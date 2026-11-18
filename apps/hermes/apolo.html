@@ -1,0 +1,1075 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hermes · Mis gastos</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNMzMwLjkgNzAuNiBBMjAwIDIwMCAwIDAgMSA0MzguNyAzMzcuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZCODZCIiBzdHJva2Utd2lkdGg9IjQwIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMzQ5LjkgNDMyLjYgQTIwMCAyMDAgMCAwIDEgMTMyLjkgNDEzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZGQjg2QiIgc3Ryb2tlLXdpZHRoPSI0MCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTY1LjggMzE3LjggQTIwMCAyMDAgMCAwIDEgNjUuOCAxOTQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZCODZCIiBzdHJva2Utd2lkdGg9IjQwIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMjU2IDE2OCBWNDA0IiBmaWxsPSJub25lIiBzdHJva2U9IiNGRkI4NkIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIxNiIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjE1MCIgcj0iMTUiIGZpbGw9IiNGRkI4NkIiLz48cGF0aCBkPSJNMjQ2IDE3MiBDMjE0IDE1MCAxNzYgMTM4IDEzNiAxNDYgQzE2MCAxNTYgMTc4IDE2NCAxOTIgMTcyIEMxNzIgMTcyIDE1NiAxNzggMTQ0IDE5MCBDMTc2IDE5MiAyMTQgMTg4IDI0NiAxODQgWiIgZmlsbD0iI0ZGQjg2QiIvPjxwYXRoIGQ9Ik0gMjY2IDE3MiBDIDI5OCAxNTAgMzM2IDEzOCAzNzYgMTQ2IEMgMzUyIDE1NiAzMzQgMTY0IDMyMCAxNzIgQyAzNDAgMTcyIDM1NiAxNzggMzY4IDE5MCBDIDMzNiAxOTIgMjk4IDE4OCAyNjYgMTg0IFoiIGZpbGw9IiNGRkI4NkIiLz48cGF0aCBkPSJNMjU2IDM5MiBDMzAyIDM3MiAzMDIgMzQwIDI1NiAzMTggQzIxMCAyOTYgMjEwIDI2NiAyNTYgMjQ0IEMyOTIgMjI4IDI5OCAyMDggMjgwIDE5NiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZCODZCIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMTMiLz48cGF0aCBkPSJNIDI1NiAzOTIgQyAyMTAgMzcyIDIxMCAzNDAgMjU2IDMxOCBDIDMwMiAyOTYgMzAyIDI2NiAyNTYgMjQ0IEMgMjIwIDIyOCAyMTQgMjA4IDIzMiAxOTYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZGQjg2QiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEzIi8+PGNpcmNsZSBjeD0iMjgyIiBjeT0iMTk0IiByPSI5IiBmaWxsPSIjRkZCODZCIi8+PGNpcmNsZSBjeD0iMjMwIiBjeT0iMTk0IiByPSI5IiBmaWxsPSIjRkZCODZCIi8+PC9zdmc+">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Estilo Atlas (igual que Fortuna). Datos: bloque <script id="apolo-datos"> que llena actualizar_apolo.py. */
+:root{
+  --bg:#090502; --panel:rgba(38,22,8,.55); --fg:#FFF4E8; --fg-2:#F2D9BC; --muted:#C9A37C; --line:rgba(255,184,107,.35); --grid:rgba(255,184,107,.12);
+  --accent:#FFB86B; --accent-soft:rgba(255,184,107,.14); --brand:#FFB86B;
+  --good:#62F0B4; --warn:#F5E26B; --bad:#FF8A7A;
+  --f-body:"Bahnschrift","Barlow","Segoe UI",system-ui,sans-serif; --f-mono:Consolas,"Cascadia Mono","IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#2A1806 0%,#120A03 55%,#090502 100%) fixed,var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45}
+.hud-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(255,184,107,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,184,107,.05) 1px,transparent 1px);background-size:32px 32px;pointer-events:none}
+.corner{position:fixed;width:30px;height:30px;border:0 solid var(--accent);pointer-events:none;opacity:.7}
+.tl{left:8px;top:8px;border-left-width:2px;border-top-width:2px}.tr{right:8px;top:8px;border-right-width:2px;border-top-width:2px}
+.bl{left:8px;bottom:8px;border-left-width:2px;border-bottom-width:2px}.br{right:8px;bottom:8px;border-right-width:2px;border-bottom-width:2px}
+@media (max-width:700px){.corner{display:none}}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.mono-label{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.cut{clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,0 100%)}
+.panel{background:var(--panel);border:1px solid var(--line);box-shadow:inset 0 0 30px rgba(255,184,107,.04);padding:14px 16px;min-width:0}
+h2{margin:0 0 10px;font-size:.78rem;font-family:var(--f-mono);font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.good{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+
+.app{position:relative;z-index:2;display:grid;gap:12px;padding:14px 20px 16px;max-width:1300px;margin:0 auto;
+  grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);grid-template-areas:"months months" "flow flow" "trend mov" "cats mov"}
+@media (max-width:900px){.app{grid-template-columns:minmax(0,1fr);grid-template-areas:"months" "flow" "trend" "cats" "mov";padding:12px 16px}}
+
+/* ---- encabezado: marca + selectores tipo «píldora» */
+.bar{grid-area:bar;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.logo{display:block;width:34px;height:34px;flex:none;filter:drop-shadow(0 0 8px rgba(255,184,107,.35))}.logo svg{width:100%;height:100%;display:block}
+.brand b{font-size:1.15rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase}
+.brand b .eg{display:inline-block;vertical-align:baseline;width:.72em;height:.72em;margin:0 .22em 0 .02em}.brand b .gl{display:block;width:100%;height:100%;overflow:visible}
+.brand small{display:block;font-family:var(--f-mono);font-size:.66rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.pills{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);background:rgba(20,11,3,.8);border-radius:999px}
+.pills button{border:0;background:transparent;padding:4px 13px;border-radius:999px;cursor:pointer;color:var(--fg-2);font-family:var(--f-mono);font-size:.74rem;letter-spacing:.08em}
+.pills button:hover{color:var(--fg);background:var(--accent-soft)}
+.pills button[aria-pressed="true"]{background:var(--accent);color:#090502;font-weight:600;box-shadow:0 0 14px rgba(255,184,107,.45)}
+.badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--warn);background:rgba(245,226,107,.1);color:var(--warn);border-radius:999px;padding:4px 6px 4px 13px;cursor:pointer;font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em}
+.badge i{font-style:normal;background:var(--warn);color:#090502;border-radius:999px;padding:0 7px;font-weight:600}
+.badge:hover{box-shadow:0 0 14px rgba(245,226,107,.35)}
+
+/* ---- tira de meses: el mes es el selector principal, cada mes con su gasto */
+.months{grid-area:months;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px;align-items:stretch}
+.arr{border:1px solid var(--line);background:rgba(20,11,3,.8);color:var(--fg-2);cursor:pointer;padding:0 10px;font-size:.8rem}
+.arr:hover{border-color:var(--accent);color:var(--accent)}
+#mstrip{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px}
+.mbtn{all:unset;cursor:pointer;text-align:center;padding:6px 2px 7px;border:1px solid var(--grid);background:rgba(20,11,3,.6);min-width:0}
+.mbtn b{display:block;font-family:var(--f-mono);font-size:.72rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-2)}
+.mbtn span{display:block;font-family:var(--f-mono);font-size:.68rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mbtn:hover{border-color:var(--line)}
+.mbtn[aria-pressed="true"]{border-color:var(--accent);background:linear-gradient(to top,rgba(255,184,107,.22),rgba(255,184,107,.04));box-shadow:0 0 14px rgba(255,184,107,.25)}
+.mbtn[aria-pressed="true"] b{color:var(--accent)} .mbtn[aria-pressed="true"] span{color:var(--fg)}
+.mbtn:focus-visible{outline:2px solid var(--accent)}
+@media (max-width:700px){#mstrip{grid-template-columns:repeat(6,minmax(0,1fr))}}
+
+/* ---- flujo del mes: entró vs salió como barras, y el balance grande */
+.flow{grid-area:flow;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:8px 28px;align-items:center}
+@media (max-width:700px){.flow{grid-template-columns:minmax(0,1fr)}}
+.flow h2{grid-column:1 / -1;margin:0}
+.fl{display:grid;grid-template-columns:5.2em minmax(0,1fr) auto;gap:4px 12px;align-items:center;margin:6px 0}
+.fl .lab{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.fl .track{height:10px;background:repeating-linear-gradient(90deg,rgba(255,184,107,.10) 0 5px,transparent 5px 7px);position:relative}
+.fl .track i{position:absolute;inset:0 auto 0 0;display:block;-webkit-mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 7px);mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 7px)}
+.fl.in .track i{background:var(--good);filter:drop-shadow(0 0 5px rgba(98,240,180,.7))}
+.fl.out .track i{background:var(--accent);filter:drop-shadow(0 0 5px rgba(255,184,107,.7))}
+.fl.inv .track i{background:#4FE3FF;filter:drop-shadow(0 0 5px rgba(79,227,255,.7))}
+.fl.inv .amt{color:#4FE3FF}
+.fl[hidden]{display:none}
+.fl.out .track i.back{background:rgba(98,240,180,.4);filter:none}
+.fl .amt{font-family:var(--f-mono);font-size:1.15rem;text-align:right;min-width:7.5em}
+.fl .sub{grid-column:2 / -1;font-size:.78rem;color:var(--muted);margin-top:-2px}
+.bal{border-left:2px solid var(--line);padding-left:20px}
+@media (max-width:700px){.bal{border-left:0;padding-left:0;border-top:1px solid var(--grid);padding-top:10px}}
+.bal .v{font-family:var(--f-mono);font-size:2.1rem;font-weight:500;line-height:1.1}
+.bal .s{font-size:.82rem;color:var(--muted)}
+.bal .top{margin-top:10px;font-size:.82rem;color:var(--fg-2)} .bal .top b{color:var(--fg);font-weight:600}
+
+/* ---- 12 meses */
+.trend{grid-area:trend}
+.bars{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:8px;align-items:end;height:170px;position:relative;padding-top:4px;border-bottom:1px solid var(--accent);background:repeating-linear-gradient(to top,transparent 0 33px,rgba(255,184,107,.07) 33px 34px)}
+.bars button{all:unset;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;position:relative;z-index:1}
+.bars .col{width:58%;max-width:28px;display:flex;flex-direction:column-reverse;gap:2px;border-top:2px solid #FFE9D0;opacity:.55;transition:opacity .2s,filter .2s}
+.bars .col i{display:block;min-height:2px}
+/* apolo-incompletos: lo que falta (estimado) va rayado sobre la columna */
+.bars .col i.est{background:repeating-linear-gradient(135deg,rgba(255,184,107,.55) 0 3px,transparent 3px 7px)!important;outline:1px dashed rgba(255,184,107,.6);outline-offset:-1px}
+.bars em .q{color:var(--warn)}
+.bars em.inc{position:relative;z-index:2;background:rgba(20,11,3,.92);padding:1px 3px;text-align:center;line-height:1.25}
+.mbtn span .q{color:var(--warn)}
+.falta{display:block;margin-top:4px;color:var(--warn);font-size:.76rem}
+#k-falta{margin:8px 0 0 calc(5.2em + 12px);font-size:.78rem}#k-falta:empty{display:none}
+.dup{color:var(--warn)}
+.legend .lavg i{display:inline-block;width:14px;height:0;border-top:1px dashed rgba(255,184,107,.6);vertical-align:middle;margin-right:6px;background:none!important}
+.legend .lest i{background:repeating-linear-gradient(135deg,rgba(255,184,107,.7) 0 2px,transparent 2px 4px)!important}
+.bars em{font-style:normal;font-family:var(--f-mono);font-size:.62rem;color:var(--muted);margin-bottom:4px;white-space:nowrap;opacity:.8}
+.bars button:hover .col{opacity:.75}
+.bars button[aria-pressed="true"] .col{opacity:1;filter:drop-shadow(0 0 8px rgba(255,184,107,.55))}
+.bars button[aria-pressed="true"] em{color:var(--accent);opacity:1;font-weight:600}
+.bars button:focus-visible .col{outline:2px solid var(--accent);outline-offset:2px}
+.bars .avg{position:absolute;left:0;right:0;border-top:1px dashed rgba(255,184,107,.3);z-index:0;pointer-events:none}
+.bars .avg span{position:absolute;right:0;top:-1.45em;font-family:var(--f-mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);background:rgba(20,11,3,.9);border:1px solid rgba(255,184,107,.35);padding:0 5px}
+.blab{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:8px;margin-top:6px;font-family:var(--f-mono);font-size:.66rem;color:var(--muted);text-align:center}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:14px;font-size:.74rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:9px;height:9px;display:inline-block;box-shadow:0 0 6px currentColor}
+.tip{position:fixed;z-index:30;pointer-events:none;background:#160D04;border:1px solid var(--accent);box-shadow:0 0 16px rgba(255,184,107,.3);padding:8px 12px;font-size:.8rem;min-width:180px;display:none}
+.tip b{display:block;margin-bottom:4px;letter-spacing:.06em}
+.tip div{display:flex;justify-content:space-between;gap:12px}
+.tip div i{width:8px;height:8px;display:inline-block;margin-right:6px}
+
+/* ---- categorías: una barra con la mezcla del mes + lista con % */
+.cats{grid-area:cats}
+.stack{display:none}
+.cat{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px 12px;align-items:baseline;padding:8px 0 10px;border-bottom:1px solid var(--grid)}
+.cat .n{font-weight:500;color:var(--fg-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat .p{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);text-align:right}
+.cat .a{font-family:var(--f-mono);font-size:.9rem;text-align:right;min-width:5.6em}
+.cat .hb{grid-column:1 / -1;height:8px;background:repeating-linear-gradient(90deg,rgba(255,184,107,.09) 0 5px,transparent 5px 7px)}
+.cat .hb i{display:block;height:100%;-webkit-mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 7px);mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 7px);filter:drop-shadow(0 0 4px currentColor)}
+.cat:first-child .n{color:var(--fg)}
+.cat .s{grid-column:1 / -1;font-size:.76rem;margin-top:-2px}
+
+/* ---- compartidos */
+.comp{grid-area:comp}
+.comp .ln{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:4px 14px;font-size:.84rem;padding:6px 0;border-bottom:1px solid var(--grid);align-items:baseline}
+.comp .ln.h{font-family:var(--f-mono);font-size:.68rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.comp .ln span:not(:first-child){font-family:var(--f-mono);text-align:right}
+.comp .ln small{display:block;color:var(--muted);font-size:.72rem}
+.comp .tot{display:flex;justify-content:space-between;gap:10px;margin-top:10px;font-size:.84rem}
+.comp .wt{color:var(--warn)}.comp .gd{color:var(--good)}
+
+/* ---- movimientos: vista + categoría arriba, agrupados por día */
+.mov{grid-area:mov;display:grid;grid-template-rows:auto auto minmax(0,1fr);max-height:calc(100vh - 150px)}
+@media (max-width:900px){.mov{max-height:none}}
+.movbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.sel{appearance:none;border:1px solid var(--line);background:rgba(20,11,3,.8) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23FFB86B'/%3E%3C/svg%3E") no-repeat right 10px center;padding:4px 28px 4px 12px;border-radius:999px;font-family:var(--f-mono);font-size:.74rem;color:var(--fg);cursor:pointer;max-width:100%}
+.sel:hover{border-color:var(--accent)}
+.rows{overflow:auto;min-height:0;scrollbar-width:thin;scrollbar-color:rgba(255,184,107,.4) transparent}
+.day{display:flex;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:1;background:#140B03;padding:6px 4px 4px;font-family:var(--f-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);border-bottom:1px solid var(--line)}
+.day span:last-child{color:var(--muted);letter-spacing:.04em}
+.row{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:2px 12px;padding:8px 4px;border-bottom:1px solid var(--grid);align-items:center;cursor:pointer}
+.row:hover{background:rgba(255,184,107,.06)}
+.row .dot{width:10px;height:10px;border-radius:50%}
+.row .t{min-width:0}
+.row .t b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .t small{display:block;font-size:.74rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .m{font-family:var(--f-mono);text-align:right}
+.row .m.in{color:var(--good)} .row .m.nc{color:var(--muted)} .rows.v-c .row .m.out{color:var(--bad)}
+.row small .dv{color:var(--good)} .row small .wt{color:var(--warn)}
+.empty{padding:28px 8px;text-align:center;color:var(--fg-2)}
+.empty b{color:var(--accent);font-weight:500}
+.foot{grid-column:1 / -1;text-align:center;margin:4px 0 0}
+
+/* «¿Para qué fue?» */
+.ask{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(1,4,10,.72);padding:16px}
+.ask.open{display:flex}
+.ask .box{width:min(720px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#160D04;border:1px solid var(--accent);box-shadow:0 0 40px rgba(255,184,107,.15);padding:16px 18px}
+.ask .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+.ask .top h2{margin:0}
+.ask .item{border-top:1px solid var(--grid);padding:12px 0}
+.ask .item.done{opacity:.45}
+.ask .who{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.ask .who b{font-weight:600}
+.ask .who .num{color:var(--fg)}
+.ask .meta{font-size:.8rem;color:var(--muted);margin-bottom:8px}
+.ask .meta.revisar{color:var(--warn)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:rgba(38,22,8,.6);padding:5px 12px;cursor:pointer;color:var(--fg-2);font-size:.86rem;border-radius:999px}
+.chip:hover{border-color:var(--accent);color:var(--fg)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#090502}
+.chip.otra input{background:transparent;border:0;border-bottom:1px solid var(--line);color:var(--fg);width:8em;padding:0 2px}
+.rem{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:.8rem;color:var(--fg-2)}
+.rem input{accent-color:var(--accent)}
+.ask .end{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+.addb{width:min(520px,100%)}
+.addb-f{display:flex;flex-direction:column;gap:6px;font-size:.82rem;color:var(--fg-2);margin:6px 0 12px}
+.addb-f input{border:1px solid var(--line);background:rgba(20,11,3,.8);color:var(--fg);padding:7px 10px;font:inherit;font-size:.95rem}
+.addb-f input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.addb-pasos{margin:0 0 8px;padding-left:1.3em;font-size:.86rem;color:var(--fg-2);display:grid;gap:4px}
+.seg{border:1px solid var(--line);background:rgba(38,22,8,.6);padding:4px 14px;cursor:pointer;color:var(--fg-2);font-family:var(--f-mono);font-size:.74rem;letter-spacing:.08em;border-radius:999px}
+.seg:hover{border-color:var(--accent);color:var(--fg)}
+.seg[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#090502}
+/* indicador de carga: los arcos del logo girando */
+.carga{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;background:var(--bg)}
+body.cargando .carga{display:flex}
+body.cargando .app{visibility:hidden}
+.carga svg{width:64px;height:64px;animation:giro 1.1s linear infinite;filter:drop-shadow(0 0 10px rgba(255,184,107,.45))}
+.carga svg path{animation:pulso 1.1s ease-in-out infinite alternate}
+@keyframes giro{to{transform:rotate(360deg)}}
+@keyframes pulso{from{opacity:.45}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.carga svg{animation-duration:3.3s}.carga svg path{animation:none}}
+
+/* ---- 12 meses con el mismo lenguaje que «Por categoría»: medidor segmentado con brillo */
+.bars.v-a,.bars.v-c{background:none;border-bottom:1px solid var(--grid)}
+.bars.v-a button::before,.bars.v-c button::before{content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:58%;max-width:28px;height:78%;
+  background:repeating-linear-gradient(to top,rgba(255,184,107,.09) 0 5px,transparent 5px 7px)}
+.bars.v-a .col,.bars.v-c .col{position:relative;gap:0;border-top:0;opacity:.6;
+  -webkit-mask:repeating-linear-gradient(to top,#000 0 5px,transparent 5px 7px);mask:repeating-linear-gradient(to top,#000 0 5px,transparent 5px 7px)}
+.bars.v-a .col i,.bars.v-c .col i{filter:drop-shadow(0 0 4px currentColor)}
+.bars.v-a button[aria-pressed="true"] .col,.bars.v-c button[aria-pressed="true"] .col{opacity:1;filter:none}
+.bars.v-c button[aria-pressed="true"]::before{background:repeating-linear-gradient(to top,rgba(255,184,107,.18) 0 5px,transparent 5px 7px)}
+.bars.v-b{display:block;height:auto;background:none;border:0;padding:0}
+.bars.v-b button{display:grid;grid-template-columns:3.4em minmax(0,1fr) 6.2em;gap:12px;align-items:center;width:100%;height:auto;padding:4px 0}
+.bars.v-b .ml{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.bars.v-b .hb{height:8px;background:repeating-linear-gradient(90deg,rgba(255,184,107,.09) 0 5px,transparent 5px 7px)}
+.bars.v-b .fill{display:flex;height:100%;opacity:.6;-webkit-mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 7px);mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 7px)}
+.bars.v-b .fill i{display:block;height:100%}
+.bars.v-b .ma{font-family:var(--f-mono);font-size:.84rem;text-align:right;color:var(--fg-2)}
+.bars.v-b button:hover .fill{opacity:.85}
+.bars.v-b button[aria-pressed="true"] .fill{opacity:1}
+.bars.v-b button[aria-pressed="true"] .ml,.bars.v-b button[aria-pressed="true"] .ma{color:var(--accent);font-weight:600}
+.bars.v-b button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.trend.v-b .blab{display:none}
+.trend.v-c .legend{display:none}
+
+/* ---- movimientos: 3 estilos a elegir (A tarjetas HUD · B terminal · C medidor) */
+.row .mm,.row .tag{display:none}
+/* A: cada movimiento es una tarjeta con corte en diagonal y filo de color con brillo */
+.rows.v-a .day{background:#140B03;border-bottom:0;padding:10px 4px 6px}
+.rows.v-a .day::after{content:"";position:absolute;left:4px;right:4px;bottom:2px;height:2px;background:repeating-linear-gradient(90deg,rgba(255,184,107,.35) 0 5px,transparent 5px 7px)}
+.rows.v-a .day{position:sticky}
+.rows.v-a .row{grid-template-columns:minmax(0,1fr) auto;margin:6px 2px;padding:8px 12px 8px 14px;border:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(38,22,8,.45);
+  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%);position:relative}
+.rows.v-a .row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c);box-shadow:0 0 8px var(--c)}
+.rows.v-a .row .dot{display:none}
+.rows.v-a .row:hover{border-color:var(--accent);background:rgba(255,184,107,.08)}
+/* B: terminal, con etiqueta de categoría en mayúsculas */
+.rows.v-b .day{border-bottom:1px dashed rgba(255,184,107,.35)}
+.rows.v-b .day span:first-child::before{content:"▸ "}
+.rows.v-b .row{grid-template-columns:7.2em minmax(0,1fr) auto;border-bottom:1px dashed var(--grid);padding:7px 4px}
+.rows.v-b .row .dot{display:none}
+.rows.v-b .row .tag{display:block;justify-self:start;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--f-mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--c);border:1px solid var(--c);padding:1px 6px;box-shadow:0 0 6px -2px var(--c)}
+.rows.v-b .row .m{font-size:.92rem}
+/* C: como «Por categoría»: monto con un medidor segmentado debajo */
+.rows.v-c .row{grid-template-columns:minmax(0,1fr) auto;padding:8px 4px 10px}
+.rows.v-c .row .dot{display:none}
+.rows.v-c .row .mm{display:block;grid-column:1 / -1;height:6px;margin-top:4px;background:repeating-linear-gradient(90deg,rgba(255,184,107,.08) 0 5px,transparent 5px 7px)}
+.rows.v-c .row .mm i{display:block;height:100%;background:var(--c);-webkit-mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 7px);mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 7px);filter:drop-shadow(0 0 4px var(--c))}
+
+/* ---- sin la línea del nombre: el filtro de banco y «¿Para qué fue?» se reubican (A tira de meses · B resumen · C meses + movimientos) */
+.bar{display:none}
+.fhead{grid-column:1 / -1;display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.fhead h2{margin:0 auto 0 0}
+/* períodos: ciclo de la tarjeta o mes calendario (18-11-2026) */
+.per{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.per .corte{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.per .corte[hidden]{display:none}
+.per[hidden]{display:none}
+.per input{width:4.2em;border:1px solid var(--line);background:rgba(20,11,3,.8);color:var(--fg);font-family:var(--f-mono);font-size:.78rem;padding:4px 6px;color-scheme:dark}
+.per input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.mbtn small{display:block;font-family:var(--f-mono);font-size:.56rem;letter-spacing:.02em;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85}
+#mes small{font-family:var(--f-mono);font-size:.7rem;font-weight:400;letter-spacing:.06em;color:var(--muted);margin-left:8px}
+.mhead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.mhead h2{margin:0}
+.months > .pills,.months > .sel,.months > .badge{align-self:center}
+body.top-a .months{grid-template-columns:auto auto minmax(0,1fr) auto auto}
+/* ---- botón «Actualizar» (18-11-2026): igual que en Fortuna, corre «actualiza Hermes» desde Atlas */
+/* «¿Para qué fue?» y «Actualizar» en un solo bloque tipo píldora, como el filtro de banco */
+.hupd{display:inline-flex;align-items:center;gap:2px;align-self:center;padding:3px;border:1px solid var(--line);background:rgba(20,11,3,.8);border-radius:999px}
+.hupd .badge{border:0;background:rgba(245,226,107,.12);padding:4px 6px 4px 12px}
+.hupd .badge:hover{box-shadow:none;background:rgba(245,226,107,.2)}
+.badge[hidden]{display:none}
+.hupd[hidden]{display:none}
+.hupd-btn{border:0;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:4px 13px;cursor:pointer;
+  font-family:var(--f-mono);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;display:inline-flex;align-items:center;gap:7px}
+.hupd-btn:hover{box-shadow:0 0 14px rgba(255,184,107,.35)}
+.hupd-btn[disabled]{opacity:.65;cursor:progress;box-shadow:none}
+.hupd-msg{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.04em;color:var(--muted);white-space:nowrap;padding:0 10px 0 6px}
+.hupd-msg:empty{display:none}
+.hupd-msg.warn{color:var(--warn)}
+.hspin{width:.8em;height:.8em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:hspin .8s linear infinite}
+@keyframes hspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.hspin{animation-duration:2.4s}}
+body.top-c .months{grid-template-columns:auto auto minmax(0,1fr) auto}
+/* diseño B (18-11-2026, elegido por el usuario): «¿Para qué fue?» y «Actualizar» como tarjetas de la tira de meses */
+.hupd{all:unset;display:flex;gap:6px;align-self:stretch}
+.hupd[hidden]{display:none}
+.hupd .badge,.hupd-btn{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:3px;padding:6px 14px;
+  border:1px solid var(--grid);background:rgba(20,11,3,.6);font-family:var(--f-mono);font-size:.72rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-2);white-space:nowrap}
+.hupd .badge{border-color:rgba(245,226,107,.45);color:var(--warn)}
+.hupd .badge i,.hupd-msg{font-style:normal;font-size:.62rem;letter-spacing:.04em;text-transform:none;font-weight:400;background:none;padding:0;border-radius:0}
+.hupd .badge i{color:var(--warn)}
+.hupd-btn{color:var(--accent);border-color:var(--line)}
+.hupd-t{display:inline-flex;align-items:center;gap:7px}
+.hupd-msg{color:var(--muted)}
+.hupd-msg:empty{display:block}
+.hupd-msg:empty::before{content:"sin actualizar todavía"}
+.hupd-msg.warn{color:var(--warn);max-width:16em;white-space:normal;text-align:center}
+.hupd .badge:hover,.hupd-btn:hover{border-color:var(--accent);box-shadow:0 0 14px rgba(255,184,107,.25);background:rgba(20,11,3,.6)}
+.hupd .badge:focus-visible,.hupd-btn:focus-visible{outline:2px solid var(--accent)}
+.hupd-btn[disabled]{cursor:progress;opacity:.75;box-shadow:none}
+@media (max-width:900px){body.top-a .months,body.top-c .months{grid-template-columns:auto minmax(0,1fr) auto}
+  body.top-a .months > .pills,body.top-c .months > .pills,body.top-a .months > .sel,body.top-c .months > .sel,body.top-a .months > .badge,.months > .hupd{grid-column:1 / -1;justify-self:start}}
+</style>
+</head>
+<body class="cargando">
+<div class="carga" role="status" aria-label="Cargando Hermes"><svg viewBox="0 0 512 512" aria-hidden="true"><path d="M330.9 70.6 A200 200 0 0 1 438.7 337.3" fill="none" stroke="#FFB86B" stroke-width="40" stroke-linecap="round"/><path d="M349.9 432.6 A200 200 0 0 1 132.9 413.6" fill="none" stroke="#FFB86B" stroke-width="40" stroke-linecap="round"/><path d="M65.8 317.8 A200 200 0 0 1 65.8 194.2" fill="none" stroke="#FFB86B" stroke-width="40" stroke-linecap="round"/><path d="M256 168 V404" fill="none" stroke="#FFB86B" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/><circle cx="256" cy="150" r="15" fill="#FFB86B"/><path d="M246 172 C214 150 176 138 136 146 C160 156 178 164 192 172 C172 172 156 178 144 190 C176 192 214 188 246 184 Z" fill="#FFB86B"/><path d="M 266 172 C 298 150 336 138 376 146 C 352 156 334 164 320 172 C 340 172 356 178 368 190 C 336 192 298 188 266 184 Z" fill="#FFB86B"/><path d="M256 392 C302 372 302 340 256 318 C210 296 210 266 256 244 C292 228 298 208 280 196" fill="none" stroke="#FFB86B" stroke-linecap="round" stroke-linejoin="round" stroke-width="13"/><path d="M 256 392 C 210 372 210 340 256 318 C 302 296 302 266 256 244 C 220 228 214 208 232 196" fill="none" stroke="#FFB86B" stroke-linecap="round" stroke-linejoin="round" stroke-width="13"/><circle cx="282" cy="194" r="9" fill="#FFB86B"/><circle cx="230" cy="194" r="9" fill="#FFB86B"/></svg></div>
+<div class="hud-grid" aria-hidden="true"></div>
+<div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+
+<!-- actualizar_apolo.py reemplaza el contenido de este bloque con los movimientos reales -->
+<script id="apolo-datos" type="application/json">{"actualizado": "", "movimientos": [], "presupuestos": {}}</script>
+
+<main class="app">
+  <header class="bar">
+    <div class="brand"><span class="logo" role="img" aria-label="Hermes"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M330.9 70.6 A200 200 0 0 1 438.7 337.3" fill="none" stroke="currentColor" stroke-width="40" stroke-linecap="round"/><path d="M349.9 432.6 A200 200 0 0 1 132.9 413.6" fill="none" stroke="currentColor" stroke-width="40" stroke-linecap="round"/><path d="M65.8 317.8 A200 200 0 0 1 65.8 194.2" fill="none" stroke="currentColor" stroke-width="40" stroke-linecap="round"/><path d="M256 168 V404" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/><circle cx="256" cy="150" r="15" fill="currentColor"/><path d="M246 172 C214 150 176 138 136 146 C160 156 178 164 192 172 C172 172 156 178 144 190 C176 192 214 188 246 184 Z" fill="currentColor"/><path d="M 266 172 C 298 150 336 138 376 146 C 352 156 334 164 320 172 C 340 172 356 178 368 190 C 336 192 298 188 266 184 Z" fill="currentColor"/><path d="M256 392 C302 372 302 340 256 318 C210 296 210 266 256 244 C292 228 298 208 280 196" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="13"/><path d="M 256 392 C 210 372 210 340 256 318 C 302 296 302 266 256 244 C 220 228 214 208 232 196" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="13"/><circle cx="282" cy="194" r="9" fill="currentColor"/><circle cx="230" cy="194" r="9" fill="currentColor"/></svg></span><div><b id="marcaNombre">Hermes</b><small>Mis finanzas</small></div></div>
+    <select class="sel" id="banco" aria-label="Banco"><option value="">Todos los bancos</option></select>
+    <button class="badge" id="askOpen" hidden></button>
+    <span class="hupd" id="hupd" hidden><button class="hupd-btn" type="button" id="hupd-btn"><span class="hupd-t">Actualizar</span><span class="hupd-msg" id="hupd-msg" role="status" aria-live="polite"></span></button></span>
+  </header>
+
+  <nav class="months" aria-label="Elegir mes">
+    <button class="arr" id="prev" aria-label="Mes anterior">◀</button><div id="mstrip"></div><button class="arr" id="next" aria-label="Mes siguiente">▶</button>
+  </nav>
+
+  <section class="panel cut flow" aria-label="Resumen del mes">
+    <h2 id="mes"></h2>
+    <div class="per" id="per" hidden><div class="pills" role="group" aria-label="Agrupar gastos por"><button data-p="ciclo" aria-pressed="true">Ciclo de tarjeta</button><button data-p="mes" aria-pressed="false">Mes calendario</button></div><label class="corte" for="corteDia">Corte día <input id="corteDia" type="number" min="1" max="31" step="1" inputmode="numeric"></label></div>
+    <div>
+      <div class="fl in"><span class="lab">Entró</span><span class="track"><i id="fl-in"></i></span><span class="amt good" id="k-ing">—</span><span class="sub" id="k-ing-s"></span></div>
+      <div class="fl out"><span class="lab">Salió</span><span class="track"><i id="fl-out"></i><i class="back" id="fl-back"></i></span><span class="amt" id="k-gasto">—</span><span class="sub" id="k-gasto-s"></span></div>
+      <div class="fl inv" id="fl-inv-row" hidden><span class="lab">Invertido</span><span class="track"><i id="fl-inv"></i></span><span class="amt" id="k-inv">—</span><span class="sub">a fondos mutuos · no cuenta como gasto</span></div>
+      <div class="falta" id="k-falta"></div>
+    </div>
+    <div class="bal"><div class="mono-label">Balance</div><div class="v" id="k-bal">—</div><div class="s" id="k-bal-s" hidden></div><div class="top" id="k-top" hidden></div></div>
+  </section>
+
+  <section class="panel trend"><h2>Últimos 12 meses · tu parte</h2><div class="bars" id="bars"></div><div class="blab" id="blab"></div><div class="legend" id="legend"></div></section>
+  <div class="tip" id="tip" role="tooltip"></div>
+
+  <section class="panel cut cats"><h2>Por categoría · tu parte</h2><div class="stack" id="stack" aria-hidden="true"></div><div id="cats"></div></section>
+
+  <section class="panel cut mov">
+    <h2>Movimientos</h2>
+    <div class="movbar">
+      <div class="pills" id="vista" role="group" aria-label="Ver"><button data-v="" aria-pressed="true">Todo</button><button data-v="out" aria-pressed="false">Salidas</button><button data-v="in" aria-pressed="false">Entradas</button></div>
+      <select class="sel" id="catf" aria-label="Categoría"></select>
+    </div>
+    <div class="rows" id="rows"></div>
+  </section>
+
+
+  <p class="foot mono-label" id="foot"></p>
+</main>
+
+<section class="ask" id="ask" role="dialog" aria-modal="true" aria-labelledby="askTitle">
+  <div class="box cut">
+    <div class="top"><h2 id="askTitle">¿Para qué fue?</h2><span class="mono-label" id="askLeft"></span></div>
+    <div id="askItems"></div>
+    <div class="end"><button class="seg" id="askLater">Más tarde</button><button class="seg" id="askNext" aria-pressed="true">Listo</button></div>
+  </div>
+</section>
+
+<!-- «+ Agregar banco» (18-11-2026): sin correos, el banco entra por los avisos del celular (MacroDroid) -->
+<section class="ask" id="addb" role="dialog" aria-modal="true" aria-labelledby="addbTitle">
+  <div class="box cut addb">
+    <div class="top"><h2 id="addbTitle">Agregar banco</h2></div>
+    <label class="addb-f">Nombre de la app del banco, como aparece en el celular<input id="addbNom" autocomplete="off" placeholder="ej. BancoEstado"></label>
+    <ol class="addb-pasos">
+      <li>En el celular, abra MacroDroid y entre a la macro «Avisos banco».</li>
+      <li>En el disparador «Notificación recibida», marque también la app de este banco.</li>
+      <li>Revise que esa app tenga activadas las notificaciones de compras y transferencias.</li>
+    </ol>
+    <p class="meta">No necesita correos. Desde ese momento, cada compra o transferencia que avise el celular entra sola a Hermes con este banco.</p>
+    <div class="end"><button class="seg" id="addbNo">Cancelar</button><button class="seg" id="addbSi" aria-pressed="true">Agregar</button></div>
+  </div>
+</section>
+
+<script>
+// el nombre de la app con su símbolo: lo arma la misma función del HUD (paintAppName); fuera de Atlas queda en texto
+(() => { let f = null; try { if (parent !== window) f = parent.paintAppName; } catch (e) {}
+  const el = document.getElementById("marcaNombre"); if (el && typeof f === "function") { try { f(el, "Hermes"); } catch (e) {} } })();
+(() => {
+  const D = JSON.parse(document.getElementById("apolo-datos").textContent || "{}");
+  const MOV = (D.movimientos || []).map(m => ({...m, cat0: m.categoria, f: new Date(m.fecha + "T12:00:00")}));
+  // Para qué fue cada gasto: {mov: {id: categoría}, reglas: {comercio en minúscula: categoría}}.
+  // Dentro de Atlas se guarda en Atlas (accesos_datos.json); abierto suelto, en este navegador.
+  const EN_ATLAS = window.parent !== window;
+  let CLS = {mov: {}, reglas: {}, vinc: {}};
+  try { CLS = Object.assign(CLS, JSON.parse(localStorage.getItem("apolo-clasificacion") || "{}")); } catch (e) {}
+  const plain = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+  const DUDOSAS = new Set(["Transferencias a personas", "Otros"]);
+  const OPCIONES = ["Comida", "Carrete/fiesta", "Regalo", "Gustito", "Supermercado", "Transporte", "Cuentas y servicios",
+                    "Salud", "Educación", "Préstamo o deuda", "Mío (no es gasto)", "No me acuerdo"];
+  // «No me acuerdo» se guarda gasto por gasto (no para toda la persona), para que Claude los analice después
+  const NO_SE = "No me acuerdo";
+  const catDe = op => op === "Mío (no es gasto)" ? "Transferencias propias" : op;
+  function aplicar() {
+    // las reglas por persona son para gastos: no le cambian la categoría a lo que esa persona te deposita
+    MOV.forEach(m => { m.categoria = CLS.mov[m.id] || (m.monto < 0 && CLS.reglas[plain(m.comercio)]) || m.cat0; });
+    vincular();
+    armarPerfil();
+  }
+  // ---- Devoluciones: cada depósito de un amigo se junta con el gasto que hiciste antes (hasta 21 días antes,
+  // porque a veces se demoran). Un depósito puede cubrir varias cuentas juntas: se reparte entre ellas. Si varios
+  // amigos te pagan más de lo que costó un gasto, cada uno pone su parte pareja y lo que sobra queda «esperando su
+  // gasto» (la otra cuenta, que quizás aún no aparece porque la Visa no manda su estado de cuenta).
+  const DEV = "Devoluciones y otros", DIAS_DEV = 21, MIN_DEV = 15000, ADELANTO = 5 * 864e5;  // en un viaje te pagan antes o durante: el gasto puede ser hasta 5 días después
+  const NO_VINC = new Set(["Comisiones del banco", "Suscripciones", "Cuentas y servicios", "Educación", "Salud"]);
+  function vincular() {
+    const byId = {};
+    MOV.forEach(m => { byId[m.id] = m; m.parejo = false; m.devs = []; m.vinc = null; m.vincs = []; m.espera = false; m.resta = 0; m.manual = false; });
+    const devs = MOV.filter(m => m.monto > 0 && m.categoria === DEV).sort((a, b) => a.f - b.f);
+    const resto = g => -g.monto - g.devs.reduce((s, d) => s + d.monto, 0);
+    // pone «monto» del depósito d en el gasto g (en g.devs queda una copia de d con ese monto)
+    const poner = (d, g, monto) => {
+      if (monto <= 0) return;
+      g.devs.push(Object.assign(Object.create(d), {monto, orig: d}));
+      d.vincs.push({g, monto}); if (!d.vinc) d.vinc = g;
+    };
+    const cerrar = (d, puesto) => { d.resta = Math.max(0, d.monto - puesto); d.espera = d.resta > 0; };
+    const V = CLS.vinc || {};
+    // 0) lo que corregiste a mano: un gasto, varios, o «esperar»
+    devs.forEach(d => {
+      const v = V[d.id];
+      if (!v) return;
+      d.manual = true;
+      if (v === "esperar") { d.espera = true; d.resta = d.monto; return; }
+      const ids = (Array.isArray(v) ? v : [v]).filter(id => byId[id] && byId[id].monto < 0);
+      let falta = d.monto;
+      ids.forEach((id, k) => { const g = byId[id], x = k === ids.length - 1 ? falta : Math.min(falta, Math.max(0, resto(g))); poner(d, g, x); falta -= x; });
+      cerrar(d, d.monto - falta);
+    });
+    // 1) calce fuerte: alguien te deposita casi lo mismo (±15 %) que pagaste hace menos de 30 días
+    devs.forEach(d => {
+      if (d.manual || d.monto < 20000) return;
+      const c = MOV.filter(g => esGasto(g) && -g.monto >= 20000 && d.f - g.f >= 0 && d.f - g.f <= 30 * 864e5 && !g.devs.length
+                              && Math.abs(-g.monto - d.monto) <= .15 * -g.monto)
+        .sort((a, b) => b.f - a.f || Math.abs(-a.monto - d.monto) - Math.abs(-b.monto - d.monto));
+      if (c.length) { const x = Math.min(d.monto, -c[0].monto); poner(d, c[0], x); cerrar(d, x); d.fuerte = true; }
+    });
+    // 2) el resto va al gasto grande más reciente de los 21 días anteriores (que sea al menos la mitad del depósito)
+    const grupos = new Map();
+    devs.forEach(d => {
+      if (d.manual || d.fuerte) return;
+      const c = MOV.filter(g => esGasto(g) && -g.monto >= MIN_DEV && !NO_VINC.has(g.categoria) && d.f - g.f >= -ADELANTO
+                              && d.f - g.f <= DIAS_DEV * 864e5 && -g.monto >= d.monto / 2 && resto(g) > 0).sort((a, b) => b.f - a.f);
+      if (!c.length) { cerrar(d, 0); return; }
+      if (!grupos.has(c[0])) grupos.set(c[0], []);
+      grupos.get(c[0]).push(d);
+    });
+    // 3) si entre todos te pagaron más de lo que costó, cada persona pone una parte pareja (tú también pones la tuya)
+    grupos.forEach((ds, g) => {
+      const libre = resto(g), total = ds.reduce((s, d) => s + d.monto, 0);
+      if (total <= libre) { ds.forEach(d => { poner(d, g, d.monto); cerrar(d, d.monto); }); return; }
+      const gente = [...new Set(ds.map(d => plain(d.comercio)))];
+      const cuota = libre / (gente.length + 1); g.parejo = true;
+      gente.forEach(p => {
+        let cupo = Math.round(cuota);
+        ds.filter(d => plain(d.comercio) === p).forEach(d => { const x = Math.min(d.monto, cupo); poner(d, g, x); cupo -= x; cerrar(d, x); });
+      });
+    });
+    // 4) lo que sobró va a los otros gastos grandes de esos mismos días (un viaje o un carrete con varias cuentas)
+    devs.filter(d => !d.manual && d.resta > 0).forEach(d => {
+      MOV.filter(g => esGasto(g) && -g.monto >= MIN_DEV && !NO_VINC.has(g.categoria) && d.f - g.f >= -ADELANTO
+                      && d.f - g.f <= DIAS_DEV * 864e5 && resto(g) > 0 && !g.parejo).sort((a, b) => b.f - a.f)
+        .forEach(g => { if (d.resta <= 0) return; const x = Math.min(d.resta, resto(g)); poner(d, g, x); d.resta -= x; });
+      d.espera = d.resta > 0;
+    });
+  }
+  const devuelto = g => (g.devs || []).reduce((s, d) => s + d.monto, 0);
+  // tu parte de un gasto: lo que pagaste menos lo que te devolvieron por él (nunca menos de 0)
+  const parte = m => Math.max(0, -m.monto - devuelto(m));
+  // Perfil: cuánto sueles gastar en cada categoría. Un gasto de 20 mil o más que es 3 veces lo típico de su
+  // categoría (y está en el 10 % más alto) se marca «fuera de lo normal»: puede ser algo que pagaste por otro.
+  let PERFIL = {};
+  function armarPerfil() {
+    const por = {};
+    MOV.filter(esGasto).forEach(m => (por[m.categoria] = por[m.categoria] || []).push(-m.monto));
+    PERFIL = {};
+    Object.entries(por).forEach(([c, v]) => { v.sort((a, b) => a - b); PERFIL[c] = {med: v[Math.floor((v.length - 1) / 2)], p90: v[Math.floor(.9 * (v.length - 1))]}; });
+  }
+  // además no debe ser algo que repites: si al mismo comercio o persona ya le pagas montos parecidos, es tu costumbre
+  const raro = m => {
+    const p = PERFIL[m.categoria], a = -m.monto;
+    if (!esGasto(m) || !p || a < 25000 || a < 4 * p.med || a < p.p90 || (m.devs || []).length) return false;
+    const yo = CLS.mov[m.id];  // si ya me dijiste para qué fue, no lo vuelvo a marcar
+    if (yo && yo !== NO_SE && yo !== "No recuerdo") return false;
+    const k = plain(m.comercio);
+    return !MOV.some(x => x !== m && esGasto(x) && plain(x.comercio) === k && -x.monto >= a / 2);
+  };
+  const fcorta = d => d.getDate() + " " + MESES[d.getMonth()].slice(0, 3);
+  function guardarCls() {
+    try { localStorage.setItem("apolo-clasificacion", JSON.stringify(CLS)); } catch (e) {}
+    if (EN_ATLAS) window.parent.postMessage({atlas: 1, type: "guardar", clave: "clasificacion", valor: CLS}, location.origin);
+  }
+  const PRES = D.presupuestos || {};
+  const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  const clp = n => "$" + Math.round(Math.abs(n)).toLocaleString("es-CL");
+  const key = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+  // ---- Períodos (18-11-2026): por ciclo de la tarjeta (de corte a corte; así viene por defecto) o por mes calendario.
+  // «noviembre» = del día siguiente al corte de octubre hasta el corte de noviembre, inclusive. Se usa el corte real del
+  // estado de cuenta si lo hay; si no, el día elegido (automático: el que más se repite en los cortes reales, o el 20),
+  // corrido al día hábil ANTERIOR si cae sábado, domingo o feriado: así lo hace el banco (23-08-2026 era domingo y cortó
+  // el viernes 21). Todo movimiento (Visa, débito, MACH y transferencias) va al período que contiene su fecha, para que
+  // cada período sume lo que pasó en ese rango de días y las compras con la Visa calcen con su estado de cuenta.
+  const CORTES = [...new Set((D.cortes || []).map(c => c && c.fecha).filter(Boolean))].sort();
+  const FERIADOS = new Set(["01-01", "05-01", "05-21", "07-16", "08-15", "09-18", "09-19", "11-01", "12-08", "12-25"]);
+  const DIA_AUTO = (() => { const n = {}; CORTES.forEach(c => { const d = +c.slice(8, 10); n[d] = (n[d] || 0) + 1; });
+    const e = Object.entries(n).sort((a, b) => b[1] - a[1] || b[0] - a[0])[0]; return e ? +e[0] : 20; })();
+  // 18-11-2026: el período es SIEMPRE el ciclo de la tarjeta, con corte el 23 (o el día hábil anterior); sin mes calendario
+  const PER = {modo: "ciclo", dia: 23};
+  const ponerPer = g => {};
+  try { ponerPer(JSON.parse(localStorage.getItem("hermes-periodo") || "null")); } catch (e) {}
+  const p2 = n => String(n).padStart(2, "0");
+  function corteDe(y, m) {   // m: 0-11 (acepta -1 y 12)
+    const b = new Date(y, m, 1); y = b.getFullYear(); m = b.getMonth();
+    const real = CORTES.filter(c => c.startsWith(y + "-" + p2(m + 1) + "-")).pop();
+    if (real) return new Date(real + "T12:00:00");
+    let d = new Date(y, m, Math.min(PER.dia || DIA_AUTO, new Date(y, m + 1, 0).getDate()), 12);
+    while (d.getDay() % 6 === 0 || FERIADOS.has(p2(d.getMonth() + 1) + "-" + p2(d.getDate()))) d = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1, 12);
+    return d;
+  }
+  const ciclo = () => PER.modo === "ciclo";
+  const perDe = f => !ciclo() || f <= corteDe(f.getFullYear(), f.getMonth()) ? new Date(f.getFullYear(), f.getMonth(), 1) : new Date(f.getFullYear(), f.getMonth() + 1, 1);
+  const perIni = d => { if (!ciclo()) return new Date(d.getFullYear(), d.getMonth(), 1, 12); const c = corteDe(d.getFullYear(), d.getMonth() - 1); return new Date(c.getFullYear(), c.getMonth(), c.getDate() + 1, 12); };
+  const perFin = d => ciclo() ? corteDe(d.getFullYear(), d.getMonth()) : new Date(d.getFullYear(), d.getMonth() + 1, 0, 12);
+  const fcor = d => d.getDate() + " " + MESES[d.getMonth()].slice(0, 3);
+  const rangoDe = d => fcor(perIni(d)) + " – " + fcor(perFin(d));
+  // una compra Visa que el banco facturó en un estado de cuenta posterior a su fecha cuenta en el ciclo de ese estado
+  // (m.ciclo = su fecha de corte), para que cada ciclo sume lo mismo que lo facturado
+  const marcarPer = () => MOV.forEach(m => { m.pk = ciclo() && m.ciclo ? m.ciclo.slice(0, 7) : key(perDe(m.f)); });
+  marcarPer();
+  window.__hermesPeriodos = {corteDe, perDe, perIni, perFin, PER, CORTES, DIA_AUTO, marcarPer, ponerPer};   // para las pruebas
+  const st = {banco: "", cat: "", vista: "", mes: null};
+  const last = MOV.length ? MOV.reduce((a, m) => m.f > a ? m.f : a, MOV[0].f) : new Date();
+  st.mes = perDe(last);
+  const $ = id => document.getElementById(id);
+
+  function delMes(d) {
+    const k = key(d);
+    return MOV.filter(m => m.pk === k && (!st.banco || m.banco === st.banco));
+  }
+  // No son gasto: lo que te pasas a ti mismo y el pago de la tarjeta (sus compras ya se cuentan una por una)
+  const NO_GASTO = new Set(["Transferencias propias", "Pago de tarjeta", "Ingresos", "Inversiones", "Devoluciones y otros", "Préstamos recibidos", "Extras de familia", "Ingresos por revisar"]);
+  // colores por tipo de gasto (tonos que se leen sobre el fondo oscuro de Atlas)
+  const PALETA = ["#FFB86B", "#4FE3FF", "#62F0B4", "#FF8A7A", "#B39DFF", "#F5E26B", "#FF7AC8"];
+  const RESTO = "#6B5A48", GRAF = 5;
+  const VAR_BARRAS = "a";
+  const VAR_MOV = "c";
+  const VAR_TOP = "a";  // dónde van el filtro de banco y «¿Para qué fue?»: a tira de meses · b resumen · c meses + movimientos
+  function ubicarArriba() {
+    const V = new URLSearchParams(location.search).get("top") || VAR_TOP, b = $("banco"), a = $("askOpen");
+    const mon = document.querySelector("nav.months"), fl = document.querySelector(".flow"), mh = document.querySelector(".mov h2");
+    let fh = document.querySelector(".fhead");
+    if (!fh) { fh = document.createElement("div"); fh.className = "fhead"; fl.insertBefore(fh, fl.firstChild); fh.appendChild($("mes")); fh.appendChild($("per")); }
+    let mhd = document.querySelector(".mhead");
+    if (!mhd) { mhd = document.createElement("div"); mhd.className = "mhead"; mh.parentNode.insertBefore(mhd, mh); mhd.appendChild(mh); }
+    document.body.classList.remove("top-a", "top-b", "top-c"); document.body.classList.add("top-" + V);
+    if (V === "b") { fh.appendChild(b); fh.appendChild(a); }
+    else { mon.insertBefore(b, mon.firstChild); (V === "a" ? mon : mhd).appendChild(a); }
+  }  // movimientos: a tarjetas HUD · b terminal · c medidor  // a: columnas segmentadas por tipo · b: filas como «Por categoría» · c: columnas ámbar  // el gráfico muestra 5 categorías + «Resto»
+  let COLOR = {};
+  const colorDe = c => COLOR[c] || (c === "Resto" ? RESTO : "#8F7A63");
+  const esGasto = m => m.monto < 0 && !NO_GASTO.has(m.categoria);
+  const gasto = ms => ms.filter(esGasto).reduce((s, m) => s - m.monto, 0);
+
+  // ---- Meses incompletos: las compras con Visa y MACH llegan con el estado de cuenta / cartola del mes siguiente.
+  // Hasta que llegan, el mes se ve más barato de lo que fue. Cada fuente cubre hasta su último movimiento.
+  // Solo lo que llega con el estado de cuenta o la cartola.
+  // Cada fuente cubre hasta su último movimiento: el estado de cuenta Visa corta cerca del 23; la cartola de la cuenta, a fin de mes.
+  const FUENTES = [];   // 18-11-2026: Hermes usa solo correo y avisos del celular; no hay cartolas que esperar
+  const finMes = d => new Date(d.getFullYear(), d.getMonth() + 1, 0);
+  FUENTES.forEach(F => { const ms = MOV.filter(F.es); F.hasta = ms.length ? ms.reduce((a, m) => m.f > a ? m.f : a, ms[0].f) : null;
+    if (F.n === "Visa" && CORTES.length) { const c = new Date(CORTES[CORTES.length - 1] + "T12:00:00"); if (!F.hasta || c > F.hasta) F.hasta = c; }
+    if (F.hasta && F.mesEntero) F.hasta = new Date(F.hasta.getFullYear(), F.hasta.getMonth() + 1, 0, 12); });
+  // lo que falta en un mes: por cada fuente que no lo cubre entero, su promedio de los 3 últimos meses completos
+  // (proporcional a los días que faltan). Solo con el filtro «Todos» o el banco de esa fuente.
+  function falta(d) {
+    const out = [];
+    if (d > last) return out;
+    FUENTES.forEach(F => {
+      if (!F.hasta || perFin(d) <= F.hasta) return;
+      if (st.banco && st.banco !== F.b) return;
+      const ini = perIni(d), desde = F.hasta >= ini ? new Date(F.hasta.getTime() + 864e5) : ini;
+      const dias = Math.round((perFin(d) - ini) / 864e5) + 1, sin = Math.round((perFin(d) - desde) / 864e5) + 1;
+      const pm = perDe(F.hasta);
+      const meses = [1, 2, 3].map(k => new Date(pm.getFullYear(), pm.getMonth() - k + (perFin(pm) <= F.hasta ? 1 : 0), 1));
+      const prom = meses.map(x => MOV.filter(m => F.es(m) && m.pk === key(x) && esGasto(m)).reduce((s, m) => s + parte(m), 0)).reduce((a, b) => a + b, 0) / 3;
+      out.push({n: F.n, desde, est: Math.round(prom * sin / dias / 1000) * 1000});
+    });
+    return out;
+  }
+  const estDe = d => falta(d).reduce((s, x) => s + x.est, 0);
+  const fdia = d => d.getDate() + " " + MESES[d.getMonth()].slice(0, 3);
+  // posibles duplicados: mismo comercio, mismo monto y mismo tipo, el mismo día o el siguiente (no se borran: solo se avisa)
+  const DUP = new Set();
+  [...MOV].sort((a, b) => a.f - b.f).forEach((m, i, arr) => {
+    for (let j = i - 1; j >= 0 && m.f - arr[j].f <= 864e5; j--)
+      if (arr[j].monto === m.monto && arr[j].comercio === m.comercio && arr[j].tipo === m.tipo && arr[j].banco === m.banco) { DUP.add(m.id); break; }
+  });
+
+  aplicar();
+  function render() {
+    const ms = delMes(st.mes);
+    $("mes").textContent = "Resumen · " + MESES[st.mes.getMonth()] + " " + st.mes.getFullYear();
+    if (ciclo()) { const r = document.createElement("small"); r.textContent = rangoDe(st.mes); $("mes").appendChild(r); }
+    document.querySelector(".trend h2").textContent = ciclo() ? "Últimos 12 ciclos de la tarjeta · tu parte" : "Últimos 12 meses · tu parte";
+    pintarPer();
+    // Entró: tu plata (mesada, honorarios). Salió: tu parte de lo que gastaste (lo que pagaste menos lo que te devolvieron);
+    // no cuentan pasarte plata a ti mismo, invertir, ni el pago de la tarjeta (sus compras ya están una por una).
+    const ENTRA = new Set(["Ingresos", "Préstamos recibidos"]);
+    const bruto = gasto(ms), g = ms.filter(esGasto).reduce((s, m) => s + parte(m), 0), dvm = bruto - g;
+    const ing = ms.filter(m => m.monto > 0 && ENTRA.has(m.categoria)).reduce((s, m) => s + m.monto, 0);
+    const extraFam = ms.filter(m => m.monto > 0 && m.categoria === "Extras de familia").reduce((s, m) => s + m.monto, 0);
+    const prevMes = new Date(st.mes.getFullYear(), st.mes.getMonth() - 1, 1), gp = delMes(prevMes).filter(esGasto).reduce((s, m) => s + parte(m), 0);
+    // lo que mandaste a inversiones (fondos mutuos): no es gasto, pero se muestra aparte para que se vea
+    const inv = ms.filter(m => m.monto < 0 && m.categoria === "Inversiones").reduce((s, m) => s - m.monto, 0);
+    const mx = Math.max(1, ing, bruto, inv);
+    $("fl-inv-row").hidden = !inv; $("fl-inv").style.width = (inv / mx * 100) + "%"; $("k-inv").textContent = clp(inv);
+    $("fl-in").style.width = (ing / mx * 100) + "%";
+    $("fl-out").style.width = (g / mx * 100) + "%";
+    $("fl-back").style.width = "0";
+    $("k-ing").textContent = clp(ing);
+    $("k-ing-s").textContent = (ing ? "mesadas y sueldo" : "sin ingresos este mes") + (extraFam ? ` · aparte, tu familia te pasó ${clp(extraFam)} extra` : "");
+    $("k-gasto").textContent = clp(g);
+    $("k-gasto-s").textContent = "tu parte" +
+      (gp ? " · " + (g >= gp ? "▲ " : "▼ ") + clp(g - gp) + " vs " + MESES[prevMes.getMonth()] + (falta(prevMes).length ? " (incompleto)" : "") : "");
+    const fl = falta(st.mes), est = fl.reduce((s, x) => s + x.est, 0);
+    const nf = fl.map(x => x.n === "Visa" ? "Visa" : x.n === "MACH" ? "MACH" : "débito");
+    $("k-falta").innerHTML = fl.length ? `⚠ Faltan datos de ${nf.length > 1 ? nf.slice(0, -1).join(", ") + " y " + nf[nf.length - 1] : nf[0]} · estimado <b>~${clp(est)}</b> más` : "";
+    const bal = ing - g;
+    $("k-bal").textContent = (bal < 0 ? "−" : "+") + clp(bal);
+    $("k-bal").className = "v " + (bal < 0 ? "bad" : "good");
+    $("k-bal-s").textContent = fl.length ? `provisorio · con lo estimado quedaría en ${bal - est < 0 ? "−" : "+"}${clp(bal - est)}`
+      : bal < 0 ? "salió más de lo que entró" : "entró más de lo que salió";
+    const top = ms.filter(esGasto).sort((a, b) => a.monto - b.monto)[0];
+    $("k-top").innerHTML = top ? `Mayor gasto: <b>${esc(top.comercio)}</b> · ${clp(top.monto)} · ${fcorta(top.f)}` : "";
+
+    pintarBarras();
+
+    // categorías: barra con la mezcla del mes + lista con % (tu parte)
+    const porCat = {};
+    ms.filter(esGasto).forEach(m => porCat[m.categoria || "Otros"] = (porCat[m.categoria || "Otros"] || 0) + parte(m));
+    const cats = Object.entries(porCat).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+    const totC = cats.reduce((s, [, v]) => s + v, 0) || 1;
+    $("stack").innerHTML = cats.map(([c, v]) => `<i style="flex:${v};background:${colorDe(c)}" title="${esc(c)} ${clp(v)}"></i>`).join("");
+    $("cats").innerHTML = cats.length ? cats.map(([c, v]) => {
+      const lim = PRES[c], p = lim ? v / lim : 0, cls = lim ? (p >= 1 ? "bad" : p >= .8 ? "warn" : "") : "";
+      return `<div class="cat"><span class="n">${esc(c)}</span>
+        <span class="p">${Math.round(v / totC * 100)} %</span><span class="a">${clp(v)}</span>
+        <span class="hb"><i style="width:${Math.max(1.5, v / cats[0][1] * 100)}%;background:${colorDe(c)};color:${colorDe(c)}"></i></span>
+        ${lim ? `<span class="s ${cls}">${p >= 1 ? "Excedido por " + clp(v - lim) : Math.round(p * 100) + " % del presupuesto"}</span>` : ""}</div>`;
+    }).join("") : vacio();
+
+    // 12 meses (fijos) + la tira de meses de arriba
+    function pintarBarras() {
+    const hoyMes = new Date(Math.max(last, new Date()));
+    const pHoy = perDe(hoyMes), ult = [...Array(12)].map((_, i) => new Date(pHoy.getFullYear(), pHoy.getMonth() - 11 + i, 1));
+    const nomP = d => MESES[d.getMonth()] + " " + d.getFullYear() + (ciclo() ? " (" + rangoDe(d) + ")" : "");
+    const vals = ult.map(d => delMes(d).filter(esGasto).reduce((s, m) => s + parte(m), 0)), mx = Math.max(1, ...vals.map((v, i) => v + estDe(ult[i])));
+    const porMes = ult.map(d => { const o = {}; delMes(d).filter(esGasto).forEach(m => { o[m.categoria] = (o[m.categoria] || 0) + parte(m); }); return o; });
+    const tot = {};
+    porMes.forEach(o => Object.entries(o).forEach(([c, v]) => tot[c] = (tot[c] || 0) + v));
+    const topC = Object.entries(tot).sort((a, b) => b[1] - a[1]).slice(0, 7).map(x => x[0]);
+    COLOR = {}; topC.forEach((c, i) => COLOR[c] = PALETA[i]);
+    const enGraf = topC.slice(0, GRAF), grupo = c => enGraf.includes(c) ? c : "Resto";
+    const seg = porMes.map(o => { const s = {}; Object.entries(o).forEach(([c, v]) => s[grupo(c)] = (s[grupo(c)] || 0) + v); return s; });
+    const orden = [...enGraf, "Resto"];
+    const corto = v => v >= 1e6 ? (v / 1e6).toFixed(1).replace(".", ",") + "M" : Math.round(v / 1000) + "k";
+    const ests = ult.map(d => estDe(d));
+    const conGasto = vals.filter((v, i) => v > 0 && !ests[i]), prom = conGasto.length ? conGasto.reduce((s, v) => s + v, 0) / conGasto.length : 0;
+    const ESC = 78;  // % del alto que usa la columna más alta (deja aire para la cifra)
+    const V = document.body.dataset.barras || VAR_BARRAS;
+    $("bars").className = "bars v-" + V; $("bars").closest(".trend").className = "panel trend v-" + V;
+    const trozos = i => V === "c" ? `<i style="flex:1;background:var(--accent);color:var(--accent)"></i>`
+      : orden.filter(c => seg[i][c]).map(c => `<i style="flex:${seg[i][c]};background:${colorDe(c)};color:${colorDe(c)}"></i>`).join("")
+        + (ests[i] ? `<i class="est" style="flex:${ests[i]}" title="estimado: faltan compras"></i>` : "");
+    $("bars").innerHTML = V === "b"
+      ? ult.map((d, i) => `<button aria-pressed="${key(d) === key(st.mes)}" aria-label="${nomP(d)}: ${clp(vals[i])}" data-i="${i}">
+          <span class="ml">${MESES[d.getMonth()].slice(0, 3)}</span><span class="hb"><span class="fill" style="width:${vals[i] / mx * 100}%">${trozos(i)}</span></span>
+          <span class="ma">${vals[i] ? clp(vals[i]) : "—"}</span></button>`).join("")
+      : ult.map((d, i) => `<button aria-pressed="${key(d) === key(st.mes)}" aria-label="${nomP(d)}: ${clp(vals[i])}" data-i="${i}">${
+          vals[i] ? `<em${ests[i] ? ' class="inc"' : ""}>${ests[i] ? `<span class="q">~+${corto(ests[i])}</span><br>${corto(vals[i])}` : corto(vals[i])}</em>` : ""}<span class="col" style="height:${(vals[i] + ests[i]) / mx * ESC}%">${trozos(i)}</span></button>`).join("")
+        + (prom ? `<div class="avg" style="bottom:${prom / mx * ESC}%"></div>` : "");
+    $("legend").innerHTML = orden.filter(c => c !== "Resto" || Object.keys(tot).length > enGraf.length)
+      .map(c => `<span><i style="background:${colorDe(c)};color:${colorDe(c)}"></i>${esc(c)}</span>`).join("")
+      + (prom ? `<span class="lavg"><i></i>promedio ${corto(prom)}${ests.some(x => x) ? " (sin meses incompletos)" : ""}</span>` : "")
+      + (ests.some(x => x) ? `<span class="lest"><i></i>estimado: faltan compras</span>` : "");
+    $("bars").querySelectorAll("button").forEach(b => {
+      const i = +b.dataset.i, d = ult[i];
+      b.onmouseenter = b.onfocus = () => {
+        const filas = Object.entries(seg[i]).sort((x, y) => y[1] - x[1]);
+        const fx = falta(d);
+        $("tip").innerHTML = `<b>${MESES[d.getMonth()]} ${d.getFullYear()}${ciclo() ? " · " + rangoDe(d) : ""} · ${clp(vals[i])}</b>` + (fx.length ? `<div class="falta">⚠ faltan ${fx.map(x => x.n + " desde el " + fdia(x.desde)).join(" y ")} · ~${clp(ests[i])} más</div>` : "") + (filas.length ? filas.map(([c, v]) =>
+          `<div><span><i style="background:${colorDe(c)}"></i>${esc(c)}</span><span class="num">${clp(v)}</span></div>`).join("") : "Sin gastos");
+        const r = b.getBoundingClientRect(), tp = $("tip");
+        tp.style.display = "block";
+        tp.style.left = Math.min(window.innerWidth - tp.offsetWidth - 8, Math.max(8, r.left + r.width / 2 - tp.offsetWidth / 2)) + "px";
+        tp.style.top = Math.max(8, r.top - tp.offsetHeight - 8) + "px";
+      };
+      b.onmouseleave = b.onblur = () => { $("tip").style.display = "none"; };
+      b.onclick = () => { st.mes = ult[i]; render(); };
+    });
+    $("blab").innerHTML = ult.map(d => `<span>${MESES[d.getMonth()].slice(0, 3)}</span>`).join("");
+    // tira de meses: mismo periodo; cada mes con tu parte gastada
+    $("mstrip").innerHTML = ult.map((d, i) => `<button class="mbtn" data-i="${i}" aria-pressed="${key(d) === key(st.mes)}" aria-label="${nomP(d)}">
+      <b>${MESES[d.getMonth()].slice(0, 3)}${d.getMonth() === 0 || i === 0 ? " " + String(d.getFullYear()).slice(2) : ""}</b><span>${vals[i] ? clp(vals[i]) : "—"}${ests[i] ? `<span class="q" title="${ciclo() ? "ciclo" : "mes"} incompleto"> *</span>` : ""}</span>${ciclo() ? `<small>${rangoDe(d)}</small>` : ""}</button>`).join("");
+    $("mstrip").querySelectorAll(".mbtn").forEach(b => b.onclick = () => { st.mes = ult[+b.dataset.i]; render(); });
+    }
+
+    // movimientos: vista (todo / salidas / entradas) + categoría, agrupados por día
+    const opts = [...new Set(ms.filter(m => st.vista !== "in" ? true : m.monto > 0).map(m => m.categoria || "Otros"))].sort();
+    if (st.cat && !opts.includes(st.cat)) st.cat = "";
+    $("catf").innerHTML = `<option value="">Todas las categorías</option>` + opts.map(c => `<option value="${esc(c)}"${c === st.cat ? " selected" : ""}>${esc(c)}</option>`).join("");
+    document.querySelectorAll("#vista button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === st.vista));
+    const lista = ms.filter(m => (!st.cat || m.categoria === st.cat) && (st.vista === "out" ? m.monto < 0 : st.vista === "in" ? m.monto > 0 : true)).sort((a, b) => b.f - a.f);
+    const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+    let html = "", dia = "";
+    const maxMov = Math.max(1, ...lista.map(m => Math.abs(m.monto)));
+    $("rows").className = "rows v-" + (document.body.dataset.mov || VAR_MOV);
+    lista.forEach(m => {
+      const k = m.fecha;
+      if (k !== dia) {
+        dia = k;
+        const del = lista.filter(x => x.fecha === k), neto = del.reduce((s, x) => s + (esGasto(x) ? x.monto : 0), 0);
+        html += `<div class="day"><span>${DIAS[m.f.getDay()]} ${m.f.getDate()} ${MESES[m.f.getMonth()].slice(0, 3)}</span><span>${neto ? "gastaste " + clp(neto) : ""}</span></div>`;
+      }
+      const nc = m.monto < 0 && NO_GASTO.has(m.categoria);
+      const dot = m.monto > 0 ? "var(--good)" : nc ? "var(--muted)" : (document.body.dataset.mov || VAR_MOV) === "c" ? "var(--bad)" : colorDe(m.categoria);
+      html += `<div class="row" role="button" tabindex="0" data-id="${esc(m.id)}" title="Cambiar para qué fue" style="--c:${dot}"><i class="dot" style="background:${dot}"></i><span class="tag">${esc(m.categoria || "Otros")}</span>
+        <span class="t"><b>${esc(m.comercio)}</b><small>${esc(m.categoria || "Otros")} · ${esc(m.cuenta === "Visa" ? "Visa" : m.banco)}${nc ? " · no cuenta como gasto" : ""}${notaDev(m)}</small></span>
+        <span class="m${m.monto > 0 ? " in" : nc ? " nc" : " out"}">${m.monto > 0 ? "+" : "−"}${clp(m.monto)}</span><span class="mm"><i style="width:${Math.max(1.5, Math.abs(m.monto) / maxMov * 100)}%"></i></span></div>`;
+    });
+    $("rows").innerHTML = lista.length ? html : vacio();
+
+    $("rows").querySelectorAll(".row").forEach(r => {
+      const abrir = () => { const m = MOV.find(x => x.id === r.dataset.id); if (!m) return; if (m.monto < 0) preguntar([m]); else if (m.categoria === DEV || m.categoria === "Ingresos" || m.categoria === "Ingresos por revisar") deQue(m); };
+      r.onclick = abrir;
+      r.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrir(); } };
+    });
+    const pend = pendientes().length;
+    $("askOpen").hidden = false;   // siempre visible (pedido 18-11-2026); el número solo si hay pendientes
+    $("askOpen").innerHTML = `¿Para qué fue?<i>${pend ? pend + " por clasificar" : "todo clasificado"}</i>`;
+
+    $("foot").textContent = D.actualizado ? "Actualizado " + D.actualizado + " · " + MOV.length + " movimientos" : "Sin datos todavía";
+    $("foot").hidden = location.pathname.startsWith("/acceso/");   // en Atlas la fecha y «Al día» salen en el botón Actualizar
+  }
+  function notaDev(m) {
+    if (m.monto < 0 && m.devs && m.devs.length) {
+      const dv = devuelto(m);
+      return ` · <span class="dv">te devolvieron ${clp(dv)} · tu parte ${clp(parte(m))}</span>`;
+    }
+    if (DUP.has(m.id)) return ` · <span class="dup">⚠ ¿duplicado? igual a otro del día anterior</span>`;
+    if (raro(m)) return ` · <span class="wt">fuera de lo normal: ¿fue para otro?</span>`;
+    if (m.monto > 0 && m.categoria === DEV) {
+      const de = m.vincs.map(v => `${esc(v.g.comercio)} (${fcorta(v.g.f)}${m.vincs.length > 1 || m.resta ? " · " + clp(v.monto) : ""})`).join(" y ");
+      if (!m.vincs.length) return ` · <span class="wt">ya te pagó; falta que aparezca el gasto</span>`;
+      return ` · <span class="dv">devolución de ${de}</span>` + (m.resta ? ` · <span class="wt">${clp(m.resta)} de un gasto que aún no aparece</span>` : "");
+    }
+    return "";
+  }
+  // ---- Corregir de qué gasto es una devolución
+  function deQue(d) {
+    const cand = MOV.filter(g => esGasto(g) && !NO_VINC.has(g.categoria) && -g.monto >= 5000 && d.f - g.f >= -ADELANTO && d.f - g.f <= 31 * 864e5)
+      .sort((a, b) => (d.vincs.some(v => v.g === b) ? 1 : 0) - (d.vincs.some(v => v.g === a) ? 1 : 0) || (-b.monto) - (-a.monto)).slice(0, 10)
+      .sort((a, b) => b.f - a.f);
+    const op = (k, txt, on) => `<button class="chip" data-k="${esc(k)}" aria-pressed="${!!on}">${txt}</button>`;
+    $("askTitle").textContent = "¿De qué gastos es esta devolución? Puedes marcar varios";
+    $("askLeft").textContent = "";
+    $("askItems").innerHTML = `<div class="item">
+      <div class="who"><b>${esc(d.comercio)}</b><span class="num">+${clp(d.monto)}</span></div>
+      <div class="meta">${d.f.getDate()} ${MESES[d.f.getMonth()]} ${d.f.getFullYear()}${d.detalle ? " · " + esc(d.detalle) : ""}</div>
+      <div class="chips">${cand.map(g => op(g.id, `${esc(g.comercio)} · ${fcorta(g.f)} · ${clp(g.monto)}`, d.manual && d.vincs.some(v => v.g === g))).join("")}</div>
+      <div class="chips" style="margin-top:8px">${op("auto", "Que Hermes lo junte solo", d.categoria === DEV && !d.manual)}${op("esperar", "Esperar su gasto", d.espera && d.manual)}${op("ingreso", "No es devolución: es ingreso", d.categoria === "Ingresos")}</div>
+    </div>`;
+    $("askItems").querySelectorAll(".chip[data-k]").forEach(b => b.onclick = () => {
+      const k = b.dataset.k;
+      CLS.vinc = CLS.vinc || {};
+      if (k === "ingreso") { CLS.mov[d.id] = "Ingresos"; delete CLS.vinc[d.id]; }
+      else {
+        if (CLS.mov[d.id] === "Ingresos") delete CLS.mov[d.id];
+        if (d.cat0 !== DEV) CLS.mov[d.id] = DEV;
+        if (k === "auto") delete CLS.vinc[d.id];
+        else if (k === "esperar") CLS.vinc[d.id] = k;
+        else {  // un gasto: se marca o desmarca; el diálogo sigue abierto para marcar otro
+          const ya = Array.isArray(CLS.vinc[d.id]) ? CLS.vinc[d.id] : (CLS.vinc[d.id] && CLS.vinc[d.id] !== "esperar" ? [CLS.vinc[d.id]] : []);
+          const nuevo = ya.includes(k) ? ya.filter(x => x !== k) : [...ya, k];
+          if (nuevo.length) CLS.vinc[d.id] = nuevo; else delete CLS.vinc[d.id];
+          guardarCls(); aplicar(); render(); deQue(MOV.find(x => x.id === d.id));
+          return;
+        }
+      }
+      guardarCls(); aplicar(); render(); cerrarAsk();
+    });
+    $("ask").classList.add("open");
+    const b = $("askItems").querySelector(".chip"); if (b) b.focus();
+  }
+  function vacio() {
+    return MOV.length ? `<div class="empty">Sin movimientos en este mes.</div>`
+      : `<div class="empty">Aún no hay movimientos.<br>Diga <b>«actualiza Hermes»</b> a Atlas.</div>`;
+  }
+  function esc(s) { return String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"})[c]); }
+
+  // ---- «¿Para qué fue?»: pocos gastos a la vez, los más recientes primero
+  const POR_VEZ = 5;
+  function pendientes() {
+    // «revisar»: aviso de un banco sin lector propio que el lector automático no leyó con seguridad
+    return MOV.filter(m => esGasto(m) && !CLS.mov[m.id] && (m.revisar || DUDOSAS.has(m.cat0) && !CLS.reglas[plain(m.comercio)]))
+      .sort((a, b) => b.f - a.f);
+  }
+  let tanda = [];
+  function preguntar(lista) {
+    // una pregunta por persona o comercio (el más reciente); si se repite, por defecto vale para todos
+    const vistos = new Set(), unicos = [];
+    for (const m of lista) { const k = plain(m.comercio); if (lista.length > 1 && vistos.has(k)) continue; vistos.add(k); unicos.push(m); }
+    $("askTitle").textContent = "¿Para qué fue?";
+    tanda = unicos.slice(0, POR_VEZ).map(m => ({m, op: "", rec: lista.length > 1 && MOV.filter(x => plain(x.comercio) === plain(m.comercio)).length >= 2}));
+    pintarTanda();
+    $("ask").classList.add("open");
+    const b = $("askItems").querySelector(".chip"); if (b) b.focus();
+  }
+  function pintarTanda() {
+    const quedan = pendientes().length;
+    $("askLeft").textContent = quedan ? `${quedan} sin clasificar` : "";
+    $("askItems").innerHTML = tanda.map((t, i) => {
+      const m = t.m, nombre = esc(m.comercio), veces = MOV.filter(x => plain(x.comercio) === plain(m.comercio)).length;
+      const actual = CLS.mov[m.id] || CLS.reglas[plain(m.comercio)] || "";
+      return `<div class="item${t.op ? " done" : ""}" data-i="${i}">
+        <div class="who"><b>${nombre}</b><span class="num">−${clp(m.monto)}</span></div>
+        <div class="meta">${m.f.getDate()} ${MESES[m.f.getMonth()]} ${m.f.getFullYear()} · ${esc(m.banco)}${m.detalle ? " · " + esc(m.detalle) : ""}${actual ? " · hoy: " + esc(actual) : ""}</div>
+        ${m.revisar ? `<div class="meta revisar">Lo leyó el lector automático: revise que el monto y el nombre estén bien.</div>` : ""}
+        <div class="chips">${OPCIONES.map(o => `<button class="chip" data-o="${esc(o)}" aria-pressed="${t.op === o}">${esc(o)}</button>`).join("")}
+          <span class="chip otra">Otra: <input aria-label="Otra categoría" maxlength="30" value="${t.op && !OPCIONES.includes(t.op) ? esc(t.op) : ""}"></span></div>
+        ${veces > 1 ? `<label class="rem"><input type="checkbox"${t.rec ? " checked" : ""}> Usar lo mismo para todo lo de «${nombre}» (${veces} movimientos)</label>` : ""}
+      </div>`;
+    }).join("");
+    $("askItems").querySelectorAll(".item").forEach(el => {
+      const t = tanda[+el.dataset.i];
+      el.querySelectorAll(".chip[data-o]").forEach(b => b.onclick = () => { t.op = b.dataset.o; elegir(t); });
+      const inp = el.querySelector(".otra input");
+      inp.onkeydown = e => { if (e.key === "Enter" && inp.value.trim()) { t.op = inp.value.trim(); elegir(t); } };
+      inp.onchange = () => { if (inp.value.trim()) { t.op = inp.value.trim(); elegir(t); } };
+      const cb = el.querySelector(".rem input");
+      if (cb) cb.onchange = () => { t.rec = cb.checked; if (t.op) elegir(t); };
+    });
+  }
+  function elegir(t) {
+    const c = catDe(t.op), k = plain(t.m.comercio);
+    if (t.rec && t.op === NO_SE) {  // vale solo para los gastos de esa persona que aún no tienen respuesta
+      MOV.filter(x => plain(x.comercio) === k && !CLS.mov[x.id] && !CLS.reglas[k] && esGasto(x)).forEach(x => { CLS.mov[x.id] = c; });
+    } else if (t.rec) { CLS.reglas[k] = c; delete CLS.mov[t.m.id]; }
+    else { CLS.mov[t.m.id] = c; if (CLS.reglas[k] && tanda.length === 1) delete CLS.reglas[k]; }
+    guardarCls(); aplicar(); pintarTanda(); render();
+  }
+  function cerrarAsk() { $("ask").classList.remove("open"); }
+  $("askLater").onclick = cerrarAsk;
+  $("askNext").onclick = () => { const p = pendientes(); if (p.length && tanda.length > 1) preguntar(p); else cerrarAsk(); };
+  $("askOpen").onclick = () => {
+    const p = pendientes();
+    if (p.length) return preguntar(p);
+    tanda = []; $("askTitle").textContent = "¿Para qué fue?"; $("askLeft").textContent = "";
+    $("askItems").innerHTML = `<p class="meta">No hay movimientos por clasificar. Cuando entre uno nuevo, aparece aquí.</p>`;
+    $("ask").classList.add("open"); $("askNext").focus();
+  };
+  $("ask").addEventListener("keydown", e => { if (e.key === "Escape") { e.stopPropagation(); cerrarAsk(); } });
+
+  // Dentro de Atlas: Atlas manda lo guardado al abrir ({atlas:1, type:"hola", datos})
+  let saludado = false;
+  window.addEventListener("message", ev => {
+    const d = ev.data || {};
+    if (ev.origin !== location.origin || !(d.atlas || d.jarvis) || d.type !== "hola") return;
+    const g = (d.datos || {}).clasificacion;
+    if (g && typeof g === "object") { CLS = {mov: g.mov || {}, reglas: g.reglas || {}, vinc: g.vinc || {}}; aplicar(); render(); }
+    const gp = (d.datos || {}).periodo;   // el modo elegido vive en Atlas (lo usan también las preguntas por voz)
+    if (gp && typeof gp === "object" && (gp.modo !== PER.modo || (+gp.dia || 0) !== PER.dia)) { ponerPer(gp); marcarPer(); render(); }
+    listo();
+    if (!saludado) { saludado = true; if (pendientes().length) preguntar(pendientes()); }
+  });
+  if (!EN_ATLAS) setTimeout(() => { if (!saludado && pendientes().length) { saludado = true; preguntar(pendientes()); } }, 300);
+  else setTimeout(() => { if (!saludado && pendientes().length) { saludado = true; preguntar(pendientes()); } }, 2500);
+
+  // bancos: la lista sale de los movimientos más los que usted agregó (aunque todavía no tengan movimientos)
+  (() => {
+    const sel = $("banco"), dlg = $("addb"), nom = $("addbNom"), AGREGAR = "__agregar__";
+    let extra = [];
+    try { extra = JSON.parse(localStorage.getItem("hermes-bancos") || "[]"); } catch (e) {}
+    const llenar = () => {
+      const cuenta = {};
+      MOV.forEach(m => { if (m.banco) cuenta[m.banco] = (cuenta[m.banco] || 0) + 1; });
+      extra.forEach(b => { if (!(b in cuenta)) cuenta[b] = 0; });
+      sel.innerHTML = `<option value="">Todos los bancos</option>`;
+      Object.keys(cuenta).sort((a, b) => cuenta[b] - cuenta[a] || a.localeCompare(b, "es")).forEach(b => sel.add(new Option(cuenta[b] ? b : b + " · sin movimientos aún", b)));
+      sel.add(new Option("+ Agregar banco…", AGREGAR));
+      sel.value = st.banco;
+    };
+    const cerrar = () => { dlg.classList.remove("open"); sel.focus(); };
+    sel.onchange = () => {
+      if (sel.value === AGREGAR) { sel.value = st.banco; nom.value = ""; dlg.classList.add("open"); nom.focus(); return; }
+      st.banco = sel.value; render();
+    };
+    $("addbNo").onclick = cerrar;
+    dlg.addEventListener("keydown", e => { if (e.key === "Escape") cerrar(); });
+    dlg.addEventListener("click", e => { if (e.target === dlg) cerrar(); });
+    const agregar = () => {
+      const b = nom.value.trim().replace(/\s+/g, " ").slice(0, 40);
+      if (!b) { nom.focus(); return; }
+      if (![...sel.options].some(o => o.value.toLowerCase() === b.toLowerCase())) {
+        extra.push(b);
+        try { localStorage.setItem("hermes-bancos", JSON.stringify(extra)); } catch (e) {}
+      }
+      llenar(); cerrar();
+    };
+    $("addbSi").onclick = agregar;
+    nom.addEventListener("keydown", e => { if (e.key === "Enter") agregar(); });
+    llenar();
+  })();
+  document.querySelectorAll("#vista button").forEach(b => b.onclick = () => { st.vista = b.dataset.v; render(); });
+  function pintarPer() {
+    document.querySelectorAll("#per button").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === PER.modo));
+    const c = document.querySelector("#per .corte"), i = $("corteDia");
+    c.hidden = !ciclo(); i.placeholder = String(DIA_AUTO);
+    if (document.activeElement !== i) i.value = PER.dia ? String(PER.dia) : "";
+    c.title = PER.dia ? "Día de corte elegido. Bórrelo para usar el automático (" + DIA_AUTO + ")."
+      : "Automático: el día que más se repite en los estados de cuenta (" + DIA_AUTO + "). Si el estado de cuenta trae el corte real, se usa ese.";
+  }
+  function cambiarPer(g) {
+    ponerPer(Object.assign({}, PER, g)); marcarPer();
+    try { localStorage.setItem("hermes-periodo", JSON.stringify(PER)); } catch (e) {}
+    if (EN_ATLAS) window.parent.postMessage({atlas: 1, type: "guardar", clave: "periodo", valor: {modo: PER.modo, dia: PER.dia}}, location.origin);
+    render();
+  }
+  document.querySelectorAll("#per button").forEach(b => b.onclick = () => { if (b.dataset.p !== PER.modo) cambiarPer({modo: b.dataset.p}); });
+  $("corteDia").onchange = () => { const v = $("corteDia").value.trim(); cambiarPer({dia: v === "" ? 0 : +v}); };
+  ubicarArriba();
+  $("catf").onchange = () => { st.cat = $("catf").value; render(); };
+  $("prev").onclick = () => { st.mes = new Date(st.mes.getFullYear(), st.mes.getMonth() - 1, 1); render(); };
+  $("next").onclick = () => { st.mes = new Date(st.mes.getFullYear(), st.mes.getMonth() + 1, 1); render(); };
+  render();
+  // el indicador de carga se va cuando Atlas manda tus clasificaciones (o a los 2,5 s si no responde)
+  function listo() { document.body.classList.remove("cargando"); }
+  if (EN_ATLAS) setTimeout(listo, 2500); else listo();
+})();
+</script>
+<script>/* botón «Actualizar» (18-11-2026): dentro de Atlas corre «actualiza Hermes» (POST /acceso/hermes/actualizar?forzar=1)
+   y consulta /estado cada 3 s; al terminar bien recarga la página con los datos nuevos. Abierta suelta, no se muestra. */
+(() => {
+  const caja = document.getElementById("hupd"), btn = document.getElementById("hupd-btn"), msg = document.getElementById("hupd-msg");
+  if (!caja || !location.pathname.startsWith("/acceso/")) return;
+  const API = location.pathname.replace(/\/[^/]*\.html?$/i, "").replace(/\/+$/, "");
+  const mon = document.querySelector("nav.months"); if (mon) mon.appendChild(caja);
+  const ask = document.getElementById("askOpen"); if (ask) caja.insertBefore(ask, caja.firstChild);   // un solo bloque: «¿Para qué fue?» + Actualizar
+  caja.hidden = false;
+  const hhmm = s => { const d = new Date(s * 1000); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); };
+  const get = (path, opt = {}) => { const c = new AbortController(); setTimeout(() => c.abort(), 4000);
+    return fetch(API + path, {...opt, signal: c.signal, cache: "no-store"}).then(r => r.json()); };
+  const tit = btn.querySelector(".hupd-t");   // diseño B (18-11-2026): tarjeta como los meses, título arriba y una línea abajo
+  const libre = () => { btn.disabled = false; btn.removeAttribute("aria-busy"); tit.textContent = "Actualizar"; };
+  const ocupado = txt => { btn.disabled = true; btn.setAttribute("aria-busy", "true"); tit.innerHTML = '<span class="hspin" aria-hidden="true"></span>Actualizando';
+    msg.className = "hupd-msg"; msg.textContent = txt || "un momento"; };
+  const pintar = e => { msg.className = "hupd-msg";
+    if (e && e.ok === false) { msg.className = "hupd-msg warn"; msg.textContent = "No se pudo actualizar" + (e.error ? ": " + e.error : ""); msg.title = e.error || ""; return; }
+    // fecha de la última actualización + «Al día» como en Fortuna (19-11-2026, pedido del usuario: reemplaza la línea de abajo)
+    if (!e || !e.ultimo) { msg.textContent = ""; return; }
+    const d = new Date(e.ultimo * 1000), hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const d0 = new Date(d); d0.setHours(0, 0, 0, 0);
+    const dias = Math.round((hoy - d0) / 864e5), horas = (Date.now() - d) / 36e5;
+    const cuando = dias === 0 ? "hoy" : dias === 1 ? "ayer" : `${d.getDate()} ${MESES_C[d.getMonth()]}`;
+    msg.title = "Al día: actualizado en las últimas 24 horas";
+    msg.textContent = `${cuando} ${hhmm(e.ultimo)} · ${horas <= 24 ? "Al día" : "Atrasado " + Math.max(1, Math.floor(horas / 24)) + (horas >= 48 ? " días" : " día")}`;
+    if (horas > 24) msg.className = "hupd-msg warn"; };
+  const MESES_C = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+  let antes = 0;
+  const esperar = () => get("/estado").then(e => {
+    if (e.corriendo) { setTimeout(esperar, 3000); return; }
+    libre();
+    if (e.ok && e.ultimo > antes) { msg.textContent = "Listo, cargando datos nuevos"; location.reload(); return; }
+    pintar(e);
+  }).catch(() => { libre(); msg.className = "hupd-msg warn"; msg.textContent = "Atlas no respondió"; });
+  btn.addEventListener("click", () => get("/estado").then(e => { antes = e.ultimo || 0; return get("/actualizar?forzar=1", {method: "POST"}); }).then(e => {
+    if (e.accion === "sin_actualizador") { msg.className = "hupd-msg warn"; msg.textContent = "Atlas no encuentra el actualizador de Hermes"; return; }
+    ocupado(e.accion === "ya_corriendo" ? "Ya se está actualizando" : "");
+    setTimeout(esperar, 3000);
+  }).catch(() => { libre(); msg.className = "hupd-msg warn"; msg.textContent = "Atlas no respondió. Reinicie Atlas y pruebe otra vez."; }));
+  get("/estado").then(e => { if (e.corriendo) { ocupado("Ya se está actualizando"); antes = e.ultimo || 0; setTimeout(esperar, 3000); } else pintar(e); }).catch(() => pintar(null));
+})();
+</script>
+<script>/* fondo carta celeste con constelación propia (17-11-2026) */
+// Fondo «carta celeste» para las apps (Fortuna, Hermes, Cronos) con una constelación tenue propia.
+// cieloApp({ rgb: "124,240,200", cons: "orion" })  ->  canvas fijo detrás de todo.
+(function () {
+  // estrellas: [AR en grados, Dec en grados, magnitud]; líneas: pares de índices
+  const C = {
+    aries: { n: "ARIES · EL CARNERO DE ORO", s: [[31.871,23.46,2.0],[28.983,20.81,2.64],[28.725,19.29,3.88],[41.751,27.26,3.6]], l: [[2,1],[1,0],[0,3]] },
+    auriga: { n: "AURIGA · CAPELLA, LA CORNUCOPIA", s: [[79.432,45.99,0.08],[87.695,44.95,1.9],[87.734,37.21,2.6],[81.284,28.61,1.65],[75.636,33.17,2.7],[76.593,43.82,3.0],[76.693,41.08,3.7],[77.472,41.23,3.2]], l: [[0,1],[1,2],[2,3],[3,4],[4,0],[0,5],[5,6],[6,7]] },
+    orion: { n: "ORIÓN", s: [[88.8, 7.4, .5], [81.3, 6.3, 1.6], [85.2, -1.9, 1.8], [84.1, -1.2, 1.7], [83.0, -.3, 2.2], [86.9, -9.7, 2.1], [78.6, -8.2, .1], [83.8, 9.9, 3.4]],
+      l: [[0, 7], [7, 1], [0, 2], [1, 4], [2, 3], [3, 4], [2, 5], [4, 6], [0, 1], [5, 6]] },
+    canmayor: { n: "CAN MAYOR · SIRIO", s: [[101.3, -16.7, -1.4], [95.7, -17.9, 2], [105.9, -15.6, 4], [107.1, -26.4, 1.8], [104.7, -29, 1.5], [111, -29.3, 2.4], [95.1, -30.1, 3]],
+      l: [[1, 0], [0, 2], [0, 3], [3, 4], [3, 5], [4, 6]] },
+    sopdet: { n: "ORIÓN Y SIRIO", s: [[88.8, 7.4, .5], [81.3, 6.3, 1.6], [85.2, -1.9, 1.8], [84.1, -1.2, 1.7], [83.0, -.3, 2.2], [86.9, -9.7, 2.1], [78.6, -8.2, .1], [101.3, -16.7, -1.4], [95.7, -17.9, 2], [107.1, -26.4, 1.8], [104.7, -29, 1.5]],
+      l: [[0, 2], [1, 4], [2, 3], [3, 4], [2, 5], [4, 6], [0, 1], [5, 6], [8, 7], [7, 9], [9, 10]], guia: [4, 7] },
+    lyra: { n: "LIRA", s: [[279.2, 38.8, 0], [281.1, 39.7, 4.7], [281.2, 37.6, 4.3], [283.6, 36.9, 4.3], [284.7, 32.7, 3.2], [282.5, 33.4, 3.5]],
+      l: [[0, 1], [0, 2], [2, 3], [3, 4], [4, 5], [5, 2], [1, 2]] },
+    sagitta: { n: "SAGITTA · LA FLECHA", s: [[295.0, 18.0, 4.4], [295.3, 17.5, 4.4], [296.8, 18.5, 3.8], [299.7, 19.5, 3.5], [301.0, 20.0, 5.1]],
+      l: [[0, 2], [1, 2], [2, 3], [3, 4]] },
+    corvus: { n: "CUERVO", s: [[183.95, -17.5, 2.6], [187.5, -16.5, 2.9], [188.6, -23.4, 2.6], [182.5, -22.6, 3], [182.1, -24.7, 4]],
+      l: [[4, 3], [3, 0], [0, 1], [1, 2], [2, 3]] },
+    capricornio: { n: "CAPRICORNIO", s: [[304.5, -12.5, 3.6], [305.3, -14.8, 3.1], [311.5, -25.3, 4.1], [312.0, -26.9, 4.1], [321.7, -22.4, 3.7], [326.8, -16.1, 2.9], [325.0, -16.7, 3.7], [320.6, -16.8, 4.3], [316.5, -17.2, 4.1]],
+      l: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 1]] },
+    hoz: { n: "LA HOZ (LEO)", s: [[152.1, 12.0, 1.4], [151.8, 16.8, 3.5], [155.0, 19.8, 2.0], [154.2, 23.4, 3.4], [148.2, 26.0, 3.9], [146.5, 23.8, 3.0]],
+      l: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]] },
+    saturno: { n: "SATURNO", s: [[304.5, -12.5, 3.6], [305.3, -14.8, 3.1], [311.5, -25.3, 4.1], [312.0, -26.9, 4.1], [321.7, -22.4, 3.7], [326.8, -16.1, 2.9], [325.0, -16.7, 3.7]],
+      l: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]], planeta: [316, -19] },
+  };
+  window.cieloApp = function (o) {
+    const cv = document.createElement("canvas"); cv.id = "cieloApp"; cv.setAttribute("aria-hidden", "true");
+    cv.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:" + (o.z == null ? 0 : o.z);
+    const host = o.host ? document.querySelector(o.host) : null;
+    if (host) { host.style.backgroundImage = "none"; host.appendChild(cv); } else document.body.insertBefore(cv, document.body.firstChild);
+    const ctx = cv.getContext("2d"), fijo = document.createElement("canvas"), rgb = o.rgb;
+    const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let W, H, brill = [], ult = 0;
+    const azar = (a) => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+    function armar() {
+      if (!innerWidth || !innerHeight) { W = H = 0; return; }   // cielo: sin tamaño todavía; se arma en el próximo resize
+      W = cv.width = fijo.width = innerWidth; H = cv.height = fijo.height = innerHeight;
+      const g = fijo.getContext("2d"), rnd = azar(11); g.clearRect(0, 0, W, H);
+      for (let i = 0; i < Math.round(300 * W * H / 1024000); i++) { const x = rnd() * W, y = rnd() * H, r = Math.pow(rnd(), 3) * 1.2 + .35, a = .45 * (.25 + .75 * rnd()), t = rnd();
+        g.fillStyle = t < .3 ? `rgba(${rgb},${a})` : `rgba(235,248,255,${a})`; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); }
+      g.strokeStyle = `rgba(${rgb},.06)`; g.lineWidth = 1; const cx = W * .5, cy = H * 1.6, R0 = H * .95;
+      for (let k = 0; k < 9; k++) { g.beginPath(); g.arc(cx, cy, R0 + k * 90, Math.PI * 1.05, Math.PI * 1.95); g.stroke(); }
+      for (let k = -9; k <= 9; k++) { const a = -Math.PI / 2 + k * .085; g.beginPath(); g.moveTo(cx + Math.cos(a) * R0, cy + Math.sin(a) * R0); g.lineTo(cx + Math.cos(a) * (R0 + 1600), cy + Math.sin(a) * (R0 + 1600)); g.stroke(); }
+      // la constelación de la app, tenue, en el tercio derecho
+      const c = C[o.cons], xs = c.s.map((s) => -s[0]), ys = c.s.map((s) => -s[1]);
+      const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+      const box = { x: W * (o.x || .62), y: H * (o.y || .16), w: W * (o.w || .32), h: H * (o.h || .64) };
+      const k = Math.min(box.w / Math.max(1, x1 - x0), box.h / Math.max(1, y1 - y0));
+      const P = c.s.map(([ra, de, m]) => [box.x + box.w / 2 + (-ra - (x0 + x1) / 2) * k, box.y + box.h / 2 + (-de - (y0 + y1) / 2) * k, m]);
+      const op = o.op || 1;
+      g.lineWidth = 1.2; g.strokeStyle = `rgba(${rgb},${.2 * op})`; g.lineCap = "round";
+      c.l.forEach(([a, b]) => { g.beginPath(); g.moveTo(P[a][0], P[a][1]); g.lineTo(P[b][0], P[b][1]); g.stroke(); });
+      if (c.guia) { g.setLineDash([3, 6]); g.strokeStyle = `rgba(${rgb},${.13 * op})`; const [a, b] = c.guia; g.beginPath(); g.moveTo(P[a][0], P[a][1]); g.lineTo(P[b][0], P[b][1]); g.stroke(); g.setLineDash([]); }
+      if (c.planeta) { const [ra, de] = c.planeta, px = box.x + box.w / 2 + (-ra - (x0 + x1) / 2) * k, py = box.y + box.h / 2 + (-de - (y0 + y1) / 2) * k, r = Math.min(W, H) * .028;
+        g.save(); g.translate(px, py); g.rotate(-.35);
+        g.strokeStyle = `rgba(${rgb},${.35 * op})`; g.lineWidth = 1.4; g.beginPath(); g.ellipse(0, 0, r * 2.2, r * .55, 0, Math.PI, 2 * Math.PI); g.stroke();
+        const gr = g.createRadialGradient(-r * .3, -r * .3, 0, 0, 0, r); gr.addColorStop(0, `rgba(${rgb},${.55 * op})`); gr.addColorStop(1, `rgba(${rgb},${.18 * op})`); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, r, 0, 7); g.fill();
+        g.beginPath(); g.ellipse(0, 0, r * 2.2, r * .55, 0, 0, Math.PI); g.stroke(); g.restore(); }
+      P.forEach(([x, y, m]) => { const r = Math.max(1.2, 3.6 - m * .55), gr = g.createRadialGradient(x, y, 0, x, y, r * 5);
+        gr.addColorStop(0, `rgba(${rgb},${.35 * op})`); gr.addColorStop(1, `rgba(${rgb},0)`); g.fillStyle = gr; g.fillRect(x - r * 5, y - r * 5, r * 10, r * 10);
+        g.fillStyle = `rgba(240,252,255,${.7 * op})`; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); });
+      const lx = Math.min(...P.map((p) => p[0])), ly = Math.max(...P.map((p) => p[1]));
+      g.fillStyle = `rgba(${rgb},${.3 * op})`; g.font = "10px Consolas, monospace"; g.fillText(c.n.split("").join(" "), lx, ly + 26);
+      brill = Array.from({ length: 16 }, () => ({ x: rnd() * W, y: rnd() * H, r: .9 + rnd() * 1.2, f: .5 + rnd() * 1.5, p: rnd() * 6 }));
+      pintar(0);
+    }
+    function pintar(t) {
+      if (!W || !H) return;
+      ctx.clearRect(0, 0, W, H); ctx.drawImage(fijo, 0, 0);
+      brill.forEach((s) => { const a = quieto ? .6 : .35 + .65 * Math.pow(.5 + .5 * Math.sin(t / 1000 * s.f * 2 + s.p), 2), R = s.r * 5;
+        const gr = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, R); gr.addColorStop(0, `rgba(235,250,255,${a})`); gr.addColorStop(.25, `rgba(${rgb},${a * .4})`); gr.addColorStop(1, `rgba(${rgb},0)`);
+        ctx.fillStyle = gr; ctx.fillRect(s.x - R, s.y - R, 2 * R, 2 * R); });
+    }
+    function paso(now) { requestAnimationFrame(paso); if (!W && innerWidth && innerHeight) armar(); if (quieto || document.hidden || now - ult < 50) return; ult = now; pintar(now); }
+    let rt = 0; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(armar, 150); });
+    armar(); requestAnimationFrame(paso);
+    window.cieloAppPintar = pintar;
+  };
+})();
+
+cieloApp({ rgb: "255,184,107", cons: "aries", host: ".hud-grid", x: 0.6, y: 0.16, w: 0.32, h: 0.62 });
+</script>
+</body>
+</html>

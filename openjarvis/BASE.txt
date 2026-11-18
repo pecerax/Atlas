@@ -1,0 +1,15 @@
+Cambios de Atlas sobre OpenJarvis (https://github.com/open-jarvis/OpenJarvis, Apache-2.0).
+Commit de origen: 6201505cd3425079459589f54764667b4758ce48
+
+Para armar src\:
+  git clone https://github.com/open-jarvis/OpenJarvis.git src
+  git -C src checkout 6201505cd3425079459589f54764667b4758ce48
+  git -C src apply ..\openjarvis\atlas.patch
+  copiar openjarvis\archivos\* encima de src\
+
+Archivos nuevos:
+  src/openjarvis/security/atlas_secretos.py
+  src/openjarvis/security/jarvis_secretos.py
+  src/openjarvis/tools/atlas_pc.py
+  src/openjarvis/tools/gmail_mark_read.py
+  src/openjarvis/tools/jarvis_pc.py

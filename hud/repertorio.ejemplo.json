@@ -1,0 +1,40 @@
+{
+ "_ayuda": "Artistas para recomendaciones. 'alias' = como podria escucharse o escribirse mal; 'canciones' = opcional, tus favoritas (si esta vacia, Atlas busca al artista).",
+ "artistas": [
+  {
+   "nombre": "Sheena Ringo",
+   "alias": [
+    "sheena ringo",
+    "shena ringo",
+    "chenaringo",
+    "chena ringo",
+    "shina ringo",
+    "shiina ringo",
+    "sina ringo",
+    "sheenaringo"
+   ],
+   "canciones": []
+  },
+  {
+   "nombre": "Ado",
+   "alias": [
+    "ado",
+    "adó",
+    "a do"
+   ],
+   "canciones": []
+  },
+  {
+   "nombre": "frederic",
+   "alias": [
+    "frederic",
+    "freederic",
+    "frederik",
+    "fredric",
+    "frederick",
+    "fréderic"
+   ],
+   "canciones": []
+  }
+ ]
+}

@@ -1,0 +1,29 @@
+[engine]
+default = "ollama"
+
+[intelligence]
+default_model = "{MODELO}"
+
+[digest]
+enabled = true
+schedule = "0 7 * * *"
+timezone = "America/Santiago"
+tts_backend = "kokoro"
+voice_id = "bm_george"
+sections = ["messages"]
+
+[digest.messages]
+sources = ["gmail_imap"]
+
+[agent]
+default_agent = "orchestrator"
+tools = "gmail_mark_read,gmail_unread,gmail_search"
+
+[speech]
+device = "cpu"
+compute_type = "int8"
+language = "en"
+model = "small"
+[analytics]
+# Jarvis: no enviar estadísticas de uso anónimas al equipo de OpenJarvis (PostHog)
+enabled = false

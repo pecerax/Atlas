@@ -1,0 +1,28 @@
+# Datos personales de quien usa Atlas: no se publican (opción B, 17-11-2026).
+# Para empezar, copie ajustes.ejemplo.json como ajustes.json y cambie lo que quiera (o use la rueda de ajustes).
+ajustes.json
+accesos_datos.json
+calendarios.json
+contactos.json
+contactos_saltados.json
+contexto_correo.json
+correo_filtro.json
+cuentas.json
+eventos_avisados.json
+eventos_contactos.json
+memoria.json
+pendientes.json
+ramos.json
+recordatorios.json
+tareas_listas.json
+ucursos_notas.json
+ucursos_sesion.json
+ultima_app.json
+vigilancias.json
+voz.json
+whatsapp_verificados.json
+*.log
+*.tmp
+__pycache__/
+canvas_notas.json
+canvas_sesion.json

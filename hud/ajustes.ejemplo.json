@@ -1,0 +1,22 @@
+{
+  "stt_model": "parakeet",
+  "sonido_alarma": "pulso",
+  "ciudad_clima": {
+    "name": "Santiago",
+    "lat": -33.4489,
+    "lon": -70.6693
+  },
+  "avisos": {
+    "antes_min": 60,
+    "alarma_tope_min": 60
+  },
+  "telegram": {
+    "ausente_min": 10
+  },
+  "frecuencias": {
+    "bandeja_seg": 60,
+    "vigilancia_correo_seg": 240,
+    "ucursos_min": 20,
+    "ucursos_con_nota_min": 10
+  }
+}

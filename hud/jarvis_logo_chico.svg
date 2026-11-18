@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<rect x="0" y="0" width="512" height="512" rx="104" fill="#06121C"/>
+<path d="M327.9244659358551 77.98069992317681 A192 192 0 0 1 431.4007278673794 334.09343547055363" fill="none" stroke="#4FE3FF" stroke-width="46" stroke-linecap="round" opacity="1"/><path d="M346.13854005489105 425.5259378289139 A192 192 0 0 1 137.7929967374736 407.29806469249064" fill="none" stroke="#4FE3FF" stroke-width="46" stroke-linecap="round" opacity="1"/><path d="M73.39714887133053 315.3312629199899 A192 192 0 0 1 73.39714887133053 196.66873708001003" fill="none" stroke="#4FE3FF" stroke-width="46" stroke-linecap="round" opacity="1"/>
+<path d="M206.13104511459747 362.9443188703247 A118 118 0 0 1 172.56139981998737 172.5613998199874" fill="none" stroke="#4FE3FF" stroke-width="26" stroke-linecap="round" opacity="1"/>
+<rect x="162" y="222.25" width="28" height="67.5" rx="14" fill="#4FE3FF"/><rect x="202" y="199.75" width="28" height="112.5" rx="14" fill="#4FE3FF"/><rect x="242" y="181" width="28" height="150" rx="14" fill="#4FE3FF"/><rect x="282" y="199.75" width="28" height="112.5" rx="14" fill="#4FE3FF"/><rect x="322" y="222.25" width="28" height="67.5" rx="14" fill="#4FE3FF"/>
+</svg>

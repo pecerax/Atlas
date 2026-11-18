@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cronos</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBkPSJNMzMwLjkgNzAuNiBBMjAwIDIwMCAwIDAgMSA0MzguNyAzMzcuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjQjdBNkZGIiBzdHJva2Utd2lkdGg9IjQwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjEiPjwvcGF0aD48cGF0aCBkPSJNMzQ5LjkgNDMyLjYgQTIwMCAyMDAgMCAwIDEgMTMyLjkgNDEzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0I3QTZGRiIgc3Ryb2tlLXdpZHRoPSI0MCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIxIj48L3BhdGg+PHBhdGggZD0iTTY1LjggMzE3LjggQTIwMCAyMDAgMCAwIDEgNjUuOCAxOTQuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjQjdBNkZGIiBzdHJva2Utd2lkdGg9IjQwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjEiPjwvcGF0aD48bGluZSB4MT0iMjU2LjAiIHkxPSIxMTYuMCIgeDI9IjI1Ni4wIiB5Mj0iOTYuMCIgc3Ryb2tlPSIjQjdBNkZGIiBzdHJva2Utd2lkdGg9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuOSI+PC9saW5lPjxsaW5lIHgxPSIzMjYuMCIgeTE9IjEzNC44IiB4Mj0iMzM2LjAiIHkyPSIxMTcuNCIgc3Ryb2tlPSIjQjdBNkZGIiBzdHJva2Utd2lkdGg9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuOSI+PC9saW5lPjxsaW5lIHgxPSIzNzcuMiIgeTE9IjE4Ni4wIiB4Mj0iMzk0LjYiIHkyPSIxNzYuMCIgc3Ryb2tlPSIjQjdBNkZGIiBzdHJva2Utd2lkdGg9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuOSI+PC9saW5lPjxsaW5lIHgxPSIzOTYuMCIgeTE9IjI1Ni4wIiB4Mj0iNDE2LjAiIHkyPSIyNTYuMCIgc3Ryb2tlPSIjQjdBNkZGIiBzdHJva2Utd2lkdGg9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuOSI+PC9saW5lPjxsaW5lIHgxPSIzNzcuMiIgeTE9IjMyNi4wIiB4Mj0iMzk0LjYiIHkyPSIzMzYuMCIgc3Ryb2tlPSIjQjdBNkZGIiBzdHJva2Utd2lkdGg9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuOSI+PC9saW5lPjxsaW5lIHgxPSIzMjYuMCIgeTE9IjM3Ny4yIiB4Mj0iMzM2LjAiIHkyPSIzOTQuNiIgc3Ryb2tlPSIjQjdBNkZGIiBzdHJva2Utd2lkdGg9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuOSI+PC9saW5lPjxsaW5lIHgxPSIyNTYuMCIgeTE9IjM5Ni4wIiB4Mj0iMjU2LjAiIHkyPSI0MTYuMCIgc3Ryb2tlPSIjQjdBNkZGIiBzdHJva2Utd2lkdGg9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuOSI+PC9saW5lPjxsaW5lIHgxPSIxODYuMCIgeTE9IjM3Ny4yIiB4Mj0iMTc2LjAiIHkyPSIzOTQuNiIgc3Ryb2tlPSIjQjdBNkZGIiBzdHJva2Utd2lkdGg9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuOSI+PC9saW5lPjxsaW5lIHgxPSIxMzQuOCIgeTE9IjMyNi4wIiB4Mj0iMTE3LjQiIHkyPSIzMzYuMCIgc3Ryb2tlPSIjQjdBNkZGIiBzdHJva2Utd2lkdGg9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuOSI+PC9saW5lPjxsaW5lIHgxPSIxMTYuMCIgeTE9IjI1Ni4wIiB4Mj0iOTYuMCIgeTI9IjI1Ni4wIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC45Ij48L2xpbmU+PGxpbmUgeDE9IjEzNC44IiB5MT0iMTg2LjAiIHgyPSIxMTcuNCIgeTI9IjE3Ni4wIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC45Ij48L2xpbmU+PGxpbmUgeDE9IjE4Ni4wIiB5MT0iMTM0LjgiIHgyPSIxNzYuMCIgeTI9IjExNy40IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgb3BhY2l0eT0iMC45Ij48L2xpbmU+PGxpbmUgeDE9IjI3MS4zIiB5MT0iMTEwLjgiIHgyPSIyNzIuMyIgeTI9IjEwMC45IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjI4Ni40IiB5MT0iMTEzLjIiIHgyPSIyODguNCIgeTI9IjEwMy40IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjMwMS4xIiB5MT0iMTE3LjEiIHgyPSIzMDQuMiIgeTI9IjEwNy42IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjMxNS40IiB5MT0iMTIyLjYiIHgyPSIzMTkuNSIgeTI9IjExMy41IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjM0MS44IiB5MT0iMTM3LjkiIHgyPSIzNDcuNyIgeTI9IjEyOS44IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjM1My43IiB5MT0iMTQ3LjUiIHgyPSIzNjAuNCIgeTI9IjE0MC4xIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjM2NC41IiB5MT0iMTU4LjMiIHgyPSIzNzEuOSIgeTI9IjE1MS42IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjM3NC4xIiB5MT0iMTcwLjIiIHgyPSIzODIuMiIgeTI9IjE2NC4zIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjM4OS40IiB5MT0iMTk2LjYiIHgyPSIzOTguNSIgeTI9IjE5Mi41IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjM5NC45IiB5MT0iMjEwLjkiIHgyPSI0MDQuNCIgeTI9IjIwNy44IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjM5OC44IiB5MT0iMjI1LjYiIHgyPSI0MDguNiIgeTI9IjIyMy42IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjQwMS4yIiB5MT0iMjQwLjciIHgyPSI0MTEuMSIgeTI9IjIzOS43IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjQwMS4yIiB5MT0iMjcxLjMiIHgyPSI0MTEuMSIgeTI9IjI3Mi4zIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjM5OC44IiB5MT0iMjg2LjQiIHgyPSI0MDguNiIgeTI9IjI4OC40IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjM5NC45IiB5MT0iMzAxLjEiIHgyPSI0MDQuNCIgeTI9IjMwNC4yIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjM4OS40IiB5MT0iMzE1LjQiIHgyPSIzOTguNSIgeTI9IjMxOS41IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjM3NC4xIiB5MT0iMzQxLjgiIHgyPSIzODIuMiIgeTI9IjM0Ny43IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjM2NC41IiB5MT0iMzUzLjciIHgyPSIzNzEuOSIgeTI9IjM2MC40IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjM1My43IiB5MT0iMzY0LjUiIHgyPSIzNjAuNCIgeTI9IjM3MS45IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjM0MS44IiB5MT0iMzc0LjEiIHgyPSIzNDcuNyIgeTI9IjM4Mi4yIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjMxNS40IiB5MT0iMzg5LjQiIHgyPSIzMTkuNSIgeTI9IjM5OC41IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjMwMS4xIiB5MT0iMzk0LjkiIHgyPSIzMDQuMiIgeTI9IjQwNC40IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjI4Ni40IiB5MT0iMzk4LjgiIHgyPSIyODguNCIgeTI9IjQwOC42IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjI3MS4zIiB5MT0iNDAxLjIiIHgyPSIyNzIuMyIgeTI9IjQxMS4xIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjI0MC43IiB5MT0iNDAxLjIiIHgyPSIyMzkuNyIgeTI9IjQxMS4xIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjIyNS42IiB5MT0iMzk4LjgiIHgyPSIyMjMuNiIgeTI9IjQwOC42IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjIxMC45IiB5MT0iMzk0LjkiIHgyPSIyMDcuOCIgeTI9IjQwNC40IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjE5Ni42IiB5MT0iMzg5LjQiIHgyPSIxOTIuNSIgeTI9IjM5OC41IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjE3MC4yIiB5MT0iMzc0LjEiIHgyPSIxNjQuMyIgeTI9IjM4Mi4yIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjE1OC4zIiB5MT0iMzY0LjUiIHgyPSIxNTEuNiIgeTI9IjM3MS45IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjE0Ny41IiB5MT0iMzUzLjciIHgyPSIxNDAuMSIgeTI9IjM2MC40IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjEzNy45IiB5MT0iMzQxLjgiIHgyPSIxMjkuOCIgeTI9IjM0Ny43IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjEyMi42IiB5MT0iMzE1LjQiIHgyPSIxMTMuNSIgeTI9IjMxOS41IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjExNy4xIiB5MT0iMzAxLjEiIHgyPSIxMDcuNiIgeTI9IjMwNC4yIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjExMy4yIiB5MT0iMjg2LjQiIHgyPSIxMDMuNCIgeTI9IjI4OC40IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjExMC44IiB5MT0iMjcxLjMiIHgyPSIxMDAuOSIgeTI9IjI3Mi4zIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjExMC44IiB5MT0iMjQwLjciIHgyPSIxMDAuOSIgeTI9IjIzOS43IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjExMy4yIiB5MT0iMjI1LjYiIHgyPSIxMDMuNCIgeTI9IjIyMy42IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjExNy4xIiB5MT0iMjEwLjkiIHgyPSIxMDcuNiIgeTI9IjIwNy44IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjEyMi42IiB5MT0iMTk2LjYiIHgyPSIxMTMuNSIgeTI9IjE5Mi41IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjEzNy45IiB5MT0iMTcwLjIiIHgyPSIxMjkuOCIgeTI9IjE2NC4zIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjE0Ny41IiB5MT0iMTU4LjMiIHgyPSIxNDAuMSIgeTI9IjE1MS42IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjE1OC4zIiB5MT0iMTQ3LjUiIHgyPSIxNTEuNiIgeTI9IjE0MC4xIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjE3MC4yIiB5MT0iMTM3LjkiIHgyPSIxNjQuMyIgeTI9IjEyOS44IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjE5Ni42IiB5MT0iMTIyLjYiIHgyPSIxOTIuNSIgeTI9IjExMy41IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjIxMC45IiB5MT0iMTE3LjEiIHgyPSIyMDcuOCIgeTI9IjEwNy42IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjIyNS42IiB5MT0iMTEzLjIiIHgyPSIyMjMuNiIgeTI9IjEwMy40IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PGxpbmUgeDE9IjI0MC43IiB5MT0iMTEwLjgiIHgyPSIyMzkuNyIgeTI9IjEwMC45IiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjM1Ij48L2xpbmU+PHBhdGggZD0iTTI1NiAyNTYgVjE2OCBNMjU2IDI1NiBMMzE0IDI4NiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjQjdBNkZGIiBzdHJva2Utd2lkdGg9IjE4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjwvcGF0aD48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjE0IiBmaWxsPSIjQjdBNkZGIj48L2NpcmNsZT48cGF0aCBkPSJNMjE3LjcgMzYxLjIgTDIwMy42IDM1NC41IEwxOTAuNyAzNDUuOCBMMTc5LjIgMzM1LjUgTDE2OS4zIDMyMy44IEwxNjEuMSAzMTAuOCBMMTU0LjggMjk2LjkgTDE1MC42IDI4Mi4zIEwxNDguNCAyNjcuMyBMMTQ4LjQgMjUyLjIgTDE1MC40IDIzNy40IEwxNTQuNSAyMjMuMCBMMTYwLjUgMjA5LjQgTDE2OC4zIDE5Ni45IEwxNzcuOCAxODUuNiBMMTg4LjYgMTc1LjcgTDIwMC43IDE2Ny41IEwyMTMuOCAxNjEuMSBMMjI3LjUgMTU2LjYgTDI0MS43IDE1NC4xIEwyNTYuMCAxNTMuNiBMMjcwLjIgMTU1LjEgTDI4NC4wIDE1OC41IEwyOTcuMSAxNjMuOCBMMzA5LjIgMTcwLjggTDMyMC4zIDE3OS40IEwzMzAuMCAxODkuNCBMMzM4LjEgMjAwLjYgTDM0NC42IDIxMi44IEwzNDkuMyAyMjUuNyBMMzUyLjEgMjM5LjEgTDM1My4xIDI1Mi42IEwzNTIuMSAyNjYuMSBMMzQ5LjMgMjc5LjMgTDM0NC43IDI5MS44IEwzMzguNCAzMDMuNiBMMzMwLjYgMzE0LjMgTDMyMS41IDMyMy44IEwzMTEuMSAzMzEuOSBMMjk5LjggMzM4LjQgTDI4Ny43IDM0My4yIiBmaWxsPSJub25lIiBzdHJva2U9IiNCN0E2RkYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBvcGFjaXR5PSIuNSI+PC9wYXRoPjxjaXJjbGUgY3g9IjIxOC40IiBjeT0iMzU5LjQiIHI9IjEwIiBmaWxsPSIjQjdBNkZGIj48L2NpcmNsZT48Y2lyY2xlIGN4PSIyMDYuMCIgY3k9IjE2OS40IiByPSIxMyIgZmlsbD0iI0I3QTZGRiI+PC9jaXJjbGU+PGNpcmNsZSBjeD0iMzQ0LjMiIGN5PSIyMjMuOSIgcj0iMTYiIGZpbGw9IiNCN0E2RkYiPjwvY2lyY2xlPjxjaXJjbGUgY3g9IjI4Ny44IiBjeT0iMzQzLjQiIHI9IjIyIiBmaWxsPSIjQjdBNkZGIj48L2NpcmNsZT48L3N2Zz4=">
+<style>
+/* Estilo Atlas (igual que Fortuna y Hermes): mismo fondo, rejilla, esquinas, paneles y tipografía. Acento de Cronos: #B7A6FF (su logo). */
+:root{
+  --bg:#05030C; --panel:rgba(26,18,52,.6); --fg:#EEEAFF; --fg-2:#D3CAF5; --muted:#A99BD8; --line:rgba(183,166,255,.38); --grid:rgba(183,166,255,.14);
+  --accent:#B7A6FF; --accent-soft:rgba(183,166,255,.18); --load-rgb:183,166,255; --a:#B7A6FF; --c:#B7A6FF; --dim:rgba(183,166,255,.5);
+  --ok:#62F0B4; --warn:#FFB86B; --bad:#FF8A7A;
+  --f-body:"Bahnschrift","Barlow","Segoe UI",system-ui,sans-serif; --f-mono:Consolas,"Cascadia Mono","IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#1C1240 0%,#0B0720 55%,#05030C 100%) fixed,var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45}
+.hud-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(183,166,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(183,166,255,.06) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0}
+.corner{position:fixed;width:30px;height:30px;border:0 solid var(--accent);pointer-events:none;z-index:1;opacity:.7}
+.tl{left:8px;top:8px;border-left-width:2px;border-top-width:2px}.tr{right:8px;top:8px;border-right-width:2px;border-top-width:2px}
+.bl{left:8px;bottom:8px;border-left-width:2px;border-bottom-width:2px}.br{right:8px;bottom:8px;border-right-width:2px;border-bottom-width:2px}
+@media (max-width:700px){.corner{display:none}}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header{position:relative;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;max-width:1300px;margin:0 auto;padding:14px 20px 8px;border-bottom:1px solid var(--grid)}
+h1{margin:0 auto 0 0;font-size:1.3rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);text-shadow:0 0 18px rgba(183,166,255,.45)}
+nav{display:flex;flex-wrap:wrap;gap:4px}
+nav button,.btn{border:1px solid var(--line);background:rgba(26,18,52,.7);padding:3px 10px;cursor:pointer;color:var(--fg-2);font-family:var(--f-mono);font-size:.74rem;letter-spacing:.08em}
+nav button:hover,.btn:hover{border-color:var(--accent);color:var(--fg)}
+nav button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+nav{align-items:center;gap:8px}
+nav .principal{font-family:var(--f-body);font-size:1rem;font-weight:600;letter-spacing:.14em;padding:7px 20px;color:var(--accent);border-color:var(--accent);
+  box-shadow:0 0 16px rgba(183,166,255,.25)}
+nav .principal.on{background:rgba(183,166,255,.24);color:#fff;box-shadow:0 0 22px rgba(183,166,255,.45)}
+.conf{position:relative}
+#bconf{font-size:1rem;padding:5px 10px;line-height:1}
+#bconf[aria-expanded="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+#menuconf{position:absolute;right:0;top:calc(100% + 6px);z-index:5;display:flex;flex-direction:column;gap:4px;min-width:210px;padding:10px;
+  background:rgba(14,9,32,.97);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#menuconf[hidden]{display:none}
+#menuconf small{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.16em;color:var(--muted);margin-bottom:2px}
+#menuconf button{text-align:left}
+.btn.ok{color:var(--ok);border-color:rgba(98,240,180,.5)}.btn.bad{color:var(--bad);border-color:rgba(255,138,122,.5)}
+main{position:relative;z-index:2;padding:14px 20px 16px;max-width:1300px;margin:0 auto}
+.card{background:var(--panel);border:1px solid var(--line);box-shadow:inset 0 0 34px rgba(183,166,255,.07);padding:14px 16px;margin-bottom:12px;position:relative;min-width:0;
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,0 100%)}
+.card h2{margin:0 0 10px;font-family:var(--f-mono);font-size:.72rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.dia .btn{padding:2px 8px;font-size:.7rem;margin-top:4px}
+.mono{font-family:Consolas,"IBM Plex Mono",monospace}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.stat{border-left:2px solid var(--accent);padding:2px 0 2px 12px;color:var(--muted);font-size:.82rem}.stat b{display:block;font-size:1.45rem;font-weight:500;font-family:var(--f-mono);color:var(--fg)}
+.stat span{font-size:12px;color:#9cc}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.tile{border:1px solid var(--line);background:#000;position:relative}
+.tile img{width:100%;aspect-ratio:1;object-fit:cover;display:block;cursor:zoom-in}
+.tile .row{display:flex}.tile .row button{flex:1;background:#02121e;border:0;border-top:1px solid var(--line);color:#9cc;padding:6px;font:inherit;cursor:pointer}
+.tile.si{outline:2px solid var(--ok)}.tile.no{outline:2px solid var(--bad);opacity:.55}
+.tile .cree{position:absolute;top:4px;left:4px;font-size:11px;padding:2px 6px;background:#01040ACC}
+.tile.si .row button.s,.tile.no .row button.n{color:#fff;background:rgba(183,166,255,.25)}
+p.note{color:var(--muted);font-size:.84rem;margin:6px 0 12px}
+.res{font-size:15px;line-height:1.6}.res b{color:#fff}
+.dia{display:grid;grid-template-columns:90px 1fr;gap:4px 14px;font-size:14px}
+.dia .h{font-family:Consolas,monospace;color:var(--muted)}
+.f{font-size:11px;letter-spacing:.1em;color:var(--warn);margin-right:6px}
+.fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:10px}
+.foto{border:1px solid var(--line);font-size:12px;color:#bde}.foto img{width:100%;display:block}.foto div{padding:6px}
+.yo{color:var(--ok)}
+#zoom{position:fixed;inset:0;background:#000D;display:none;align-items:center;justify-content:center;z-index:9}
+#zoom img{max-width:92vw;max-height:92vh}
+#diag input,#diag select,input[type=date]{background:rgba(14,9,32,.9);color:var(--fg);border:1px solid var(--line);padding:4px 8px;font-family:var(--f-mono);font-size:.82rem;color-scheme:dark}
+@media(max-width:600px){main{padding:12px 16px}.dia{grid-template-columns:60px 1fr}}
+/* indicador de carga estándar de Atlas (anillo que corre): reemplaza «Buscando…», «Cargando…» y el «…» */
+.jload{display:inline-block;width:1.4em;height:1.4em;vertical-align:-.3em;margin-right:.5em;flex:none;overflow:visible}
+.jload .jl-t line{stroke:var(--a,#4FE3FF);stroke-width:46;stroke-linecap:round;opacity:.3;animation:jlTick 1.2s linear infinite;animation-delay:calc(var(--i) * .1s)}
+.jload .jl-b rect{fill:var(--a,#4FE3FF);opacity:.55}
+@keyframes jlTick{0%{opacity:1}40%{opacity:.3}100%{opacity:.3}}
+.jloadrow{display:inline-flex;align-items:center}
+@media (prefers-reduced-motion:reduce){.jload .jl-t line{animation-duration:3.6s}}
+/* Mi día: esfera de 24 h con la forma del logo de Cronos + panel con lo que significa cada color */
+.reloj{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.reloj svg.esfera{width:min(380px,100%);flex:none;overflow:visible}
+.esfera .arco{fill:none;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100;animation:rjDibuja .9s cubic-bezier(.2,.7,.2,1) forwards;transition:stroke-width .2s,filter .2s,opacity .2s}
+.esfera .arco.on{filter:drop-shadow(0 0 8px currentColor);stroke-width:calc(var(--w) * 1.35)}
+.esfera.foco .arco:not(.on){opacity:.28}
+.esfera .aguja{transform-origin:256px 256px;animation:rjAguja 2.2s cubic-bezier(.3,.6,.2,1) forwards}
+.esfera .pulso{transform-origin:256px 256px;animation:rjPulso 3.2s ease-in-out 2.2s infinite}
+.esfera .nucleo{animation:rjAparece .8s ease-out .9s both}
+.esfera .giro{transform-origin:256px 256px;animation:rjGiro 60s linear infinite}
+.esfera .orbita{transform-origin:256px 256px;animation:rjGiro 90s linear infinite}
+.esfera .aguja{transform-origin:256px 256px;animation:rjGiro 60s linear infinite}
+@keyframes rjGiro{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.esfera .giro,.esfera .orbita,.esfera .aguja,.esfera .nucleo{animation:none}}
+@keyframes rjAparece{from{opacity:0}to{opacity:1}}
+@keyframes rjDibuja{to{stroke-dashoffset:0}}
+@keyframes rjAguja{from{transform:rotate(0deg)}to{transform:rotate(var(--fin))}}
+@keyframes rjPulso{0%,100%{opacity:.25;transform:scale(1)}50%{opacity:.6;transform:scale(1.025)}}
+@media (prefers-reduced-motion:reduce){.esfera .arco{animation:none;stroke-dashoffset:0}.esfera .aguja{animation:none;transform:rotate(var(--fin))}.esfera .pulso{animation:none}}
+.leyenda{flex:1 1 300px;min-width:0;display:grid;gap:10px;align-content:start}
+.leyenda .tipos{display:flex;flex-wrap:wrap;gap:6px 14px;font:500 11px Consolas,monospace;letter-spacing:.12em;color:var(--muted)}
+.leyenda .tipos i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.leyenda ol{list-style:none;margin:0;padding:0;display:grid;gap:4px;max-height:330px;overflow-y:auto}
+.leyenda li{display:grid;grid-template-columns:12px 92px 1fr;gap:10px;align-items:baseline;padding:6px 8px;border-radius:4px;border:1px solid transparent;cursor:default}
+.leyenda li:hover,.leyenda li.on{background:rgba(183,166,255,.08);border-color:var(--line)}
+.leyenda li i{width:10px;height:10px;border-radius:50%;align-self:center}
+.leyenda li .hh{font:13px Consolas,monospace;color:var(--muted);font-variant-numeric:tabular-nums}
+.leyenda li .tt{min-width:0}
+.leyenda li .cf{display:block;font:500 10px Consolas,monospace;letter-spacing:.12em;color:var(--muted)}
+.leyenda li.baja .tt{opacity:.75}
+
+/* cargador estándar de Atlas: «núcleo» (arcos del logo que giran + barras de voz). Se adapta solo:
+   en línea con texto (canvas.jload), en un botón (jbtn) y en un recuadro (jbox, con tiempo transcurrido) */
+canvas.jload{display:inline-block;width:1.5em;height:1.5em;vertical-align:-.35em;margin-right:.55em;flex:none}
+.jloadrow{display:inline-flex;align-items:center}
+.jbox{position:relative;width:100%;min-height:200px;display:flex;align-items:flex-end;justify-content:center;border:1px solid rgba(183,166,255,.25);background:rgba(20,13,42,.6);box-sizing:border-box}
+.jbox canvas.jl-box{position:absolute;inset:0;width:100%;height:100%;margin:0}
+.jplate{position:relative;margin-bottom:12px;padding:6px 14px;border:1px solid rgba(183,166,255,.35);background:rgba(14,9,32,.9);color:#B7A6FF;font:500 12px Consolas,monospace;letter-spacing:.18em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}
+.jplate small{font-size:10px;letter-spacing:.08em;color:rgba(223,247,255,.6);text-transform:none}
+.jbtn{position:relative;display:flex;align-items:center;justify-content:center;min-height:1.6em;padding-left:2.6em}
+.jbtn canvas.jl-btn{position:absolute;left:-6px;top:-4px;width:calc(100% + 12px);height:calc(100% + 8px);margin:0}
+
+/* A2 (17-11): cabecera sin logo; fecha como título a la izquierda, pestañas subrayadas a la derecha */
+header{align-items:flex-end!important;justify-content:space-between;padding:16px 20px 0!important;border-bottom:1px solid rgba(183,166,255,.18)!important}
+#cab{display:grid;gap:4px;padding-bottom:10px;min-width:0}
+#dtitulo{font:600 26px var(--f-body,'Bahnschrift'),'Segoe UI',sans-serif;letter-spacing:.06em;color:var(--fg);text-wrap:balance}
+#dtitulo::first-letter{text-transform:uppercase}
+.dctl{margin:0;display:flex;align-items:center;gap:6px}
+.dctl .flecha{background:none;border:0;color:var(--accent);font-size:14px;cursor:pointer;padding:2px 6px}
+.dctl .flecha:hover{color:var(--fg)}
+.dctl input{background:none;border:0;color:var(--muted);font:12px Consolas,monospace;color-scheme:dark}
+header nav{align-items:flex-end!important;gap:22px!important}
+header nav > button[data-t],header nav .principal,header nav .principal.on{background:none!important;border:0!important;border-bottom:2px solid transparent!important;box-shadow:none!important;padding:0 2px 10px!important;font:500 .85rem var(--f-mono)!important;letter-spacing:.12em!important;color:var(--muted)!important}
+header nav > button[data-t].on{border-bottom-color:var(--accent)!important;color:var(--fg)!important}
+header nav .conf{align-self:center;margin-bottom:8px}
+main > section > #dout{margin-top:4px}
+/* selector 2 (17-11): MI DÍA / ESTADO / ⚙ en una sola barra con esquinas cortadas como el HUD, centrada con el título */
+header{align-items:center!important;padding-bottom:12px!important}
+#cab{padding-bottom:0!important}
+header nav{align-items:center!important;gap:0!important;border:0!important;padding:0!important;position:relative}
+/* el borde con esquinas cortadas va en una capa aparte: así el menú del ⚙ no queda recortado */
+header nav::before{content:"";position:absolute;inset:0;border:1px solid rgba(183,166,255,.4);pointer-events:none;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+header nav > button[data-t].principal,header nav > button[data-t]{border:0!important;border-right:1px solid rgba(183,166,255,.25)!important;padding:9px 20px!important;font:600 .78rem Consolas,monospace!important;letter-spacing:.14em!important;color:#9C93C4!important;background:none!important}
+header nav > button[data-t].principal.on,header nav > button[data-t].on{background:rgba(183,166,255,.22)!important;color:var(--fg)!important;box-shadow:inset 0 -2px 0 var(--accent)!important}
+header nav > button[data-t]:hover{color:var(--fg)!important}
+header nav .conf{margin:0!important;align-self:center!important;padding:0 6px}
+#bconf{border:0!important;background:none!important}
+#bconf[aria-expanded="true"],#bconf:hover{color:var(--fg)!important;text-shadow:0 0 8px var(--accent)}
+
+/* fecha A (17-11): una sola barra con esquinas cortadas; la fecha al centro abre el calendario del mes */
+#cab{position:relative}
+#dtitulo{font:600 18px Consolas,monospace!important;letter-spacing:.18em!important;text-transform:uppercase;color:var(--fg)}
+.fbar{display:flex!important;align-items:stretch!important;gap:0!important;border:1px solid rgba(183,166,255,.45);width:max-content;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+.fbar[hidden]{display:none!important}
+.fbar .flecha{background:none;border:0;color:var(--accent);font:600 13px Consolas;padding:0 14px!important;cursor:pointer}
+.fbar .flecha:hover{color:var(--fg);background:rgba(183,166,255,.12)}
+.fbar .f{background:none;border:0;border-left:1px solid rgba(183,166,255,.25);border-right:1px solid rgba(183,166,255,.25);padding:8px 18px;color:var(--fg);font:600 17px Consolas,monospace;letter-spacing:.14em;text-shadow:0 0 10px rgba(183,166,255,.45);cursor:pointer;white-space:nowrap}
+.fbar .f small{font:600 13px Consolas;color:var(--accent);margin-left:10px;text-shadow:none}
+.fbar .f:hover,.fbar .f[aria-expanded="true"]{background:rgba(183,166,255,.12)}
+.cal{position:absolute;left:0;top:calc(100% + 8px);z-index:20;background:#140E2C;border:1px solid rgba(183,166,255,.45);padding:14px;width:300px;box-shadow:0 18px 40px rgba(0,0,0,.5);clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+.cal .ct{display:flex;justify-content:space-between;align-items:center;font:600 12px Consolas,monospace;letter-spacing:.16em;color:var(--fg);margin-bottom:10px}
+.cal .ct button{background:none;border:0;color:var(--accent);font:600 14px Consolas;cursor:pointer;padding:2px 8px}
+.cal .g{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.cal .g i{font:500 10px Consolas;color:#7E76A8;font-style:normal;padding-bottom:4px}
+.cal .g button{font:500 13px Bahnschrift,sans-serif;color:#B9B2DD;padding:6px 0;border:1px solid transparent;background:none;position:relative;cursor:pointer}
+.cal .g button:hover{border-color:rgba(183,166,255,.4)}
+.cal .g button:disabled{opacity:.3;cursor:default;border-color:transparent}
+.cal .g button.sel{border-color:var(--accent);background:rgba(183,166,255,.18);color:#fff}
+.cal .g button.hoy{color:var(--accent)}
+.cal .g button.dato::after{content:"";position:absolute;left:50%;bottom:2px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:#62F0B4}
+.cal .pie{margin-top:10px;font:11px Consolas;color:var(--muted)}
+.cal .pie em{font-style:normal;color:#62F0B4}
+
+/* inicio de Cronos (17-11): queda el logo de la animación de entrada, vivo, y debajo se elige el día */
+.inicio{display:flex;flex-direction:column;align-items:center;gap:18px;padding:34px 0 40px}
+.inicio .ilogo{width:280px;height:280px;color:var(--accent);filter:drop-shadow(0 0 10px rgba(183,166,255,.55))}
+.inicio .inm{font:600 44px Bahnschrift,'Segoe UI',sans-serif;letter-spacing:.3em;margin-right:-.3em;color:var(--accent);text-shadow:0 0 16px rgba(183,166,255,.6)}
+.inicio .inm .eg{display:inline-block;vertical-align:baseline;width:.72em;height:.72em;margin:0 .3em 0 .04em}.inicio .inm .gl{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 8px rgba(183,166,255,.6))}
+.inicio .ipreg{margin:-4px 0 4px;color:var(--muted);font-size:15px;letter-spacing:.04em}
+.inicio .cal{position:static;box-shadow:none}
+.inicio .atajos{display:flex;gap:8px}
+.inicio .atajos button{background:none;border:1px solid rgba(183,166,255,.35);color:var(--fg);font:600 11px Consolas,monospace;letter-spacing:.16em;padding:7px 12px;cursor:pointer}
+.inicio .atajos button:hover{border-color:var(--accent);background:rgba(183,166,255,.12)}
+.ilogo .orbita{transform-origin:256px 256px;animation:rjGiro 90s linear infinite}
+.ilogo .aguja{transform-origin:256px 256px;animation:rjGiro 60s linear infinite}
+@media (prefers-reduced-motion:reduce){.ilogo .orbita,.ilogo .aguja{animation:none}}
+
+/* transición «directo» (17-11): al elegir el día el reloj se encoge al lugar de la esfera y gira rápido mientras carga */
+.esfslot{width:min(380px,100%);aspect-ratio:1;flex:none}
+.cargando{font:600 13px Consolas,monospace;letter-spacing:.18em;color:var(--fg);text-shadow:0 0 8px rgba(183,166,255,.6);animation:latido 1.4s ease-in-out infinite}
+@keyframes latido{50%{opacity:.45}}
+.volador{position:fixed;z-index:30;pointer-events:none;color:var(--accent);filter:drop-shadow(0 0 10px rgba(183,166,255,.55));transform-origin:0 0}
+.volador .orbita{transform-origin:256px 256px;animation:rjGiro 90s linear infinite}
+.volador .aguja{transform-origin:256px 256px;animation:rjGiro 60s linear infinite}
+.volador.rapido .aguja.h{animation-duration:1.6s!important}.volador.rapido .aguja.m{animation-duration:.45s!important}
+#dout.llego .esfera .nucleo{animation:none}
+@media (prefers-reduced-motion:reduce){.volador .orbita,.volador .aguja,.cargando{animation:none}}
+
+/* modo de ubicación (18-11): A = elegir la primera vez; B = panel de fuentes en ⚙ */
+.modo{max-width:1100px;margin:10px auto 0;display:grid;gap:8px}
+.modo .tit{font:600 20px Consolas,monospace;letter-spacing:.2em;color:var(--fg);text-shadow:0 0 12px rgba(183,166,255,.45)}
+.modo .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;margin-top:14px}
+.mcard{text-align:left;cursor:pointer;color:var(--fg);font:inherit;padding:22px 24px;display:grid;gap:12px;align-content:start;border:1px solid rgba(183,166,255,.35);background:rgba(26,18,56,.6);clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px)}
+.mcard:hover,.mcard:focus-visible{border-color:var(--accent);background:rgba(183,166,255,.12)}
+.mcard h3{margin:0;font:600 12px Consolas,monospace;letter-spacing:.18em;color:var(--accent)}
+.mcard .q{font-size:21px;font-weight:600}
+.mcard ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px;line-height:1.7}
+.mcard .ir{justify-self:start;border:1px solid var(--accent);background:rgba(183,166,255,.16);font:600 12px Consolas,monospace;letter-spacing:.16em;padding:9px 16px}
+.ayuda{color:var(--muted);font-size:13.5px;line-height:1.55;margin:4px 0 0;border-left:2px solid var(--accent);padding-left:12px}
+.fpan{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){.fpan{grid-template-columns:1fr}}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(183,166,255,.45)}
+.seg button{padding:10px;background:none;border:0;font:600 11px Consolas,monospace;letter-spacing:.14em;color:var(--muted);cursor:pointer}
+.seg button.on{background:rgba(183,166,255,.22);color:#fff;box-shadow:inset 0 -2px 0 var(--accent)}
+.fu{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:12px;align-items:start;padding:11px 0;border-top:1px solid rgba(183,166,255,.12)}
+.fu:first-of-type{border-top:0}
+.fu .e{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font:700 11px Consolas;color:#120C26}
+.fu .e.ok{background:#62F0B4}.fu .e.pe{background:#F5E26B}.fu .e.no{background:#FF8A7A}.fu .e.au{background:#8FA8FF}
+.fu b{display:block;font-size:15px}.fu small{color:var(--muted);font-size:13px;line-height:1.4}
+.fu .tag{font:600 10px Consolas;letter-spacing:.16em;padding:3px 7px;border:1px solid rgba(183,166,255,.4);color:var(--accent)}
+.fu textarea{width:100%;min-height:110px;margin-top:8px;background:rgba(14,9,32,.9);color:var(--fg);border:1px solid var(--line);font:12px Consolas,monospace}
+</style>
+</head>
+<body>
+<div class="hud-grid" aria-hidden="true"></div><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+<header><div id="cab"><div id="dtitulo" hidden></div><div class="fbar dctl"><button type="button" class="flecha" id="dant" title="Día anterior" aria-label="Día anterior">◀</button><button type="button" class="f" id="dfx" aria-haspopup="dialog" aria-expanded="false" title="Elegir otra fecha">—</button><button type="button" class="flecha" id="dsig" title="Día siguiente" aria-label="Día siguiente">▶</button></div><input type="date" id="dfecha" aria-label="Fecha" hidden><button class="btn" id="dver" hidden>VER</button><div class="cal" id="dcal" hidden></div></div>
+<nav><button data-t="dia" class="principal on">MI DÍA</button> <button data-t="estado">ESTADO</button>
+<span class="conf"><button id="bconf" aria-expanded="false" aria-controls="menuconf" title="Configuración de Cronos">⚙</button>
+<div id="menuconf" hidden><small>CONFIGURACIÓN DE CRONOS</small><button data-t="fuentes">FUENTES DE UBICACIÓN</button><button data-t="diag">DIAGNÓSTICO DE DÍAS</button></div></span></nav></header>
+<main>
+<section id="estado" hidden></section>
+<section id="fuentes" hidden></section>
+<section id="ensenar" hidden>
+  <div class="card"><h2>ENSEÑAR SU CARA</h2>
+  <p class="note">Marque ✓ en las caras que son usted y ✕ en las que no. Con unas 15 caras suyas basta para empezar. Después las que más se le parecen salen primero.</p>
+  <div class="grid" id="eg"></div>
+  <p><button class="btn" id="emas">GUARDAR Y MOSTRAR MÁS</button> <span id="einfo" class="mono"></span></p></div>
+</section>
+<section id="prueba" hidden>
+  <div class="card"><h2>PRUEBA CONTROLADA</h2>
+  <p class="note">Atlas le muestra 60 caras nuevas con lo que cree (USTED / OTRO). Marque ✓ si es usted y ✕ si no. Al terminar le digo cuántas acertó.</p>
+  <p><button class="btn" id="pnueva">NUEVA PRUEBA</button> <span id="pinfo" class="mono"></span></p>
+  <div class="grid" id="pg"></div>
+  <p><button class="btn ok" id="pfin" hidden>VER RESULTADO</button></p>
+  <div class="res" id="pres"></div></div>
+</section>
+<section id="dia">
+  <div id="dout"></div>
+</section>
+<section id="diag" hidden>
+  <div class="card"><h2>DIAGNÓSTICO DE LA LÍNEA DEL DÍA</h2>
+  <p class="note">Cronos elige un día al azar de los últimos 3 meses que usted aún no revisó y le muestra lo que cree que hizo. Marque cada bloque: ✓ si está bien, ✕ si está mal o ✎ para corregir la hora o el lugar, y agregue lo que faltó. Después pase a OTRO DÍA. Con cada día revisado mide cuánto acierta y ajusta sus reglas. Todo queda en este computador.</p>
+  <p><button class="btn" id="gotro">OTRO DÍA ▶</button> <span class="note" id="grango"></span>
+  <span hidden><select id="gdias"><option selected>7</option></select><button id="gver"></button><button id="gant"></button><button id="gsig"></button></span></p>
+  <div id="gres"></div></div>
+  <div id="gout"></div>
+</section>
+</main>
+<div id="zoom"><img alt=""></div>
+<script>
+const B = location.pathname.replace(/\/$/, '') ;
+const $ = s => document.querySelector(s);
+const JLOAD = '<canvas class="jload" aria-hidden="true"></canvas>';   // cargador estándar en línea (núcleo)
+const jesc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+function jbox(text, sub) { return '<div class="jbox"><canvas class="jload jl-box" aria-hidden="true"></canvas><div class="jplate">' + jesc(text) + (sub ? "<small>" + jesc(sub) + "</small>" : "") + "</div></div>"; }
+function jbtn(text) { return '<span class="jbtn"><canvas class="jload jl-btn" aria-hidden="true"></canvas><span>' + jesc(text) + "</span></span>"; }
+(function () {   // un solo bucle dibuja todos los cargadores visibles
+  const RGB = (getComputedStyle(document.documentElement).getPropertyValue("--load-rgb") || "").trim() || "79,227,255";   // color de la app (Cronos: lila)
+  const C = (a) => "rgba(" + RGB + "," + a + ")";
+  const slow = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0.35 : 1;
+  function core(c, cx, cy, R, t) {
+    const lw = Math.max(1.3, R * 0.13);
+    const ring = (r, w, segs, sp, al) => { c.lineWidth = w; c.lineCap = "round"; c.strokeStyle = C(al);
+      segs.forEach(([a0, l]) => { c.beginPath(); c.arc(cx, cy, r, a0 + t * sp, a0 + l + t * sp); c.stroke(); }); };
+    ring(R - lw / 2, lw, [[0, 1.6], [2.1, 1.1], [3.9, 0.6]], 1.1, 0.95);
+    ring(R * 0.7, lw * 0.7, [[0, 2.4], [3, 1.6]], -1.7, 0.6);
+    if (R > 14) ring(R * 0.47, lw * 0.55, [[0, 0.9], [1.6, 0.9], [3.2, 0.9], [4.8, 0.9]], 2.6, 0.8);
+    const n = R > 14 ? 5 : 3, bw = Math.max(1.2, R * (n === 5 ? 0.07 : 0.11));
+    for (let i = 0; i < n; i++) { const v = 0.35 + 0.65 * Math.abs(Math.sin(t * 3 + i * 0.9)), bh = R * (n === 5 ? 0.5 : 0.62) * v;
+      c.fillStyle = C(0.95); c.fillRect(cx + (i - (n - 1) / 2) * bw * 1.9 - bw / 2, cy - bh / 2, bw, bh); }
+  }
+  const win = (t, n, k) => { const p = (t * 0.9) % 1 * (n + k) - k; return (i) => i >= p && i < p + k; };   // tramo que corre
+  function frame(ms) {
+    const els = document.querySelectorAll("canvas.jload");
+    if (els.length) {
+      const now = ms / 1000, dpr = window.devicePixelRatio || 1;
+      els.forEach((el) => {
+        const w = el.clientWidth, h = el.clientHeight; if (!w || !h) return;
+        if (!el._t0) el._t0 = now;
+        const t = (now - el._t0) * slow;
+        if (el.width !== Math.round(w * dpr) || el.height !== Math.round(h * dpr)) { el.width = Math.round(w * dpr); el.height = Math.round(h * dpr); }
+        const c = el.getContext("2d"); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+        if (el.classList.contains("jl-btn")) {   // botón: núcleo a la izquierda y una línea de tramos que corre abajo
+          const R = Math.min(h * 0.36, 16), x0 = R * 2 + 16, segs = 16, sw = (w - x0 - 8) / segs, on = win(t, segs, 4);
+          core(c, R + 8, h / 2, R, t);
+          for (let i = 0; i < segs; i++) { c.fillStyle = C(on(i) ? 0.85 : 0.12); c.fillRect(x0 + i * sw, h - 5, sw - 2, 2); }
+        } else if (el.classList.contains("jl-box")) {   // recuadro: núcleo al centro, tiempo transcurrido y barra lateral
+          const R = Math.min(Math.min(w, h - 64) * 0.4, 80);   // arriba de la placa con el texto
+          core(c, w / 2, (h - 64) / 2 + 6, R, t);
+          const s = Math.floor(now - el._t0), mm = String(Math.floor(s / 60)).padStart(2, "0"), ss = String(s % 60).padStart(2, "0");
+          c.font = "11px Consolas, monospace"; c.fillStyle = C(0.7); c.fillText("TIEMPO", 14, 24);
+          c.fillStyle = "rgba(223,247,255,.95)"; c.fillText(mm + ":" + ss, 14, 39);
+          const n = 18, bh = (h - 36) / n, on = win(t, n, 5);
+          for (let i = 0; i < n; i++) { c.fillStyle = C(on(n - 1 - i) ? 0.85 : 0.12); c.fillRect(w - 20, 18 + i * bh, 7, bh - 2); }
+        } else core(c, w / 2, h / 2, Math.min(w, h) / 2, t);
+      });
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+const api = (p, body) => fetch(B + '/' + p, body ? {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)} : {}).then(r => r.json());
+const pct = x => x == null ? '—' : Math.round(x * 100) + ' %';
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+$('#bconf').onclick = ev => { ev.stopPropagation(); const m = $('#menuconf'); m.hidden = !m.hidden; $('#bconf').setAttribute('aria-expanded', String(!m.hidden)); };
+document.addEventListener('click', ev => { if (!ev.target.closest('.conf')) { $('#menuconf').hidden = true; $('#bconf').setAttribute('aria-expanded', 'false'); } });
+document.querySelectorAll('nav button[data-t]').forEach(b => b.onclick = () => {
+  $('#menuconf').hidden = true; $('#bconf').setAttribute('aria-expanded', 'false');
+  document.querySelectorAll('nav button[data-t]').forEach(x => x.classList.toggle('on', x === b));
+  $('#bconf').classList.toggle('on', !!b.closest('#menuconf'));
+  document.querySelectorAll('main > section').forEach(s => s.hidden = s.id !== b.dataset.t);
+  ({estado: verEstado, ensenar: cargarEnsenar, prueba: () => {}, dia: () => {}, diag: () => { if (!DIAG) { GHASTA = 'azar'; verDiag(); } }, fuentes: verFuentes})[b.dataset.t]();
+});
+$('#zoom').onclick = () => $('#zoom').style.display = 'none';
+async function zoomCara(id){ const r = await api('api/foto_de_cara?id=' + id); if (!r.foto) return;
+  $('#zoom img').src = B + '/foto?w=1100&id=' + r.foto; $('#zoom').style.display = 'flex'; }
+
+async function verEstado(){
+  const e = await api('api/estado');
+  const fu = Object.entries(e.por_fuente || {}).map(([k,v]) => `${k}: ${v}`).join(' · ') || 'sin Takeout ni cronología todavía';
+  $('#estado').innerHTML = `<div class="card"><h2>ÍNDICE LOCAL</h2><div class="stats">
+   <div class="stat"><b>${e.items}</b><span>registros en el índice</span></div></div>
+   <p class="note">Otras fuentes: ${esc(fu)}</p>
+   <p class="note">Cronos no usa fotos.</p>
+   <button class="btn" id="besc">BUSCAR TAKEOUT Y CHATS NUEVOS</button></div>`;
+  $('#besc').onclick = async () => { $('#besc').innerHTML = jbtn('BUSCANDO'); await api('api/escanear', {}); verEstado(); };
+}
+
+const marcas = {};
+function tile(c, prueba){
+  const d = document.createElement('div'); d.className = 'tile';
+  d.innerHTML = (c.cree !== undefined ? `<span class="cree" style="color:${c.cree ? 'var(--ok)' : 'var(--warn)'}">${c.cree ? 'USTED' : 'OTRO'}</span>` : '')
+    + `<img loading="lazy" src="${B}/cara?id=${c.cara}" alt=""><div class="row"><button class="s">✓</button><button class="n">✕</button></div>`;
+  d.querySelector('img').onclick = () => zoomCara(c.cara);
+  const set = async yo => { d.classList.toggle('si', yo); d.classList.toggle('no', !yo);
+    if (prueba) { await api('api/marcar', {cara: c.cara, yo, prueba}); contarPrueba(); } else marcas[c.cara] = yo; };
+  d.querySelector('.s').onclick = () => set(true); d.querySelector('.n').onclick = () => set(false);
+  return d;
+}
+async function cargarEnsenar(){
+  const ids = Object.keys(marcas);
+  for (const k of ids) { await api('api/marcar', {cara: +k, yo: marcas[k]}); delete marcas[k]; }
+  const r = await api('api/ensenar?n=36'); const g = $('#eg'); g.innerHTML = '';
+  if (!r.caras.length) g.innerHTML = '<p class="note">Todavía no hay caras revisadas. Atlas las va sacando de sus fotos en segundo plano; vuelva en un rato.</p>';
+  r.caras.forEach(c => g.appendChild(tile(c, 0)));
+  const e = await api('api/estado'); $('#einfo').textContent = `${e.refs} caras suyas enseñadas`;
+}
+$('#emas').onclick = cargarEnsenar;
+
+let prueba = null;
+$('#pnueva').onclick = async () => {
+  const e = await api('api/estado');
+  if (e.refs < 8) { $('#pinfo').textContent = 'Primero enséñele al menos 8 caras suyas.'; return; }
+  prueba = await api('api/prueba?n=60'); const g = $('#pg'); g.innerHTML = ''; $('#pres').innerHTML = '';
+  prueba.caras.forEach(c => g.appendChild(tile(c, prueba.prueba)));
+  $('#pfin').hidden = false; contarPrueba();
+};
+function contarPrueba(){ if (!prueba) return; const n = document.querySelectorAll('#pg .tile.si,#pg .tile.no').length;
+  $('#pinfo').textContent = `prueba ${prueba.prueba}: ${n} de ${prueba.caras.length} marcadas`; }
+$('#pfin').onclick = async () => {
+  const r = await api('api/resultado?prueba=' + prueba.prueba), t = await api('api/resultado');
+  const a = r.actual, s = t.sugerido;
+  $('#pres').innerHTML = `<p>En esta prueba (${r.respuestas} respuestas): de las que dijo «usted», acertó <b>${pct(a.precision)}</b>
+   (${a.vp} bien, ${a.fp} eran otra persona). Encontró <b>${pct(a.exhaustividad)}</b> de las suyas (${a.fn} se le escaparon). Acierto total <b>${pct(a.acierto)}</b>.</p>`
+   + (s ? `<p>Con todas las pruebas (${t.respuestas} respuestas), el umbral <span class="mono">${s.umbral}</span> acertaría ${pct(s.precision)} al decir «usted» y encontraría ${pct(s.exhaustividad)} de sus fotos.
+     <button class="btn ok" id="pusar">USAR ESE UMBRAL</button></p>` : '<p class="note">Aún no hay suficientes respuestas para sugerir otro umbral.</p>');
+  if (s) $('#pusar').onclick = async () => { await api('api/umbral', {umbral: s.umbral}); $('#pusar').textContent = 'LISTO'; };
+};
+
+const COL = {'videos':'#FFB86B','búsqueda':'#4FE3FF','web':'#8FA8FF','maps':'#FF8A7A','chat':'#FFFFFF','app':'#B9C7D6'};
+const CONF = c => /^alta/.test(c) ? 'var(--ok)' : /^media/.test(c) ? 'var(--c)' : 'var(--warn)';
+const mins = h => h ? (+h.slice(0, 2)) * 60 + (+h.slice(3, 5)) : null;
+const FILA = {sueno:'#6F5FD0', lugar:'#B7A6FF', viaje:'#FFB86B', actividad:'#E9A6FF', dicho:'#B9C7D6', quieto:'#FFB86B'};
+const hh = h => { const m = mins(h); return m >= 1440 ? String(Math.floor(m / 60) - 24).padStart(2, '0') + h.slice(2) + ' (+1)' : h; };
+function bloquesSVG(bl){
+  bl = bl.filter(b => b.ini && ['sueno', 'lugar', 'viaje', 'actividad'].includes(b.fila));
+  const a0 = Math.min(0, ...bl.map(b => mins(b.ini))), a1 = Math.max(1440, ...bl.map(b => Math.ceil(mins(b.fin || b.ini) / 60) * 60));
+  const W = 960, X = m => ((m - a0) / (a1 - a0) * W);
+  let g = '';
+  for (let h = a0; h <= a1; h += 120) g += `<line x1="${X(h)}" y1="2" x2="${X(h)}" y2="84" stroke="#B7A6FF22"/><text x="${X(h)}" y="98" fill="#B7A6FF99" font-size="11" text-anchor="middle" font-family="Consolas">${String(h / 60 % 24).padStart(2, '0')}</text>`;
+  if (a1 > 1440) g += `<line x1="${X(1440)}" y1="2" x2="${X(1440)}" y2="84" stroke="#B7A6FF77" stroke-dasharray="3 3"/><text x="${X(1440) + 4}" y="12" fill="#B7A6FF99" font-size="10">medianoche</text>`;
+  const fila = (y, t) => `<text x="-8" y="${y + 21}" fill="#B7A6FF" font-size="11" text-anchor="end" letter-spacing=".1em">${t}</text>`;
+  g += fila(4, 'DÓNDE') + fila(46, 'QUÉ');
+  const caja = (b, y, alto) => { const a = X(mins(b.ini)), w = Math.max(4, X(mins(b.fin || b.ini)) - a), c = FILA[b.fila] || '#fff';
+    const op = b.conf === 'alta' ? .55 : b.conf === 'media' ? .35 : .15, dash = b.conf === 'baja' ? ' stroke-dasharray="4 3"' : '';
+    const t = b.titulo.replace(/ \((rindió|la dicta usted|como profesor auxiliar|como alumno)\).*/, ''), cabe = Math.floor(w / 6.6);
+    return `<g><title>${esc(hh(b.ini) + '–' + hh(b.fin) + ' ' + b.titulo + ' · confianza ' + b.conf + ': ' + b.por)}</title><rect x="${a}" y="${y}" width="${w}" height="${alto}" rx="3" fill="${c}" fill-opacity="${op}" stroke="${c}"${dash}/>`
+      + (cabe > 3 ? `<text x="${a + 5}" y="${y + alto / 2 + 4}" fill="#fff" font-size="11">${esc(t.length > cabe ? t.slice(0, cabe - 1) + '…' : t)}</text>` : '') + '</g>'; };
+  bl.filter(b => b.fila !== 'actividad').forEach(b => g += caja(b, 4 + (b.fila === 'viaje' ? 6 : 0), b.fila === 'viaje' ? 20 : 32));
+  bl.filter(b => b.fila === 'actividad').forEach(b => g += caja(b, 46, 32));
+  return `<svg viewBox="-70 0 1040 104" style="width:100%;height:auto;display:block">${g}</svg>
+    <p class="note"><span style="color:${FILA.sueno}">■</span> sueño &nbsp; <span style="color:${FILA.lugar}">■</span> lugar &nbsp; <span style="color:${FILA.viaje}">■</span> viaje &nbsp; <span style="color:${FILA.actividad}">■</span> qué hacía &nbsp; · borde punteado = poco seguro · pase el mouse para ver por qué</p>`;
+}
+const filaTxt = b => `<span style="color:${FILA[b.fila]}">■</span> ${esc(b.titulo)} <span class="f" style="color:${CONF(b.conf)}">${b.conf.toUpperCase()}</span><span style="color:var(--muted);font-size:12px"> ${esc(b.por)}</span>`;
+const horas = b => `${hh(b.ini)}${b.fin && b.fin !== b.ini ? '–' + hh(b.fin) : ''}`;
+// Mi día: el día como la esfera del logo de Cronos (24 h, medianoche arriba). Anillo exterior = dónde estuvo,
+// anillo interior = qué hacía. Los arcos se dibujan uno tras otro y la aguja recorre el día; a la derecha, qué es cada color.
+const COLOR_RELOJ = b => b.fila === 'sueno' ? '#6F5FD0' : b.fila === 'viaje' ? '#FFB86B' : b.fila === 'actividad' ? '#E9A6FF'
+  : b.lugar === 'casa' || /su casa/i.test(b.titulo) ? '#8FD3C4' : b.lugar === 'U' || /la U\b/.test(b.titulo) ? '#B7A6FF' : '#F7D488';
+const TIPOS_RELOJ = [['#6F5FD0', 'SUEÑO'], ['#8FD3C4', 'SU CASA'], ['#B7A6FF', 'LA U'], ['#F7D488', 'OTRO LUGAR'], ['#FFB86B', 'VIAJE'], ['#E9A6FF', 'QUÉ HACÍA']];
+function relojSVG(bl){
+  const VAR = 'C';  // logo vivo con los planetas del día (elegida el 17-11)
+  // Esfera completa (17-11): marco de arcos del logo, bisel con marcas cada 5 min y anillo que gira, 24 horas numeradas,
+  // marcas cada 15 min, arcos con brillo y nombre escrito encima, horas de cada cambio en el borde, la espiral del logo
+  // de fondo y al centro dónde pasó más tiempo.
+  const C = 256, P = (r, m) => { const t = Math.min(m, 1439.9) / 1440 * 2 * Math.PI; return [C + r * Math.sin(t), C - r * Math.cos(t)]; };
+  const f1 = n => n.toFixed(1);
+  const arco = (r, a, b, rev) => { b = Math.max(b, a + 6); const [x0, y0] = P(r, a), [x1, y1] = P(r, b);
+    return rev ? `M${f1(x1)} ${f1(y1)} A${r} ${r} 0 ${b - a > 720 ? 1 : 0} 0 ${f1(x0)} ${f1(y0)}`
+               : `M${f1(x0)} ${f1(y0)} A${r} ${r} 0 ${b - a > 720 ? 1 : 0} 1 ${f1(x1)} ${f1(y1)}`; };
+  const linea = (r0, r1, m, w, op, col = '#B7A6FF') => { const [x0, y0] = P(r0, m), [x1, y1] = P(r1, m);
+    return `<line x1="${f1(x0)}" y1="${f1(y0)}" x2="${f1(x1)}" y2="${f1(y1)}" stroke="${col}" stroke-width="${w}" stroke-linecap="round" opacity="${op}"/>`; };
+  let g = '<defs><filter id="esfBrillo" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="7"/></filter>'
+        + '<radialGradient id="esfFondo"><stop offset="0" stop-color="#33266A" stop-opacity=".95"/><stop offset=".7" stop-color="#170F33" stop-opacity=".7"/><stop offset="1" stop-color="#0B0818" stop-opacity="0"/></radialGradient></defs>'
+        + '<circle cx="256" cy="256" r="262" fill="url(#esfFondo)"/>';
+  // marco: los tres arcos gruesos del logo y un bisel fino con marcas cada 5 minutos
+  [[25, 110], [145, 215], [250, 290]].forEach(([a, b]) => g += `<path d="${arco(250, a * 4, b * 4)}" fill="none" stroke="#B7A6FF" stroke-width="10" stroke-linecap="round" opacity=".6"/>`);
+  g += '<circle cx="256" cy="256" r="236" fill="none" stroke="#B7A6FF" stroke-opacity=".25"/>';
+  for (let q = 0; q < 288; q++) if (q % 3) g += linea(232, 236, q * 5, 1, .3);
+  g += '<g class="giro"><circle cx="256" cy="256" r="242" fill="none" stroke="#B7A6FF" stroke-opacity=".35" stroke-width="1.5" stroke-dasharray="2 14 40 14"/></g>';
+  // pistas de fondo
+  g += '<circle cx="256" cy="256" r="200" fill="none" stroke="#B7A6FF" stroke-opacity=".1" stroke-width="40"/>'
+     + '<circle cx="256" cy="256" r="128" fill="none" stroke="#B7A6FF" stroke-opacity=".08" stroke-width="18"/>';
+  // marcas: cada hora (largas cada 2 h, como el logo) y cada 15 minutos
+  for (let q = 0; q < 96; q++) if (q % 4) g += linea(163, 169, q * 15, 2, .28);
+  for (let h = 0; h < 24; h++) g += linea(h % 2 ? 158 : 150, 171, h * 60, h % 2 ? 4 : 8, h % 2 ? .4 : .9);
+  // las 24 horas, más grandes cada 6
+  for (let h = 0; h < 24; h++) { const [x, y] = P(h % 6 ? 266 : 270, h * 60), fuerte = h % 6 === 0;
+    g += `<text x="${f1(x)}" y="${f1(y + (fuerte ? 6 : 4))}" fill="#B7A6FF" fill-opacity="${fuerte ? 1 : .6}" font-size="${fuerte ? 18 : 11}" text-anchor="middle" font-family="Consolas" font-weight="${fuerte ? 700 : 400}">${String(h).padStart(2, '0')}</text>`; }
+  let brillo = '', textos = '', bordes = '', mayor = null, ult = -999;
+  bl.forEach((b, i) => {
+    const a = Math.max(0, mins(b.ini)), z = Math.min(1440, mins(b.fin || b.ini));
+    if (z <= a && b.fila !== 'viaje') return;
+    const dentro = b.fila === 'actividad', r = dentro ? 128 : 200, w = dentro ? 18 : b.fila === 'viaje' ? 26 : 40, col = COLOR_RELOJ(b);
+    if (!dentro && b.fila !== 'sueno' && b.fila !== 'viaje' && (!mayor || z - a > mayor.d)) mayor = {b, d: z - a};
+    const op = b.conf === 'baja' ? .9 : b.conf === 'media' ? .85 : 1, dash = '';
+    // poco seguro = rayado diagonal del mismo color (17-11; el punteado se estiraba según el largo del tramo)
+    if (b.conf === 'baja') g += `<pattern id="esfRaya${i}" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(45)"><rect width="9" height="9" fill="${col}" fill-opacity=".22"/><rect width="4" height="9" fill="${col}"/></pattern>`;
+    const d = dentro ? arco(r, a, z) : arco(r, a + 3, z - 3);
+    brillo += `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" opacity="${b.conf === 'baja' ? .2 : .5}" filter="url(#esfBrillo)"/>`;
+    g += `<path class="arco" data-i="${i}" d="${d}" pathLength="100" stroke="${b.conf === 'baja' ? `url(#esfRaya${i})` : col}" style="--w:${w};stroke-width:${w};stroke-linecap:${dentro ? 'round' : 'butt'};color:${col};opacity:${op};animation-delay:${(i * .12).toFixed(2)}s${dash}"><title>${esc(horas(b) + ' · ' + b.titulo)}</title></path>`;
+    if (!dentro && b.fila !== 'viaje' && a - ult >= 50) {  // la hora de cada cambio de lugar, en el borde
+      ult = a; const [x, y] = P(214, a);
+      bordes += linea(176, 224, a, 2, .9, col) + `<circle cx="${f1(x)}" cy="${f1(y)}" r="3.5" fill="${col}"/>`;
+    }
+    if (!dentro && z - a >= 100) {  // el nombre escrito sobre el arco (al derecho también en la mitad de abajo)
+      const medio = (a + z) / 2, abajo = medio > 360 && medio < 1080, id = 'esfT' + i;
+      const nom = b.fila === 'sueno' ? 'SUEÑO' : col === '#8FD3C4' ? 'SU CASA' : col === '#B7A6FF' ? 'LA U'
+        : b.fila === 'viaje' ? 'VIAJE' : b.titulo.replace(/^En /, '').toUpperCase().slice(0, 16);
+      textos += `<path id="${id}" d="${arco(abajo ? 194 : 206, a, z, abajo)}" fill="none"/><text font-family="Bahnschrift,Segoe UI,sans-serif" font-size="15" font-weight="700" letter-spacing="3" fill="#120C26"><textPath href="#${id}" startOffset="50%" text-anchor="middle">${esc(nom)}</textPath></text>`;
+    }
+  });
+  g = g.replace('<circle cx="256" cy="256" r="200"', brillo + '<circle cx="256" cy="256" r="200"') + textos + bordes;
+  // centro: el logo de Cronos vivo, con menos detalle: 12 marcas, la órbita con sus planetas girando y dos agujas gruesas
+  // con la hora real. Los planetas son los lugares del día (el más grande, donde pasó más tiempo).
+  const ah = new Date(), seg = ah.getHours() * 3600 + ah.getMinutes() * 60 + ah.getSeconds();
+  const aguja = (gr, dur, cuerpo) => `<g transform="rotate(${gr.toFixed(2)} 256 256)"><g class="aguja" style="animation-duration:${dur}s">${cuerpo}</g></g>`;
+  let n = '<circle cx="256" cy="256" r="98" fill="#0B0818" fill-opacity=".92" stroke="#B7A6FF" stroke-opacity=".35" stroke-width="1.5"/>';
+  let k = '';
+  for (let h = 0; h < 12; h++) k += linea(140, 160, h * 120, 10, .9);
+  const PL = [[218.4, 359.4, 10], [206.0, 169.4, 13], [344.3, 223.9, 16], [287.8, 343.4, 22]];
+  let cols = PL.map(() => '#B7A6FF');
+  if (VAR === 'C') {  // colores de los lugares con más tiempo, el mayor en el planeta más grande
+    const tot = {};
+    bl.forEach(b => { if (b.fila === 'actividad') return; const c = COLOR_RELOJ(b), d = Math.min(1440, mins(b.fin || b.ini)) - Math.max(0, mins(b.ini)); if (d > 0) tot[c] = (tot[c] || 0) + d; });
+    const orden = Object.entries(tot).sort((x, y) => y[1] - x[1]).map(x => x[0]);
+    cols = [orden[3], orden[2], orden[1], orden[0]].map(c => c || '#B7A6FF');
+  }
+  k += `<g class="orbita"><path d="M217.7 361.2 L203.6 354.5 L190.7 345.8 L179.2 335.5 L169.3 323.8 L161.1 310.8 L154.8 296.9 L150.6 282.3 L148.4 267.3 L148.4 252.2 L150.4 237.4 L154.5 223.0 L160.5 209.4 L168.3 196.9 L177.8 185.6 L188.6 175.7 L200.7 167.5 L213.8 161.1 L227.5 156.6 L241.7 154.1 L256.0 153.6 L270.2 155.1 L284.0 158.5 L297.1 163.8 L309.2 170.8 L320.3 179.4 L330.0 189.4 L338.1 200.6 L344.6 212.8 L349.3 225.7 L352.1 239.1 L353.1 252.6 L352.1 266.1 L349.3 279.3 L344.7 291.8 L338.4 303.6 L330.6 314.3 L321.5 323.8 L311.1 331.9 L299.8 338.4 L287.7 343.2" fill="none" stroke="#B7A6FF" stroke-width="6" stroke-linecap="round" opacity=".45"/>`
+     + PL.map(([x, y, r], i) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${cols[i]}"${VAR === 'C' ? ` style="filter:drop-shadow(0 0 6px ${cols[i]})"` : ''}/>`).join('') + '</g>';
+  k += aguja(seg / 120 % 360, 43200, '<line x1="256" y1="256" x2="256" y2="178" stroke="#B7A6FF" stroke-width="18" stroke-linecap="round"/>')
+     + aguja((seg % 3600) / 10, 3600, '<line x1="256" y1="256" x2="256" y2="146" stroke="#E9E4FF" stroke-width="12" stroke-linecap="round"/>')
+     + '<circle cx="256" cy="256" r="14" fill="#E9E4FF"/>';
+  n += `<g transform="translate(256 256) scale(.56) translate(-256 -256)">${k}</g>`;
+  if (VAR === 'B') n += aguja(seg / 240, 86400, '<line x1="256" y1="160" x2="256" y2="30" stroke="#E9E4FF" stroke-width="2.5" stroke-linecap="round" opacity=".85"/><path d="M256 22 l7 12 h-14 z" fill="#E9E4FF"/>');
+  g += `<g class="nucleo">${n}</g>`;
+  return `<svg class="esfera" viewBox="-30 -30 572 572" role="img" aria-label="Esfera de 24 horas del día">${g}</svg>`;
+}
+function bloquesHTML(f, d){
+  const bl = ((d.bloques || {})[f] || []).filter(b => b.ini && ['sueno', 'lugar', 'viaje', 'actividad'].includes(b.fila))
+    .sort((a, b) => mins(a.ini) - mins(b.ini));
+  if (!bl.length) return '<div class="card"><h2>SU DÍA</h2><p class="note">No hay pistas suficientes para armar el día.</p></div>';
+  const usados = new Set(bl.map(COLOR_RELOJ));
+  const tipos = TIPOS_RELOJ.filter(([c]) => usados.has(c)).map(([c, t]) => `<span><i style="background:${c}"></i>${t}</span>`).join('');
+  const lista = bl.map((b, i) => `<li data-i="${i}" class="${b.conf === 'baja' ? 'baja' : ''}"><i style="background:${COLOR_RELOJ(b)}"></i><span class="hh">${horas(b)}</span>`
+    + `<span class="tt">${esc(b.titulo)}<span class="cf">${b.conf === 'alta' ? 'SEGURO' : b.conf === 'media' ? 'PROBABLE' : 'POCO SEGURO'}</span></span></li>`).join('');
+  return `<div class="card"><h2>SU DÍA</h2><div class="reloj">${relojSVG(bl)}<div class="leyenda"><div class="tipos">${tipos}</div><ol>${lista}</ol>
+    <p class="note" style="margin:0">Anillo de afuera: dónde estuvo · anillo de adentro: qué hacía · rayado: poco seguro</p></div></div></div>`;
+}
+// pasar el mouse por la lista o por un arco ilumina los dos
+document.addEventListener('mouseover', e => {
+  const el = e.target.closest && e.target.closest('.leyenda li, .esfera .arco'), caja = el && el.closest('.reloj');
+  document.querySelectorAll('.reloj .on').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.esfera.foco').forEach(x => x.classList.remove('foco'));
+  if (!caja) return;
+  caja.querySelectorAll(`[data-i="${el.dataset.i}"]`).forEach(x => x.classList.add('on'));
+  caja.querySelector('.esfera').classList.add('foco');
+});
+// ---------- DIAGNÓSTICO: el usuario marca los bloques de sus últimos días y Atlas mide cuánto acierta
+let DIAG = null, GHASTA = null;   // GHASTA: último día mostrado (null = ayer)
+const isoMenos = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
+const VER = {ok: ['BIEN', 'var(--ok)'], mal: ['MAL', 'var(--bad)'], corregido: ['CORREGIDO', 'var(--warn)']};
+function diagResultado(r){
+  if (!r || !r.n) return '<p class="note">Aún no ha revisado bloques. Marque cada uno como BIEN, MAL o CORREGIR.</p>';
+  const pct = (a, n) => n ? Math.round(100 * a / n) + '%' : '—';
+  return `<div class="stats"><div class="stat"><b>${pct(r.ok, r.n)}</b>exactos</div><div class="stat"><b>${pct(r.ok + r.solo_hora, r.n)}</b>lugar o actividad bien</div>
+    <div class="stat"><b>${r.n}</b>bloques revisados</div><div class="stat"><b>${r.faltantes}</b>cosas que faltaron</div></div>
+    <p class="note">Por confianza: ${Object.entries(r.por_conf).map(([c, x]) => `${c.toUpperCase()} ${pct(x.ok + x.solo_hora, x.n)} (${x.n})`).join(' · ')}</p>
+    <details><summary style="cursor:pointer;color:var(--c)">Por regla</summary><div class="dia">${r.reglas.map(x => `<span class="h">${pct(x.ok + x.solo_hora, x.n)}</span><span>${esc(x.regla)} <span style="color:#7aa">(${x.n} revisados${x.solo_hora ? ', ' + x.solo_hora + ' con la hora corrida' : ''})</span></span>`).join('')}</div></details>
+    <p class="note">Las reglas con 3 revisiones o más se ajustan solas: suben o bajan su confianza y corrigen la hora si siempre se equivoca en el mismo sentido.</p>`;
+}
+function diagDia(dd){
+  const fila = b => `<span class="h">${horas(b)}</span><span id="rv${b.id}">${filaTxt(b)}<br>
+      ${b.veredicto ? `<span class="f" style="color:${VER[b.veredicto][1]}">${VER[b.veredicto][0]}${b.c_titulo ? ': ' + esc(b.c_titulo) : ''}${b.c_ini ? ' · ' + esc(b.c_ini) + (b.c_fin ? '–' + esc(b.c_fin) : '') : ''}</span> ` : ''}
+      <button class="btn ok" data-v="ok" data-id="${b.id}">✓ BIEN</button> <button class="btn bad" data-v="mal" data-id="${b.id}">✕ MAL</button> <button class="btn" data-v="editar" data-id="${b.id}">✎ CORREGIR</button>
+      <span class="corr" hidden><br><input size="5" placeholder="desde" value="${esc(b.c_ini || b.ini)}"> <input size="5" placeholder="hasta" value="${esc(b.c_fin || b.fin || '')}">
+      <input size="34" placeholder="qué fue en realidad (vacío si solo cambia la hora)" value="${esc(b.c_titulo || '')}"> <button class="btn" data-v="corregido" data-id="${b.id}">GUARDAR</button></span></span>`;
+  return `<div class="card"><h2>${esc(dd.dia.toUpperCase())}</h2>${dd.bloques.length ? bloquesSVG(dd.bloques) : '<p class="note">Sin bloques ese día.</p>'}
+    <div class="dia" style="margin-top:10px">${dd.bloques.map(fila).join('')}
+    ${dd.faltantes.map(x => `<span class="h">${esc(x.ini)}${x.fin ? '–' + esc(x.fin) : ''}</span><span style="color:var(--warn)">FALTÓ: ${esc(x.titulo)} <button class="btn" data-v="borrar" data-id="${x.id}">QUITAR</button></span>`).join('')}</div>
+    <p style="margin-top:10px"><span class="note">¿Faltó algo?</span> <input size="5" placeholder="desde" class="fi"> <input size="5" placeholder="hasta" class="ff">
+      <input size="34" placeholder="dónde estuvo o qué hizo" class="ft"> <button class="btn" data-v="faltante" data-fecha="${dd.fecha}">AGREGAR</button></p></div>`;
+}
+async function verDiag(){
+  $('#gout').innerHTML = jbox('Eligiendo un día', 'Puede tardar unos segundos: lee correos y chats con el modelo local');
+  DIAG = await api(GHASTA === 'azar' ? 'api/dia_azar' : 'api/diagnostico?dias=' + $('#gdias').value + (GHASTA ? '&hasta=' + GHASTA : ''));
+  if (DIAG.error) { $('#gout').innerHTML = `<p class="note">${esc(DIAG.error)}</p>`; return; }
+  $('#gres').innerHTML = diagResultado(DIAG.resultado);
+  $('#gout').innerHTML = DIAG.dias.map(diagDia).join('');
+  $('#grango').textContent = DIAG.pendientes != null ? `quedan ${DIAG.pendientes} días sin revisar en los últimos 3 meses` : '';
+}
+document.addEventListener('click', async ev => {
+  const t = ev.target.closest('#diag button[data-v]'); if (!t) return;
+  const v = t.dataset.v;
+  if (v === 'editar') { t.parentElement.querySelector('.corr').hidden = false; return; }
+  let body;
+  if (v === 'faltante') { const p = t.parentElement;
+    body = {fecha: t.dataset.fecha, veredicto: v, c_ini: p.querySelector('.fi').value, c_fin: p.querySelector('.ff').value, c_titulo: p.querySelector('.ft').value};
+    if (!body.c_titulo.trim()) return;
+  } else if (v === 'borrar') body = {id: t.dataset.id, veredicto: v};
+  else {
+    let dd, b; for (const x of DIAG.dias) { const y = x.bloques.find(z => z.id === t.dataset.id); if (y) { dd = x; b = y; } }
+    body = {id: b.id, fecha: dd.fecha, veredicto: v, bloque: b};
+    if (v === 'corregido') { const i = t.parentElement.querySelectorAll('input'); body.c_ini = i[0].value; body.c_fin = i[1].value; body.c_titulo = i[2].value; }
+    Object.assign(b, {veredicto: v, c_ini: body.c_ini || '', c_fin: body.c_fin || '', c_titulo: body.c_titulo || ''});
+  }
+  t.innerHTML = jbtn('GUARDANDO');
+  const r = await api('api/revisar', body);
+  if (r.error) { t.textContent = 'ERROR'; return; }
+  $('#gres').innerHTML = diagResultado(r);
+  if (v === 'faltante' || v === 'borrar') verDiag();
+  else { const dd = DIAG.dias.find(x => x.bloques.some(z => z.id === t.dataset.id)); const card = t.closest('.card'); card.outerHTML = diagDia(dd); }
+});
+function lineaSVG(f, x, d){
+  const W = 960, X = m => (m / 1440 * W).toFixed(1);
+  let g = '';
+  for (let h = 0; h <= 24; h += 3) g += `<line x1="${X(h*60)}" y1="4" x2="${X(h*60)}" y2="112" stroke="#B7A6FF22"/><text x="${X(h*60)}" y="124" fill="#B7A6FF99" font-size="10" text-anchor="middle" font-family="Consolas">${String(h).padStart(2,'0')}</text>`;
+  const fila = (y, t) => `<text x="-6" y="${y + 9}" fill="#A99BD8" font-size="10" text-anchor="end">${t}</text>`;
+  g += fila(6, 'SUEÑO') + fila(30, 'AGENDA') + fila(56, 'PANTALLA') + fila(86, 'LUGARES');
+  const sn = (d.sueno || {})[f];
+  if (sn) {
+    const a = sn.desde.slice(0, 10) === f ? mins(sn.desde.slice(11)) : 0, b = mins(sn.hasta.slice(11));
+    g += `<rect x="${X(a)}" y="6" width="${X(b) - X(a)}" height="14" fill="#8FA8FF33" stroke="#8FA8FF"><title>Durmió aprox. ${sn.desde.slice(11)}–${sn.hasta.slice(11)} (${sn.horas} h, confianza ${sn.confianza})</title></rect>`;
+  }
+  (d.eventos || []).filter(e => e.fecha === f && e.hora).forEach(e => { const a = mins(e.hora);
+    g += `<rect x="${X(a)}" y="30" width="${X(Math.min(a + 75, 1440)) - X(a)}" height="14" fill="#B7A6FF22" stroke="#B7A6FF"><title>${esc(e.hora + ' ' + e.titulo + (e.lugar ? ' · ' + e.lugar : ''))}</title></rect>`; });
+  ((d.cuartos || {})[f] || []).forEach(c => {
+    g += `<rect x="${X(c.i * 15)}" y="54" width="${(W / 96 - 1).toFixed(1)}" height="20" fill="${COL[c.tipo] || '#fff'}" opacity="${Math.min(1, .35 + c.n / 6)}"><title>${String(Math.floor(c.i/4)).padStart(2,'0')}:${String(c.i%4*15).padStart(2,'0')} · ${c.tipo} (${c.n})</title></rect>`; });
+  x.lugares.filter(l => l[0]).forEach(l => {
+    g += `<circle cx="${X(mins(l[0]))}" cy="92" r="5" fill="${CONF(l[2])}"><title>${esc(l[0] + ' ' + l[1] + ' · ' + l[2])}</title></circle>`; });
+  return `<svg viewBox="-60 0 1030 130" style="width:100%;height:auto;display:block">${g}</svg>
+    <p class="note">${Object.entries(COL).map(([k, v]) => `<span style="color:${v}">■</span> ${k}`).join(' &nbsp; ')} &nbsp; · pase el mouse sobre la línea para ver el detalle</p>`;
+}
+$('#gver').onclick = verDiag;
+$('#gotro').onclick = () => { GHASTA = 'azar'; verDiag(); };
+$('#gant').onclick = () => { const ds = (DIAG && DIAG.dias || []).map(x => x.fecha); if (!ds.length) return; GHASTA = isoMenos(ds[ds.length - 1], 1); verDiag(); };
+$('#gsig').onclick = () => { const ds = (DIAG && DIAG.dias || []).map(x => x.fecha); if (!ds.length) return;
+  const ayer = isoMenos(new Date().toISOString().slice(0, 10), 1), h = isoMenos(ds[0], -(+$('#gdias').value));
+  GHASTA = h >= ayer ? null : h; verDiag(); };
+let DGEN = 0;
+addEventListener('pagehide', () => { try { navigator.sendBeacon(B + '/api/leer', new Blob([JSON.stringify({callar: true, cerrar: true})], {type: 'application/json'})); } catch (e) {} });   // al cerrar Cronos se calla y deja de escribir el relato
+$('#dfecha').onchange = () => $('#dver').click();   // cambiar el día carga el nuevo (y corta el anterior)
+$('#dver').onclick = async () => {
+  const g = ++DGEN; if (g > 1) api('api/leer', {callar: true});   // Atlas deja de narrar el día anterior
+  $('#cab .dctl').hidden = false; pintarFecha();
+  const f = $('#dfecha').value; const vuelo = empezarVuelo();
+  const pRel = api('api/narrar?fecha=' + f);
+  const d = await api('api/dia?fecha=' + f);
+  const rel = await pRel;
+  if (g !== DGEN) return;   // ya pidió otro día: esto se descarta
+  const x = (d.resumen || {})[f] || {lugares: [], hechos: [], contexto: {fotos_recibidas: [], otros: []}};
+  const sn = (d.sueno || {})[f], ses = (d.sesiones || {})[f] || [];
+  const ORIG = {'cámara':'SU CÁMARA','whatsapp enviada':'ENVIADA POR USTED','whatsapp':'RECIBIDA','captura':'CAPTURA','pc':'PC'};
+  const propias = d.fotos.filter(p => p.origen !== 'whatsapp' || p.usted), otras = d.fotos.filter(p => !(p.origen !== 'whatsapp' || p.usted));
+  const fotos = fs => '<div class="fotos">' + fs.map(p => `<div class="foto"><img loading="lazy" src="${B}/foto?id=${p.id}&w=360" alt="">
+      <div><span class="f">${ORIG[p.origen] || ''}</span>${p.usted ? '<span class="yo">· USTED </span>' : ''}${esc(p.hora)}<br>${esc(p.descripcion || 'sin describir aún')}</div></div>`).join('') + '</div>';
+  const H3 = t => `<h3 style="color:var(--c);letter-spacing:.15em;font-size:13px;margin:18px 0 8px">${t}</h3>`;
+  const lugares = x.lugares.length ? '<div class="dia">' + x.lugares.map(l => `<span class="h">${l[0] || '—'}</span><span>${esc(l[1])} <span class="f" style="color:${CONF(l[2])}">${esc(l[2].split(' (')[0]).toUpperCase()}</span><span style="color:var(--muted);font-size:12px"> ${esc((l[2].split(' (')[1] || '').replace(')', ''))}</span></span>`).join('') + '</div>'
+    : '<p class="note">Sin pistas de lugar ese día.</p>';
+  const hechos = x.hechos.length ? '<div class="dia">' + x.hechos.map(r => `<span class="h">${r[0] || '—'}</span><span>${esc(r[1])}</span>`).join('') + '</div>' : '<p class="note">Nada más registrado.</p>';
+  const sesH = ses.filter(z => z.n > 1 || z.tipo === 'maps' || z.tipo === 'chat'), sueltas = ses.length - sesH.length;
+  const sesiones = sesH.length ? '<div class="dia">' + sesH.map(z => `<span class="h">${z.ini}${z.fin !== z.ini ? '–' + z.fin : ''}</span><span><span class="f" style="color:${COL[z.tipo]}">${z.tipo.toUpperCase()} · ${z.n}</span>${esc(z.muestra.join(' · '))}</span>`).join('') + '</div>'
+    + (sueltas ? `<p class="note">y ${sueltas} usos sueltos más</p>` : '') : '<p class="note">Sin actividad registrada en pantalla.</p>';
+  const sueno = sn ? `<p class="note">Sueño estimado: ${sn.desde.slice(11)}${sn.desde.slice(0, 10) !== f ? ' (noche anterior)' : ''} a ${sn.hasta.slice(11)} · ${sn.horas} h · confianza ${sn.confianza}</p>` : '';
+  $('#dout').innerHTML = `<div class="card"><h2>RELATO</h2><div class="res" id="drelato" style="font-size:16px;line-height:1.7"><p style="margin:0">${esc(rel.texto || rel.error || '')}</p></div>
+      <p style="margin:8px 0 0"><button class="btn" id="dleer">🔊 QUE ATLAS LO LEA</button> <button class="btn" id="drehacer">REHACER RELATO</button></p></div>`
+    + `<details style="margin-top:14px"><summary style="cursor:pointer;color:var(--c);letter-spacing:.12em">DETALLE · ${x.lugares.length} pistas de lugar · ${x.hechos.length} hechos</summary>`
+    + H3('DÓNDE ESTUVO') + lugares + H3('QUÉ HIZO') + hechos + (propias.length ? fotos(propias) : '')
+    + (otras.length || x.contexto.otros.length ? H3('MÁS CONTEXTO') + (x.contexto.otros.length ? '<div class="dia">' + x.contexto.otros.map(r => `<span class="h">${r[0] || '—'}</span><span>${esc(r[1])}</span>`).join('') + '</div>' : '') + (otras.length ? fotos(otras) : '') : '')
+    + '</details>';
+  $('#dout').insertAdjacentHTML('afterbegin', bloquesHTML(f, d));   // la línea del día arriba, el relato debajo
+  terminarVuelo(vuelo);
+  const relato = async forzar => { $('#drelato').innerHTML = jbox('Escribiendo el relato', 'Atlas lo escribe con el modelo local');
+    const r = await api('api/narrar?fecha=' + f + (forzar ? '&forzar=1' : '')); if (g === DGEN) $('#drelato').innerHTML = `<p style="margin:0">${esc(r.texto || r.error)}</p>`; };
+  $('#drehacer').onclick = () => relato(true);
+  $('#dleer').onclick = async () => { const b = $('#dleer'); b.innerHTML = jbtn('LEYENDO'); const r = await api('api/leer', {fecha: f});
+    b.textContent = r.error ? 'NO PUDE LEERLO' : '🔊 QUE ATLAS LO LEA'; };
+  if (g === DGEN && rel.texto && !/^No hay nada/.test(rel.texto)) $('#dleer').click();   // elegido el día, Atlas lo lee apenas carga (al abrir Cronos no lee nada)
+};
+
+// A2: título con la fecha elegida, flechas para moverse un día y la cabecera cambia según la pestaña
+const tituloDia = () => { const v = $('#dfecha').value; if (!v) return 'Mi día';
+  const d = new Date(v + 'T12:00:00'), hoy = new Date();
+  return d.toLocaleDateString('es-CL', Object.assign({weekday: 'long', day: 'numeric', month: 'long'}, d.getFullYear() !== hoy.getFullYear() ? {year: 'numeric'} : {})); };
+const moverDia = n => { const d = new Date(($('#dfecha').value || ymd(new Date())) + 'T12:00:00'); d.setDate(d.getDate() + n);
+  $('#dfecha').value = d.toISOString().slice(0, 10); $('#dver').click(); };
+
+// fecha A: «MAR 02 ENE 2001» en la barra; el calendario marca los días con datos (punto verde)
+const MESES = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+const MESES_L = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+const DIAS3 = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+const ymd = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+function pintarFecha() {
+  const v = $('#dfecha').value; if (!v) return;
+  const d = new Date(v + 'T12:00:00');
+  $('#dfx').innerHTML = `${DIAS3[d.getDay()]} ${String(d.getDate()).padStart(2, '0')} ${MESES[d.getMonth()]} ${d.getFullYear()}<small>▾</small>`;
+  $('#dfx').setAttribute('aria-label', 'Fecha: ' + tituloDia() + '. Elegir otra');
+  $('#dsig').disabled = v >= ymd(new Date());
+}
+let CALMES = null;
+async function pintarCal(c = $('#dcal')) {
+  const [y, m] = CALMES, sel = $('#dfecha').value, hoy = ymd(new Date());
+  const mes = `${y}-${String(m + 1).padStart(2, '0')}`;
+  let h = `<div class="ct"><button type="button" data-m="-1" aria-label="Mes anterior">‹</button>${MESES_L[m]} ${y}<button type="button" data-m="1" aria-label="Mes siguiente">›</button></div><div class="g">`
+        + ['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(x => `<i>${x}</i>`).join('');
+  const ini = (new Date(y, m, 1).getDay() + 6) % 7, n = new Date(y, m + 1, 0).getDate();
+  for (let i = 0; i < ini; i++) h += '<span></span>';
+  for (let k = 1; k <= n; k++) { const f = `${mes}-${String(k).padStart(2, '0')}`;
+    h += `<button type="button" data-f="${f}" class="${f === sel ? 'sel' : ''}${f === hoy ? ' hoy' : ''}"${f > hoy ? ' disabled' : ''}>${k}</button>`; }
+  c.innerHTML = h + '</div><div class="pie"><em>●</em> días con datos</div>';
+  try { const r = await api('api/dias_con_datos?mes=' + mes);
+    if (CALMES && CALMES[0] === y && CALMES[1] === m) (r.dias || []).forEach(f => { const b = c.querySelector(`[data-f="${f}"]`); if (b) b.classList.add('dato'); });
+  } catch (e) { /* sin puntos si falla */ }
+}
+const abrirCal = abrir => { $('#dcal').hidden = !abrir; $('#dfx').setAttribute('aria-expanded', String(abrir));
+  if (abrir) { const d = new Date(($('#dfecha').value || ymd(new Date())) + 'T12:00:00'); CALMES = [d.getFullYear(), d.getMonth()]; pintarCal(); } };
+$('#dfx').onclick = ev => { ev.stopPropagation(); abrirCal($('#dcal').hidden); };
+function calClick(ev, c) { ev.stopPropagation(); const b = ev.target.closest('button'); if (!b) return;
+  if (b.dataset.m) { const d = new Date(CALMES[0], CALMES[1] + Number(b.dataset.m), 1); CALMES = [d.getFullYear(), d.getMonth()]; pintarCal(c); }
+  else if (b.dataset.f) { $('#dfecha').value = b.dataset.f; abrirCal(false); $('#dver').click(); } }
+$('#dcal').onclick = ev => calClick(ev, $('#dcal'));
+document.addEventListener('click', () => { if (!$('#dcal').hidden) abrirCal(false); });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('#dcal').hidden) { abrirCal(false); $('#dfx').focus(); } });
+$('#dant').onclick = () => moverDia(-1);
+$('#dsig').onclick = () => moverDia(1);
+document.querySelectorAll('nav button[data-t]').forEach(b => b.addEventListener('click', () => {
+  const t = b.dataset.t; $('#cab .dctl').hidden = t !== 'dia' || !$('#dfecha').value; $('#dtitulo').hidden = t === 'dia'; $('#dcal').hidden = true;
+  if (VOLADOR) VOLADOR.style.visibility = t === 'dia' ? '' : 'hidden';
+  $('#dtitulo').textContent = b.textContent.trim(); }));
+
+// inicio: Cronos no carga ningún día solo; muestra su logo vivo y pregunta qué día ver
+const LOGO_CRONOS = `<path d="M330.9 70.6 A200 200 0 0 1 438.7 337.3" fill="none" stroke="currentColor" stroke-width="40" stroke-linecap="round" opacity="1"></path><path d="M349.9 432.6 A200 200 0 0 1 132.9 413.6" fill="none" stroke="currentColor" stroke-width="40" stroke-linecap="round" opacity="1"></path><path d="M65.8 317.8 A200 200 0 0 1 65.8 194.2" fill="none" stroke="currentColor" stroke-width="40" stroke-linecap="round" opacity="1"></path><line x1="256.0" y1="116.0" x2="256.0" y2="96.0" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.9"></line><line x1="326.0" y1="134.8" x2="336.0" y2="117.4" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.9"></line><line x1="377.2" y1="186.0" x2="394.6" y2="176.0" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.9"></line><line x1="396.0" y1="256.0" x2="416.0" y2="256.0" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.9"></line><line x1="377.2" y1="326.0" x2="394.6" y2="336.0" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.9"></line><line x1="326.0" y1="377.2" x2="336.0" y2="394.6" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.9"></line><line x1="256.0" y1="396.0" x2="256.0" y2="416.0" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.9"></line><line x1="186.0" y1="377.2" x2="176.0" y2="394.6" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.9"></line><line x1="134.8" y1="326.0" x2="117.4" y2="336.0" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.9"></line><line x1="116.0" y1="256.0" x2="96.0" y2="256.0" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.9"></line><line x1="134.8" y1="186.0" x2="117.4" y2="176.0" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.9"></line><line x1="186.0" y1="134.8" x2="176.0" y2="117.4" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity="0.9"></line><line x1="271.3" y1="110.8" x2="272.3" y2="100.9" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="286.4" y1="113.2" x2="288.4" y2="103.4" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="301.1" y1="117.1" x2="304.2" y2="107.6" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="315.4" y1="122.6" x2="319.5" y2="113.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="341.8" y1="137.9" x2="347.7" y2="129.8" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="353.7" y1="147.5" x2="360.4" y2="140.1" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="364.5" y1="158.3" x2="371.9" y2="151.6" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="374.1" y1="170.2" x2="382.2" y2="164.3" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="389.4" y1="196.6" x2="398.5" y2="192.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="394.9" y1="210.9" x2="404.4" y2="207.8" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="398.8" y1="225.6" x2="408.6" y2="223.6" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="401.2" y1="240.7" x2="411.1" y2="239.7" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="401.2" y1="271.3" x2="411.1" y2="272.3" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="398.8" y1="286.4" x2="408.6" y2="288.4" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="394.9" y1="301.1" x2="404.4" y2="304.2" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="389.4" y1="315.4" x2="398.5" y2="319.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="374.1" y1="341.8" x2="382.2" y2="347.7" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="364.5" y1="353.7" x2="371.9" y2="360.4" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="353.7" y1="364.5" x2="360.4" y2="371.9" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="341.8" y1="374.1" x2="347.7" y2="382.2" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="315.4" y1="389.4" x2="319.5" y2="398.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="301.1" y1="394.9" x2="304.2" y2="404.4" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="286.4" y1="398.8" x2="288.4" y2="408.6" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="271.3" y1="401.2" x2="272.3" y2="411.1" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="240.7" y1="401.2" x2="239.7" y2="411.1" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="225.6" y1="398.8" x2="223.6" y2="408.6" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="210.9" y1="394.9" x2="207.8" y2="404.4" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="196.6" y1="389.4" x2="192.5" y2="398.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="170.2" y1="374.1" x2="164.3" y2="382.2" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="158.3" y1="364.5" x2="151.6" y2="371.9" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="147.5" y1="353.7" x2="140.1" y2="360.4" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="137.9" y1="341.8" x2="129.8" y2="347.7" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="122.6" y1="315.4" x2="113.5" y2="319.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="117.1" y1="301.1" x2="107.6" y2="304.2" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="113.2" y1="286.4" x2="103.4" y2="288.4" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="110.8" y1="271.3" x2="100.9" y2="272.3" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="110.8" y1="240.7" x2="100.9" y2="239.7" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="113.2" y1="225.6" x2="103.4" y2="223.6" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="117.1" y1="210.9" x2="107.6" y2="207.8" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="122.6" y1="196.6" x2="113.5" y2="192.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="137.9" y1="170.2" x2="129.8" y2="164.3" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="147.5" y1="158.3" x2="140.1" y2="151.6" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="158.3" y1="147.5" x2="151.6" y2="140.1" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="170.2" y1="137.9" x2="164.3" y2="129.8" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="196.6" y1="122.6" x2="192.5" y2="113.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="210.9" y1="117.1" x2="207.8" y2="107.6" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="225.6" y1="113.2" x2="223.6" y2="103.4" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><line x1="240.7" y1="110.8" x2="239.7" y2="100.9" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.35"></line><circle cx="256" cy="256" r="14" fill="currentColor"></circle><g class="orbita"><path d="M217.7 361.2 L203.6 354.5 L190.7 345.8 L179.2 335.5 L169.3 323.8 L161.1 310.8 L154.8 296.9 L150.6 282.3 L148.4 267.3 L148.4 252.2 L150.4 237.4 L154.5 223.0 L160.5 209.4 L168.3 196.9 L177.8 185.6 L188.6 175.7 L200.7 167.5 L213.8 161.1 L227.5 156.6 L241.7 154.1 L256.0 153.6 L270.2 155.1 L284.0 158.5 L297.1 163.8 L309.2 170.8 L320.3 179.4 L330.0 189.4 L338.1 200.6 L344.6 212.8 L349.3 225.7 L352.1 239.1 L353.1 252.6 L352.1 266.1 L349.3 279.3 L344.7 291.8 L338.4 303.6 L330.6 314.3 L321.5 323.8 L311.1 331.9 L299.8 338.4 L287.7 343.2" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity=".5"></path><circle cx="218.4" cy="359.4" r="10" fill="currentColor"></circle><circle cx="206.0" cy="169.4" r="13" fill="currentColor"></circle><circle cx="344.3" cy="223.9" r="16" fill="currentColor"></circle><circle cx="287.8" cy="343.4" r="22" fill="currentColor"></circle></g>__AGUJAS__`;
+function pintarLogo(c) { c.innerHTML = logoHTML(); }
+function logoHTML() {
+  const ahora = new Date(), seg = ahora.getHours() * 3600 + ahora.getMinutes() * 60 + ahora.getSeconds();
+  const ag = (gr, dur, d) => `<g transform="rotate(${gr.toFixed(2)} 256 256)"><g class="aguja ${dur > 4000 ? 'h' : 'm'}" style="animation-duration:${dur}s">${d}</g></g>`;
+  const agujas = ag(seg / 120 % 360, 43200, '<line x1="256" y1="256" x2="256" y2="190" stroke="currentColor" stroke-width="20" stroke-linecap="round"/>')
+               + ag((seg % 3600) / 10, 3600, '<line x1="256" y1="256" x2="256" y2="166" stroke="currentColor" stroke-width="12" stroke-linecap="round"/>')
+               + '<circle cx="256" cy="256" r="14" fill="currentColor"/>';
+  return `<svg class="ilogo" viewBox="0 0 512 512" aria-hidden="true">${LOGO_CRONOS.replace('__AGUJAS__', agujas)}</svg>`;
+}
+// el nombre de la app con su símbolo: lo arma la misma función del HUD (paintAppName); fuera de Atlas queda en texto
+function nombreConGlifo(el, nombre) {
+  let f = null; try { if (parent !== window) f = parent.paintAppName; } catch (e) {}
+  if (el && typeof f === 'function') { try { f(el, nombre); } catch (e) {} }
+}
+function pintarInicio() {
+  if (VOLADOR) { VOLADOR.remove(); VOLADOR = null; }
+  $('#dfecha').value = ''; $('#cab .dctl').hidden = true; $('#dcal').hidden = true;
+  $('#dout').innerHTML = `<div class="inicio">${logoHTML()}`
+    + `<div class="inm" aria-label="Cronos">CRONOS</div><p class="ipreg">¿Qué día quiere ver?</p><div class="cal" id="dcal0"></div>`
+    + `<div class="atajos"><button type="button" data-d="1">AYER</button><button type="button" data-d="7">HACE UNA SEMANA</button></div></div>`;
+  nombreConGlifo($('#dout .inicio .inm'), 'Cronos');
+  const d = new Date(); CALMES = [d.getFullYear(), d.getMonth()]; pintarCal($('#dcal0'));
+  $('#dcal0').onclick = ev => calClick(ev, $('#dcal0'));
+  $('#dout .atajos').onclick = ev => { const b = ev.target.closest('button'); if (!b) return;
+    $('#dfecha').value = ymd(new Date(Date.now() - Number(b.dataset.d) * 864e5)); $('#dver').click(); };
+}
+
+// vuelo del reloj: del inicio (o de la nada, si cambia de día con las flechas) al lugar de la esfera
+let VOLADOR = null;
+const sinMovimiento = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+function logoSVG() { const t = document.createElement('div'); pintarLogo(t); return t.firstElementChild; }
+function empezarVuelo() {
+  if (VOLADOR) VOLADOR.remove();
+  const viejo = $('#dout .ilogo'), desde = viejo && viejo.getBoundingClientRect();
+  const svg = viejo || logoSVG();
+  $('#dout').classList.remove('llego');
+  $('#dout').innerHTML = '<div class="card"><h2>SU DÍA</h2><div class="reloj"><div class="esfslot"></div><p class="cargando">ARMANDO SU DÍA…</p></div></div>';
+  const r = $('#dout .esfslot').getBoundingClientRect(), lado = r.width * 512 * .56 / 572;   // el tamaño del núcleo de la esfera
+  const hasta = {x: r.left + r.width / 2 - lado / 2, y: r.top + r.height / 2 - lado / 2, w: lado};
+  svg.setAttribute('class', 'volador rapido'); svg.style.cssText = `left:${hasta.x}px;top:${hasta.y}px;width:${lado}px;height:${lado}px`;
+  document.body.appendChild(svg); VOLADOR = svg;
+  if (desde && !sinMovimiento()) {
+    const k = desde.width / lado;
+    svg.animate([{transform: `translate(${desde.left - hasta.x}px,${desde.top - hasta.y}px) scale(${k})`}, {transform: 'none'}],
+                {duration: 700, easing: 'cubic-bezier(.65,0,.35,1)'});
+  } else if (!sinMovimiento()) svg.animate([{opacity: 0}, {opacity: 1}], {duration: 250});
+  return hasta;
+}
+function terminarVuelo(hasta) {
+  const v = VOLADOR, esf = $('#dout .esfera'); $('#dout').classList.add('llego');
+  if (!v) return;
+  VOLADOR = null;
+  if (!esf || sinMovimiento()) { v.remove(); return; }
+  const r = esf.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, o = $('#dout').getBoundingClientRect();
+  v.classList.remove('rapido');
+  v.animate([{transform: 'none'}, {transform: `translate(${cx - hasta.x - hasta.w / 2}px,${cy - hasta.y - hasta.w / 2}px)`}],
+            {duration: 300, easing: 'ease-out', fill: 'forwards'});
+  $('#dout').animate([{clipPath: `circle(0px at ${cx - o.left}px ${cy - o.top}px)`}, {clipPath: `circle(${Math.hypot(innerWidth, innerHeight)}px at ${cx - o.left}px ${cy - o.top}px)`}],
+                     {duration: 700, easing: 'cubic-bezier(.33,1,.68,1)'});
+  v.animate([{opacity: 1}, {opacity: 0}], {duration: 300, delay: 550, fill: 'forwards'}).onfinish = () => v.remove();
+}
+
+// ¿Rutas de Maps o señales? La primera vez se elige con dos tarjetas (A); después se ve y cambia en ⚙ (B)
+const COMO_RUTAS = 'En el celular: Google Maps › su foto › Rutas › ícono de nube › activar la copia de seguridad. Después siga la guía «?» de Atlas para que la baje cada noche.';
+function pintarModo() {
+  $('#cab .dctl').hidden = true;
+  $('#dout').innerHTML = `<div class="modo"><div class="tit">¿CÓMO ARMAMOS SU HISTORIA?</div><p class="note" style="margin:0">Se elige una vez. Lo puede cambiar después en ⚙ › Fuentes de ubicación.</p><div class="cards">
+    <button type="button" class="mcard" data-m="rutas"><h3>OPCIÓN AUTOMÁTICA</h3><span class="q">Tengo Rutas de Maps activado</span>
+      <ul><li>Atlas lo baja cada noche: dónde estuvo y cómo se movió.</li><li>Recibos, gastos y calendario se suman solos.</li><li>Usted no tiene que hacer nada más.</li></ul><span class="ir">USAR RUTAS DE MAPS</span></button>
+    <button type="button" class="mcard" data-m="senales"><h3>OPCIÓN MANUAL</h3><span class="q">No tengo la ubicación activada</span>
+      <ul><li>Cronos deduce dónde estuvo con señales: bip!, recibos de viajes, gastos y calendario.</li><li>Suma las rutas que buscó en Maps (Takeout) y las horas de sus chats de WhatsApp, sin texto.</li><li>Le pide pasos de vez en cuando y es menos preciso.</li></ul><span class="ir">USAR SEÑALES</span></button></div>
+    <p class="ayuda">¿No sabe si tiene Rutas activado? ${COMO_RUTAS}</p></div>`;
+  $('#dout .cards').onclick = async ev => { const b = ev.target.closest('[data-m]'); if (!b) return;
+    await api('api/modo', {modo: b.dataset.m}); pintarInicio(); };
+}
+const HACE = d => d == null ? 'Sin datos' : d <= 1 ? 'Último dato: ayer o hoy' : `Último dato: hace ${d} días`;
+async function verFuentes() {
+  const sec = $('#fuentes'); sec.innerHTML = '<div class="card"><h2>FUENTES DE UBICACIÓN</h2><p class="note">Revisando…</p></div>';
+  const r = await api('api/fuentes'), sen = r.modo !== 'rutas';
+  const izq = `<div class="card"><h2>DE DÓNDE SALE SU UBICACIÓN</h2><div class="seg"><button type="button" data-m="rutas" class="${sen ? '' : 'on'}">RUTAS DE MAPS</button><button type="button" data-m="senales" class="${sen ? 'on' : ''}">SEÑALES</button></div>`
+    + (sen ? '<p class="note">Sin Rutas de Maps, Cronos arma el día con lo que deja rastro. Mientras más fuentes estén al día, más seguro es el día.</p>'
+           : `<p class="note">${r.rutas.activa ? `Rutas de Maps: ${r.rutas.dias} días, último ${r.rutas.ultimo}. Manda sobre todo lo demás.` : 'Aún no llegan datos de Rutas de Maps.'}</p><p class="ayuda">${COMO_RUTAS}</p>`)
+    + '</div>';
+  const fs = r.fuentes.filter(f => sen || f.estado === 'au');
+  const der = `<div class="card"><h2>${sen ? 'SEÑALES' : 'SE SUMAN SOLAS'}</h2>` + fs.map(f => `<div class="fu" data-f="${f.id}"><span class="e ${f.estado}">${{ok: '✓', pe: '•', no: '!', au: '⟳'}[f.estado]}</span>`
+      + `<span><b>${esc(f.nombre)}</b><small>${f.estado === 'au' ? '' : HACE(f.hace) + (f.dias ? ` · ${f.dias} días` : '') + '. '}${esc(f.aviso)}${f.id === 'chats' && r.pendientes_chats ? ` Hay ${r.pendientes_chats} en Descargas.` : ''}</small><span class="extra"></span></span>`
+      + (f.estado === 'au' ? '<span class="tag">AUTOMÁTICO</span>' : f.accion ? `<button type="button" class="btn" data-a="${f.id}">${f.accion}</button>` : '<span></span>') + '</div>').join('') + '</div>';
+  sec.innerHTML = `<div class="fpan">${izq}${der}</div>`;
+  sec.querySelector('.seg').onclick = async ev => { const b = ev.target.closest('[data-m]'); if (b) { await api('api/modo', {modo: b.dataset.m}); verFuentes(); } };
+  sec.querySelectorAll('[data-a]').forEach(b => b.onclick = async () => {
+    const fila = b.closest('.fu'), ex = fila.querySelector('.extra');
+    if (b.dataset.a === 'chats') { b.innerHTML = jbtn('IMPORTANDO'); const x = await api('api/importar_chats', {});
+      ex.innerHTML = `<small>${x.error ? esc(x.error) : x.chats ? `Listo: ${x.chats} chats, ${x.horas} horas nuevas. Los archivos quedaron en la papelera.` : 'No hay chats exportados en Descargas.'}${x.sin_autor ? ` En ${x.sin_autor} no supe cuál era usted.` : ''}</small>`;
+      b.textContent = 'IMPORTAR'; }
+    else if (b.dataset.a === 'maps') ex.innerHTML = '<p class="ayuda">takeout.google.com › desmarque todo › marque «Mi actividad» (solo Maps) › exportar. Cuando llegue el correo, baje el zip a Descargas. Atlas lo lee en las próximas horas.</p>';
+    else if (b.dataset.a === 'bip') { ex.innerHTML = '<textarea aria-label="Tabla de movimientos de bip!" placeholder="Pegue aquí la tabla de movimientos de tarjetabip.cl"></textarea><button type="button" class="btn">GUARDAR VIAJES</button> <small></small>';
+      ex.querySelector('button').onclick = async () => { const x = await api('api/pegar_bip', {texto: ex.querySelector('textarea').value});
+        ex.querySelector('small').textContent = x.error || `Listo: ${x.nuevos} viajes nuevos.`; }; }
+  });
+}
+api('api/fuentes').then(r => r.modo ? pintarInicio() : pintarModo()).catch(() => pintarInicio());   // Mi día es la vista principal: abre preguntando qué día ver
+</script>
+<script>/* fondo carta celeste con constelación propia (17-11-2026) */
+// Fondo «carta celeste» para las apps (Fortuna, Hermes, Cronos) con una constelación tenue propia.
+// cieloApp({ rgb: "124,240,200", cons: "orion" })  ->  canvas fijo detrás de todo.
+(function () {
+  // estrellas: [AR en grados, Dec en grados, magnitud]; líneas: pares de índices
+  const C = {
+    orion: { n: "ORIÓN", s: [[88.8, 7.4, .5], [81.3, 6.3, 1.6], [85.2, -1.9, 1.8], [84.1, -1.2, 1.7], [83.0, -.3, 2.2], [86.9, -9.7, 2.1], [78.6, -8.2, .1], [83.8, 9.9, 3.4]],
+      l: [[0, 7], [7, 1], [0, 2], [1, 4], [2, 3], [3, 4], [2, 5], [4, 6], [0, 1], [5, 6]] },
+    canmayor: { n: "CAN MAYOR · SIRIO", s: [[101.3, -16.7, -1.4], [95.7, -17.9, 2], [105.9, -15.6, 4], [107.1, -26.4, 1.8], [104.7, -29, 1.5], [111, -29.3, 2.4], [95.1, -30.1, 3]],
+      l: [[1, 0], [0, 2], [0, 3], [3, 4], [3, 5], [4, 6]] },
+    sopdet: { n: "ORIÓN Y SIRIO", s: [[88.8, 7.4, .5], [81.3, 6.3, 1.6], [85.2, -1.9, 1.8], [84.1, -1.2, 1.7], [83.0, -.3, 2.2], [86.9, -9.7, 2.1], [78.6, -8.2, .1], [101.3, -16.7, -1.4], [95.7, -17.9, 2], [107.1, -26.4, 1.8], [104.7, -29, 1.5]],
+      l: [[0, 2], [1, 4], [2, 3], [3, 4], [2, 5], [4, 6], [0, 1], [5, 6], [8, 7], [7, 9], [9, 10]], guia: [4, 7] },
+    lyra: { n: "LIRA", s: [[279.2, 38.8, 0], [281.1, 39.7, 4.7], [281.2, 37.6, 4.3], [283.6, 36.9, 4.3], [284.7, 32.7, 3.2], [282.5, 33.4, 3.5]],
+      l: [[0, 1], [0, 2], [2, 3], [3, 4], [4, 5], [5, 2], [1, 2]] },
+    sagitta: { n: "SAGITTA · LA FLECHA", s: [[295.0, 18.0, 4.4], [295.3, 17.5, 4.4], [296.8, 18.5, 3.8], [299.7, 19.5, 3.5], [301.0, 20.0, 5.1]],
+      l: [[0, 2], [1, 2], [2, 3], [3, 4]] },
+    corvus: { n: "CUERVO", s: [[183.95, -17.5, 2.6], [187.5, -16.5, 2.9], [188.6, -23.4, 2.6], [182.5, -22.6, 3], [182.1, -24.7, 4]],
+      l: [[4, 3], [3, 0], [0, 1], [1, 2], [2, 3]] },
+    capricornio: { n: "CAPRICORNIO", s: [[304.5, -12.5, 3.6], [305.3, -14.8, 3.1], [311.5, -25.3, 4.1], [312.0, -26.9, 4.1], [321.7, -22.4, 3.7], [326.8, -16.1, 2.9], [325.0, -16.7, 3.7], [320.6, -16.8, 4.3], [316.5, -17.2, 4.1]],
+      l: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 1]] },
+    hoz: { n: "LA HOZ (LEO)", s: [[152.1, 12.0, 1.4], [151.8, 16.8, 3.5], [155.0, 19.8, 2.0], [154.2, 23.4, 3.4], [148.2, 26.0, 3.9], [146.5, 23.8, 3.0]],
+      l: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]] },
+    saturno: { n: "SATURNO", s: [[304.5, -12.5, 3.6], [305.3, -14.8, 3.1], [311.5, -25.3, 4.1], [312.0, -26.9, 4.1], [321.7, -22.4, 3.7], [326.8, -16.1, 2.9], [325.0, -16.7, 3.7]],
+      l: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]], planeta: [316, -19] },
+  };
+  window.cieloApp = function (o) {
+    const cv = document.createElement("canvas"); cv.id = "cieloApp"; cv.setAttribute("aria-hidden", "true");
+    cv.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:" + (o.z == null ? 0 : o.z);
+    const host = o.host ? document.querySelector(o.host) : null;
+    if (host) { host.style.backgroundImage = "none"; host.appendChild(cv); } else document.body.insertBefore(cv, document.body.firstChild);
+    const ctx = cv.getContext("2d"), fijo = document.createElement("canvas"), rgb = o.rgb;
+    const quieto = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let W, H, brill = [], ult = 0;
+    const azar = (a) => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+    function armar() {
+      if (!innerWidth || !innerHeight) { W = H = 0; return; }   // cielo: sin tamaño todavía; se arma en el próximo resize
+      W = cv.width = fijo.width = innerWidth; H = cv.height = fijo.height = innerHeight;
+      const g = fijo.getContext("2d"), rnd = azar(11); g.clearRect(0, 0, W, H);
+      for (let i = 0; i < Math.round(300 * W * H / 1024000); i++) { const x = rnd() * W, y = rnd() * H, r = Math.pow(rnd(), 3) * 1.2 + .35, a = .45 * (.25 + .75 * rnd()), t = rnd();
+        g.fillStyle = t < .3 ? `rgba(${rgb},${a})` : `rgba(235,248,255,${a})`; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); }
+      g.strokeStyle = `rgba(${rgb},.06)`; g.lineWidth = 1; const cx = W * .5, cy = H * 1.6, R0 = H * .95;
+      for (let k = 0; k < 9; k++) { g.beginPath(); g.arc(cx, cy, R0 + k * 90, Math.PI * 1.05, Math.PI * 1.95); g.stroke(); }
+      for (let k = -9; k <= 9; k++) { const a = -Math.PI / 2 + k * .085; g.beginPath(); g.moveTo(cx + Math.cos(a) * R0, cy + Math.sin(a) * R0); g.lineTo(cx + Math.cos(a) * (R0 + 1600), cy + Math.sin(a) * (R0 + 1600)); g.stroke(); }
+      // la constelación de la app, tenue, en el tercio derecho
+      const c = C[o.cons], xs = c.s.map((s) => -s[0]), ys = c.s.map((s) => -s[1]);
+      const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+      const box = { x: W * (o.x || .62), y: H * (o.y || .16), w: W * (o.w || .32), h: H * (o.h || .64) };
+      const k = Math.min(box.w / Math.max(1, x1 - x0), box.h / Math.max(1, y1 - y0));
+      const P = c.s.map(([ra, de, m]) => [box.x + box.w / 2 + (-ra - (x0 + x1) / 2) * k, box.y + box.h / 2 + (-de - (y0 + y1) / 2) * k, m]);
+      const op = o.op || 1;
+      g.lineWidth = 1.2; g.strokeStyle = `rgba(${rgb},${.2 * op})`; g.lineCap = "round";
+      c.l.forEach(([a, b]) => { g.beginPath(); g.moveTo(P[a][0], P[a][1]); g.lineTo(P[b][0], P[b][1]); g.stroke(); });
+      if (c.guia) { g.setLineDash([3, 6]); g.strokeStyle = `rgba(${rgb},${.13 * op})`; const [a, b] = c.guia; g.beginPath(); g.moveTo(P[a][0], P[a][1]); g.lineTo(P[b][0], P[b][1]); g.stroke(); g.setLineDash([]); }
+      if (c.planeta) { const [ra, de] = c.planeta, px = box.x + box.w / 2 + (-ra - (x0 + x1) / 2) * k, py = box.y + box.h / 2 + (-de - (y0 + y1) / 2) * k, r = Math.min(W, H) * .028;
+        g.save(); g.translate(px, py); g.rotate(-.35);
+        g.strokeStyle = `rgba(${rgb},${.35 * op})`; g.lineWidth = 1.4; g.beginPath(); g.ellipse(0, 0, r * 2.2, r * .55, 0, Math.PI, 2 * Math.PI); g.stroke();
+        const gr = g.createRadialGradient(-r * .3, -r * .3, 0, 0, 0, r); gr.addColorStop(0, `rgba(${rgb},${.55 * op})`); gr.addColorStop(1, `rgba(${rgb},${.18 * op})`); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, r, 0, 7); g.fill();
+        g.beginPath(); g.ellipse(0, 0, r * 2.2, r * .55, 0, 0, Math.PI); g.stroke(); g.restore(); }
+      P.forEach(([x, y, m]) => { const r = Math.max(1.2, 3.6 - m * .55), gr = g.createRadialGradient(x, y, 0, x, y, r * 5);
+        gr.addColorStop(0, `rgba(${rgb},${.35 * op})`); gr.addColorStop(1, `rgba(${rgb},0)`); g.fillStyle = gr; g.fillRect(x - r * 5, y - r * 5, r * 10, r * 10);
+        g.fillStyle = `rgba(240,252,255,${.7 * op})`; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); });
+      const lx = Math.min(...P.map((p) => p[0])), ly = Math.max(...P.map((p) => p[1]));
+      g.fillStyle = `rgba(${rgb},${.3 * op})`; g.font = "10px Consolas, monospace"; g.fillText(c.n.split("").join(" "), lx, ly + 26);
+      brill = Array.from({ length: 16 }, () => ({ x: rnd() * W, y: rnd() * H, r: .9 + rnd() * 1.2, f: .5 + rnd() * 1.5, p: rnd() * 6 }));
+      pintar(0);
+    }
+    function pintar(t) {
+      if (!W || !H) return;
+      ctx.clearRect(0, 0, W, H); ctx.drawImage(fijo, 0, 0);
+      brill.forEach((s) => { const a = quieto ? .6 : .35 + .65 * Math.pow(.5 + .5 * Math.sin(t / 1000 * s.f * 2 + s.p), 2), R = s.r * 5;
+        const gr = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, R); gr.addColorStop(0, `rgba(235,250,255,${a})`); gr.addColorStop(.25, `rgba(${rgb},${a * .4})`); gr.addColorStop(1, `rgba(${rgb},0)`);
+        ctx.fillStyle = gr; ctx.fillRect(s.x - R, s.y - R, 2 * R, 2 * R); });
+    }
+    function paso(now) { requestAnimationFrame(paso); if (!W && innerWidth && innerHeight) armar(); if (quieto || document.hidden || now - ult < 50) return; ult = now; pintar(now); }
+    let rt = 0; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(armar, 150); });
+    armar(); requestAnimationFrame(paso);
+    window.cieloAppPintar = pintar;
+  };
+})();
+
+cieloApp({ rgb: "183,166,255", cons: "capricornio", host: ".hud-grid", x: 0.6, y: 0.16, w: 0.34, h: 0.6 });
+</script>
+</body>
+</html>

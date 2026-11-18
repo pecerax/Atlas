@@ -1,0 +1,62 @@
+{
+ "_nota": "Accesos por nombre: si dice solo el nombre (o abre <nombre>), Atlas abre ruta (programa .exe/.lnk/.cmd o página .html del PC) o, si no hay, url. dice = otras formas de decirlo. \"en_atlas\": true muestra la página .html dentro de la pantalla de Atlas (con «cierra <nombre>» se vuelve). \"actualizar\": programa y argumentos (en la carpeta de ruta) que corre «actualiza <nombre>», con confirmación (sin ella si \"actualizar_sin_confirmar\": true, para los que solo bajan datos).",
+ "accesos": [
+  {
+   "nombre": "Fortuna",
+   "dice": [
+    "fortuna",
+    "proyecto fortuna",
+    "el proyecto fortuna",
+    "mis fondos",
+    "fondos mutuos",
+    "mis fondos mutuos",
+    "la app de fondos"
+   ],
+   "ruta": "%LOCALAPPDATA%\\Atlas\\apps\\fortuna\\mis_fondos.html",
+   "se_dice": "Fortuna, sus fondos mutuos",
+   "en_atlas": true,
+   "actualizar": [
+    "actualizar_fondos.py",
+    "--no-abrir"
+   ],
+   "actualizar_sin_confirmar": true
+  },
+  {
+   "nombre": "Hermes",
+   "dice": [
+    "hermes",
+    "proyecto hermes",
+    "el proyecto hermes",
+    "mis gastos",
+    "mis finanzas",
+    "la app de gastos"
+   ],
+   "ruta": "%LOCALAPPDATA%\\Atlas\\apps\\hermes\\apolo.html",
+   "se_dice": "Hermes, sus gastos",
+   "en_atlas": true,
+   "actualizar": [
+    "actualizar_apolo.py"
+   ],
+   "actualizar_sin_confirmar": true
+  },
+  {
+   "nombre": "Cronos",
+   "dice": [
+    "cronos",
+    "crono",
+    "kronos",
+    "mi cronos",
+    "historia",
+    "mi historia",
+    "panel historia",
+    "la historia",
+    "mis fotos",
+    "mi línea de tiempo",
+    "linea de tiempo"
+   ],
+   "ruta": "%LOCALAPPDATA%\\Atlas\\apps\\cronos\\historia.html",
+   "se_dice": "Cronos, su línea de tiempo",
+   "en_atlas": true
+  }
+ ]
+}

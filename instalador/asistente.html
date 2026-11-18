@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Instalar Atlas</title>
+<link rel="icon" href="/atlas.png">
+<style>
+/* Mismo mundo que la HUD de Atlas: así el instalador y el primer inicio se sienten un solo proceso (bocetos v2, 18-11-2026) */
+:root{--bg:#0A1622;--bar:#07111B;--fg:#DFF7FF;--dim:#8FC3D6;--a:#4FE3FF;--line:#16293A;--line2:#284257;
+  --ok:#62F0B4;--warn:#FFD27A;--bad:#FF8A7A;--panel:rgba(6,30,46,.6);
+  --disp:"Bahnschrift SemiCondensed","Bahnschrift","Segoe UI",sans-serif;--body:"Bahnschrift","Segoe UI",sans-serif;
+  --mono:Consolas,"Cascadia Mono",monospace;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:15px/1.5 var(--body)}
+body{display:flex;flex-direction:column}
+main{flex:1;padding:28px 34px 18px;display:flex;flex-direction:column;gap:14px;overflow:auto}
+footer{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:14px 34px;border-top:1px solid var(--line);background:var(--bar)}
+h1{font:600 26px var(--disp);margin:0;letter-spacing:.01em}
+.eyebrow{font:11px var(--mono);letter-spacing:.22em;color:var(--a);text-transform:uppercase}
+p{margin:0}.t{color:var(--dim)}.small{font-size:13px}
+button{font:600 13px var(--disp);letter-spacing:.08em;padding:9px 18px;border:1px solid var(--line2);color:var(--dim);background:none;cursor:pointer}
+button.p{background:var(--a);color:#02121C;border-color:var(--a)}
+button.g{border-color:transparent}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible,.card:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+.list{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;justify-content:space-between;gap:14px;border-bottom:1px dashed var(--line);padding-bottom:6px;align-items:baseline}
+.row .s{font:12.5px var(--mono);text-align:right}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.ac{color:var(--a)}.mut{color:var(--dim)}
+.track{height:5px;background:#132536}.track i{display:block;height:100%;background:var(--a);transition:width .6s}
+.track.pausa i{background:var(--bad)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--dim)}
+input[type=text],input[type=password],input[type=email]{font:14px var(--mono);color:var(--fg);background:#050D15;border:1px solid var(--line2);padding:8px 10px;width:100%}
+.lock{font-size:12.5px;color:var(--ok)}
+.warnbox{border:1px dashed rgba(255,210,122,.5);padding:8px 11px;font-size:13px;color:var(--warn)}
+.errbox{border:1px solid rgba(255,138,122,.5);padding:8px 11px;font-size:13.5px;color:var(--bad)}
+.wait{display:flex;gap:14px;align-items:center}
+.spin{width:30px;height:30px;flex:none;border-radius:50%;border:3px solid var(--line);border-top-color:var(--a);animation:sp 1.1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}.track i{transition:none}}
+.logo{width:58px;height:58px;border-radius:50%;border:2px solid var(--a);box-shadow:0 0 18px rgba(79,227,255,.45),inset 0 0 14px rgba(79,227,255,.35);display:grid;place-items:center;font:600 22px var(--disp);color:var(--a)}
+.sub{display:flex;flex-direction:column;gap:9px;font-size:14px;margin:0;padding:0;list-style:none;counter-reset:n}
+.sub li{display:flex;gap:10px;align-items:baseline}
+.sub li::before{counter-increment:n;content:counter(n);font:12px var(--mono);color:var(--a);flex:none;width:12px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:640px){.two{grid-template-columns:1fr}}
+.card{border:1px solid var(--line2);background:var(--panel);padding:14px;text-align:left;color:var(--dim);font:14px var(--body);display:flex;flex-direction:column;gap:6px;letter-spacing:0}
+.card b{font:600 16px var(--disp);color:var(--fg)}
+.card:hover{border-color:var(--a)}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opts button{font:13px var(--body);letter-spacing:0;padding:6px 11px}
+.opts button.on{border-color:var(--a);color:var(--a)}
+.steps{display:flex;gap:5px}.steps i{width:22px;height:3px;background:var(--line2)}.steps i.on{background:var(--a)}
+.qr{background:#fff;padding:8px;flex:none;line-height:0}
+.mono{font-family:var(--mono)}
+code{font:13px var(--mono);color:var(--a)}
+.sim{position:fixed;right:10px;top:8px;font:10px var(--mono);color:var(--warn);letter-spacing:.15em}
+</style>
+</head>
+<body>
+<span class="sim" id="sim" hidden>MODO DE PRUEBA · NO INSTALA NADA</span>
+<main id="m" aria-live="polite"></main>
+<footer id="f"></footer>
+<script>
+const MACRO_URL = "https://github.com/pecerax/Atlas/raw/main/instalador/Avisos_banco.macro";
+"use strict";
+const $m = document.getElementById("m"), $f = document.getElementById("f");
+let E = null, pant = null, sync = null, uni = "", campos = {};
+const CUENTAS = ["ucursos", "canvas", "correo", "calendario", "hermes", "cronos"];
+const ORDEN = ["bienvenida", "instalando", "ucursos", "canvas", "correo", "calendario", "hermes", "hermes_cel", "cronos", "cronos_rutas", "listo"];
+
+function el(tag, cls, txt) { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+function btn(txt, fn, cls = "", dis = false) { const b = el("button", cls, txt); b.type = "button"; b.disabled = dis; b.onclick = fn; return b; }
+async function api(ruta, cuerpo) {
+  const r = await fetch(ruta, cuerpo === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo) });
+  return r.json();
+}
+function cta(id) { return (E && E.cuentas[id]) || { estado: "espera", detalle: "" }; }
+function ir(p) { pant = p; campos = {}; pintar(true); }
+function sig() {
+  let i = ORDEN.indexOf(pant) + 1;
+  if (ORDEN[i] === "hermes_cel" && cta("hermes").estado === "saltado") i++;
+  if (ORDEN[i] === "cronos_rutas" && E.cronos_modo !== "rutas") i++;
+  ir(ORDEN[i]);
+}
+function pasos(n) { const s = el("div", "steps"); for (let i = 1; i <= 6; i++) s.appendChild(el("i", i <= n ? "on" : "")); return s; }
+function pie(izq, ...der) { $f.replaceChildren(); $f.append(izq || el("span"), Object.assign(el("div"), { style: "display:flex;gap:8px" })); $f.lastChild.append(...der); }
+function saltar(id) { return btn("Saltar", async () => { await api("/api/saltar", { id }); await leer(); sig(); }, "g"); }
+
+// ---- campos que la persona escribe: se conservan aunque la pantalla se repinte cada segundo
+function campo(id, etiqueta, tipo = "text", ph = "") {
+  const l = el("label", "f", etiqueta), i = el("input");
+  i.type = tipo; i.id = "c_" + id; i.placeholder = ph; i.autocomplete = "off"; i.spellcheck = false;
+  i.value = campos[id] || ""; i.oninput = () => { campos[id] = i.value; pintar(true); };   // repinta: habilita el botón
+  l.appendChild(i); return l;
+}
+
+function estadoCuenta(id, esperaTxt) {
+  const c = cta(id), box = el("div");
+  if (c.estado === "corriendo") {
+    const w = el("div", "wait"); w.append(el("div", "spin"));
+    const t = el("div"); t.append(el("div", "", c.detalle || esperaTxt), el("div", "t small", "Cuando termine, esta pantalla sigue sola."));
+    w.append(t); box.append(w);
+  } else if (c.estado === "listo") box.append(el("div", "ok", "✓ " + (c.detalle || "Listo")));
+  else if (c.estado === "error") box.append(el("div", "errbox", c.detalle || "No se pudo conectar"));
+  return box;
+}
+
+// ------------------------------------------------------------------------------------ pantallas
+const P = {};
+P.bienvenida = () => {
+  const r = E.requisitos || {};
+  $m.append(el("div", "logo", "A"), el("h1", "", "Bienvenido a Atlas"), el("div", "eyebrow", E.version ? "Versión " + E.version : ""),
+    el("p", "t", "Atlas es un asistente al que le habla. Primero se instala solo; después le ayudamos a conectar sus cuentas."));
+  const l = el("div", "list");
+  const fila = (k, nombre) => { const x = r[k]; const f = el("div", "row"); f.append(el("span", "", nombre), el("span", "s " + (!x ? "mut" : x.ok ? "ok" : k === "gpu" ? "warn" : "bad"), x ? x.texto : "Revisando…")); l.append(f); };
+  fila("windows", "Windows"); fila("espacio", "Espacio libre (se necesitan 12 GB)"); fila("gpu", "Tarjeta gráfica"); fila("internet", "Internet");
+  $m.append(l);
+  if (r.gpu && !r.gpu.ok) $m.append(el("p", "warnbox", "Sin tarjeta NVIDIA, Atlas usa un modelo más chico (4B): responde más simple, pero no se arrastra."));
+  const listo = r.internet && r.espacio;
+  if (listo && !r.internet.ok) $m.append(el("p", "errbox", "Necesita internet para instalar Atlas. Conéctese y presione Revisar de nuevo."));
+  if (listo && !r.espacio.ok) $m.append(el("p", "errbox", "Falta espacio en el disco. Libere al menos 12 GB y presione Revisar de nuevo."));
+  const puede = listo && r.internet.ok && r.espacio.ok;
+  pie(el("span", "t small", "Toma unos 20 a 40 minutos, según su internet"),
+    ...(listo && !puede ? [btn("REVISAR DE NUEVO", async () => { E.requisitos = {}; pintar(true); E.requisitos = await api("/api/requisitos"); pintar(true); })] : []),
+    btn("INSTALAR", async () => { await api("/api/instalar", {}); await leer(); ir("instalando"); }, "p", !puede));
+};
+
+P.instalando = () => {
+  $m.append(el("h1", "", "Instalando Atlas"), el("p", "t", "Puede dejar el computador solo. Le avisamos cuando haya que hacer algo."));
+  const l = el("div", "list"); let tot = 0, hecho = 0, pausa = false, error = null;
+  for (const d of E.pasos_def) {
+    const s = E.pasos[d.id]; tot += d.peso; hecho += d.peso * (s.estado === "listo" ? 1 : s.progreso || 0);
+    if (s.pausa) pausa = true; if (s.estado === "error") error = { titulo: d.titulo, detalle: s.detalle };
+    let titulo = d.titulo; if (d.id === "modelo") titulo += E.modelo === "qwen3.5:4b" ? " (modelo chico, 2,7 GB)" : " (6,6 GB)";
+    const txt = s.estado === "listo" ? s.detalle || "Listo" : s.estado === "corriendo" ? (s.detalle || "En curso") : s.estado === "error" ? "Falló" : "En espera";
+    const f = el("div", "row"); f.append(el("span", "", titulo), el("span", "s " + ({ listo: "ok", corriendo: "ac", error: "bad" }[s.estado] || "mut"), txt)); l.append(f);
+  }
+  const tr = el("div", "track" + (pausa ? " pausa" : "")); const bar = el("i"); bar.style.width = Math.round(100 * hecho / tot) + "%"; tr.append(bar);
+  $m.append(l, tr);
+  if (pausa) $m.append(el("p", "errbox", "Se cortó la conexión a internet. No se perdió nada: cuando vuelva, Atlas sigue desde donde quedó."));
+  if (error) $m.append(el("p", "errbox", `No se pudo terminar «${error.titulo}». ${error.detalle} El detalle quedó en el registro de instalación, sin contraseñas.`));
+  const fin = E.fase === "cuentas";
+  if (fin) $m.append(el("p", "ok", "✓ Todo instalado. Ahora conectemos sus cuentas."));
+  pie(el("span", "t small", fin ? "" : pausa ? "Reintentando solo…" : "Esto puede tardar"),
+    ...(error ? [btn("REINTENTAR", async () => { await api("/api/reintentar", {}); leer(); }, "p")] : []),
+    btn("SIGUIENTE", () => ir("ucursos"), error ? "" : "p", !fin));
+};
+
+P.ucursos = () => {
+  const c = cta("ucursos");
+  $m.append(el("div", "eyebrow", "Sus cuentas · 1 de 6"), el("h1", "", "U-Cursos"),
+    el("p", "t", "Para avisarle cuando sale una nota. Se abrirá U-Cursos en una ventana: inicie sesión con su cuenta de la U, como siempre. Si no estudia en la Chile, presione Saltar."),
+    estadoCuenta("ucursos", "Esperando que inicie sesión en la ventana de U-Cursos…"),
+    el("p", "warnbox", "Cada cierto tiempo U-Cursos cierra la sesión. Cuando pase, la U de arriba en Atlas se pone roja y basta con decir «conecta U-Cursos»."));
+  pie(pasos(1), saltar("ucursos"),
+    c.estado === "listo" ? btn("SIGUIENTE", sig, "p") :
+      btn(c.estado === "error" ? "REINTENTAR" : "INICIAR SESIÓN", () => api("/api/cuenta/ucursos", {}).then(leer), "p", c.estado === "corriendo"));
+};
+
+P.canvas = () => {
+  const c = cta("canvas");
+  $m.append(el("div", "eyebrow", "Sus cuentas · 2 de 6"), el("h1", "", "Canvas"),
+    el("p", "t", "Si su universidad usa Canvas, elíjala o escriba la dirección. Se abrirá su página para que inicie sesión."));
+  const o = el("div", "opts");
+  for (const u of E.universidades) o.append(btn(u, () => { uni = u; campos.url = ""; pintar(true); }, uni === u ? "on" : ""));
+  o.append(btn("Otra…", () => { uni = "otra"; pintar(true); }, uni === "otra" ? "on" : ""));
+  $m.append(o);
+  if (uni === "otra") $m.append(campo("url", "Dirección de Canvas (la que ve al entrar, por ejemplo cursos.canvas.uc.cl)", "text", "canvas.su-universidad.cl"));
+  $m.append(estadoCuenta("canvas", "Esperando que inicie sesión en la ventana de Canvas…"),
+    el("p", "t small", "La sesión también vence cada tanto; se renueva diciendo «conecta Canvas»."));
+  const listoDatos = uni && (uni !== "otra" || (campos.url || "").includes("."));
+  pie(pasos(2), saltar("canvas"),
+    c.estado === "listo" ? btn("SIGUIENTE", sig, "p") :
+      btn(c.estado === "error" ? "REINTENTAR" : "INICIAR SESIÓN", () => api("/api/cuenta/canvas", { universidad: uni === "otra" ? "" : uni, url: campos.url || "" }).then(leer), "p", c.estado === "corriendo" || !listoDatos));
+};
+
+P.correo = () => {
+  const c = cta("correo");
+  $m.append(el("div", "eyebrow", "Sus cuentas · 3 de 6"), el("h1", "", "Correo de Gmail"),
+    el("p", "t", "Google no deja que Atlas use su contraseña normal. Hay que crear una contraseña especial solo para Atlas. Lo hacemos juntos:"));
+  const ol = el("ol", "sub");
+  const li1 = el("li"); li1.append("Su cuenta necesita la verificación en 2 pasos activa. Si no la tiene, ", Object.assign(btn("actívela aquí", () => api("/api/abrir", { a: "dospasos" }), "g"), { style: "padding:0;color:var(--a);letter-spacing:0;font:inherit;text-decoration:underline" }), ".");
+  ol.append(li1, el("li", "", "Presione «Abrir Google», escriba «Atlas» como nombre y presione Crear."), el("li", "", "Google le muestra 16 letras. Cópielas y péguelas aquí abajo."));
+  const dos = el("div", "two"); dos.append(campo("email", "Correo", "email", "nombre@gmail.com"), campo("clave", "Las 16 letras", "password", "abcd efgh ijkl mnop"));
+  $m.append(ol, dos, el("p", "lock", "🔒 Se guarda en el Administrador de credenciales de Windows. No queda escrita en ningún archivo."), estadoCuenta("correo", "Probando la conexión…"));
+  const okDatos = (campos.email || "").includes("@") && (campos.clave || "").replace(/\s/g, "").length >= 16;
+  pie(btn("Abrir Google", () => api("/api/abrir", { a: "apppasswords" })), saltar("correo"),
+    c.estado === "listo" ? btn("SIGUIENTE", sig, "p") :
+      btn("PROBAR Y SEGUIR", () => { const d = { email: campos.email, clave: campos.clave }; campos.clave = ""; api("/api/cuenta/correo", d).then(leer); }, "p", c.estado === "corriendo" || !okDatos));
+};
+
+P.calendario = () => {
+  const c = cta("calendario");
+  $m.append(el("div", "eyebrow", "Sus cuentas · 4 de 6"), el("h1", "", "Google Calendar"),
+    el("p", "t", "Para ver su agenda y crear eventos. Se abrirá Google en su navegador; elija su cuenta y acepte."),
+    el("p", "warnbox", "Google le mostrará «Google no verificó esta app». Es normal: presione «Configuración avanzada» y luego «Ir a Atlas»."),
+    estadoCuenta("calendario", "Esperando que acepte en el navegador…"));
+  pie(pasos(4), saltar("calendario"),
+    c.estado === "listo" ? btn("SIGUIENTE", sig, "p") :
+      btn(c.estado === "error" ? "REINTENTAR" : "INICIAR SESIÓN CON GOOGLE", () => api("/api/cuenta/calendario", {}).then(leer), "p", c.estado === "corriendo"));
+};
+
+P.hermes = () => {
+  const c = cta("hermes"), pc = E.pasos.syncthing;
+  $m.append(el("div", "eyebrow", "Sus cuentas · 5 de 6 · Hermes"), el("h1", "", "Gastos del banco"),
+    el("p", "t", "Hermes suma sus gastos solo, leyendo los avisos que le llegan al celular. Necesita tres cosas:"));
+  const l = el("div", "list");
+  const fila = (a, b, cls) => { const f = el("div", "row"); f.append(el("span", "", a), el("span", "s " + cls, b)); l.append(f); };
+  fila("Programa en este PC", pc.estado === "listo" ? "Instalado y corriendo" : "Falta", pc.estado === "listo" ? "ok" : "bad");
+  const co = cta("correo"); fila("Correo conectado", co.estado === "listo" ? (E.correo || "Conectado") : "Falta: vuelva al paso del correo", co.estado === "listo" ? "ok" : "warn");
+  fila("Su celular Android", "Siguiente pantalla", "warn");
+  $m.append(l, campo("clave", "Contraseña de los PDF del banco (los comprobantes que el banco manda con clave)", "password", "Opcional"),
+    el("p", "lock", "🔒 Se guarda en el Administrador de credenciales de Windows."), estadoCuenta("hermes", "Guardando…"));
+  pie(el("span", "t small", "¿Tiene iPhone? Hermes aún no funciona ahí"), saltar("hermes"),
+    c.estado === "listo" ? btn("SIGUIENTE", sig, "p") :
+      btn("SIGUIENTE", () => { const d = { clave: campos.clave || "" }; campos.clave = ""; api("/api/cuenta/hermes", d).then(leer); }, "p", c.estado === "corriendo"));
+};
+
+let qrHecho = "";
+P.hermes_cel = () => {
+  $m.append(el("div", "eyebrow", "Hermes · su celular"), el("h1", "", "Hermes en su celular"));
+  const fila = el("div"); fila.style.cssText = "display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap";
+  const q = el("div", "qr"); q.id = "qr";
+  if (sync && sync.id) { const qr = qrcode(0, "M"); qr.addData(sync.id); qr.make(); q.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0 }); }
+  else q.append(el("span", "mut", "…"));
+  const ol = el("ol", "sub"); ol.style.flex = "1"; ol.style.minWidth = "260px";
+  ol.append(el("li", "", "En Play Store instale «MacroDroid» y «Syncthing-Fork»."),
+    el("li", "", "Abra Syncthing, toque «+» › Agregar dispositivo › el ícono de cámara, y escanee el código de la izquierda."),
+    el("li", "", "Cuando le pregunte, acepte la carpeta «avisos_banco», elija la carpeta «Atlas» de la memoria interna y el modo «Solo enviar»."),
+    el("li", "", E.macro ? "Escanee con la cámara el código de la derecha: baja la macro «Avisos banco». Ábrala y elija MacroDroid; ya viene armada." : "En MacroDroid cree la macro «Avisos banco» siguiendo Ajustes › Guía de las apps › Hermes."),
+    el("li", "", "Dele a MacroDroid permiso para leer notificaciones y escribir archivos."));
+  fila.append(q, ol);
+  if (E.macro) {   // la macro se baja del repositorio público (el PC solo recibe de esa carpeta, no puede mandarla)
+    const caja = el("div"); caja.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:6px";
+    const q2 = el("div", "qr"); const m2 = qrcode(0, "M"); m2.addData(MACRO_URL); m2.make(); q2.innerHTML = m2.createSvgTag({ cellSize: 3, margin: 0 });
+    caja.append(q2, el("span", "mut small", "La macro")); fila.append(caja);
+  }
+  $m.append(fila);
+  const est = el("div", "list");
+  const f1 = el("div", "row"); f1.append(el("span", "", "Celular emparejado"), el("span", "s " + (sync && sync.celular ? "ok" : "mut"), sync && sync.celular ? sync.celular : "Esperando que escanee el código")); est.append(f1);
+  const f2 = el("div", "row"); f2.append(el("span", "", "Primer aviso del banco"), el("span", "s " + (sync && sync.ultimo_aviso ? "ok" : "mut"), sync && sync.ultimo_aviso ? "Llegó · " + sync.ultimo_aviso : "Esperando (hágase una compra chica o use «Probar acción»)")); est.append(f2);
+  $m.append(est, el("p", "t small", "Su código de este PC: " + (sync && sync.id || "…")));
+  pie(el("span", "t small", "Puede terminarlo después en Ajustes"), btn("Más tarde", sig, "g"), btn("SIGUIENTE", sig, "p", !(sync && sync.ultimo_aviso)));
+};
+
+P.cronos = () => {
+  $m.append(el("div", "eyebrow", "Sus cuentas · 6 de 6 · Cronos"), el("h1", "", "¿Cómo armamos su historia?"),
+    el("p", "t", "Cronos reconstruye dónde estuvo cada día. Elija una forma; la puede cambiar después en Cronos › ⚙ › Fuentes."));
+  const d = el("div", "two");
+  const a = btn("", () => { E.cronos_modo = "rutas"; ir("cronos_rutas"); }, "card");
+  a.append(el("span", "eyebrow", "Automática"), el("b", "", "Tengo Rutas de Maps activado"), el("span", "", "Atlas baja sus rutas cada noche: dónde estuvo y cómo se movió. No hay que hacer nada más."));
+  const b = btn("", async () => { E.cronos_modo = "senales"; await api("/api/cuenta/cronos", { modo: "senales" }); await leer(); ir("listo"); }, "card");
+  b.append(el("span", "eyebrow", "Manual · señales"), el("b", "", "No tengo la ubicación activada"), el("span", "", "Deduce dónde estuvo con bip!, recibos, gastos, calendario, búsquedas en Maps y las horas de sus chats de WhatsApp. Le pide pasos de vez en cuando."));
+  d.append(a, b); $m.append(d, el("p", "t small", "¿No sabe si lo tiene? En el celular: Google Maps › su foto › Rutas › ícono de nube. Recibos, gastos y calendario se suman solos en ambas."));
+  pie(pasos(6), saltar("cronos"));
+};
+
+P.cronos_rutas = () => {
+  const c = cta("cronos");
+  if (!campos.email && E.correo) campos.email = E.correo;
+  $m.append(el("div", "eyebrow", "Cronos · Rutas de Maps"), el("h1", "", "Conectar sus rutas"));
+  const ol = el("ol", "sub");
+  ol.append(el("li", "", "En el celular: Google Maps › su foto › Rutas › ícono de nube › activar la copia de seguridad."),
+    el("li", "", "Se abrirá Google: inicie sesión con su contraseña y la verificación en 2 pasos."),
+    el("li", "", "Google le pedirá la contraseña una vez más para entregar la llave de sus rutas."));
+  $m.append(ol, campo("email", "Correo de su cuenta de Google", "email", "nombre@gmail.com"), estadoCuenta("cronos", "Preparando…"),
+    el("p", "lock", "🔒 Las llaves quedan en el Administrador de credenciales de Windows. En su cuenta de Google aparecerá un dispositivo «Android Device»: es Atlas."));
+  pie(btn("Volver", () => ir("cronos"), "g"), saltar("cronos"),
+    c.estado === "listo" ? btn("SIGUIENTE", sig, "p") :
+      btn(c.estado === "error" ? "REINTENTAR" : "CONECTAR", () => api("/api/cuenta/cronos", { modo: "rutas", email: campos.email || "" }).then(leer), "p", c.estado === "corriendo" || !(campos.email || "").includes("@")));
+};
+
+P.listo = () => {
+  $m.append(el("h1", "", "Atlas está listo"));
+  const l = el("div", "list");
+  const fila = (a, b, cls) => { const f = el("div", "row"); f.append(el("span", "", a), el("span", "s " + cls, b)); l.append(f); };
+  const inst = E.pasos_def.every((d) => E.pasos[d.id].estado === "listo");
+  fila("Atlas, el cerebro, oído y voces", inst ? "Instalado" : "Incompleto", inst ? "ok" : "bad");
+  const nombres = { ucursos: "U-Cursos", canvas: "Canvas", correo: "Correo", calendario: "Calendario", hermes: "Hermes", cronos: "Cronos" };
+  for (const id of CUENTAS) {
+    const c = cta(id);
+    fila(nombres[id], c.estado === "listo" ? (c.detalle || "Conectado") : c.estado === "error" ? "Quedó a medias" : "Saltado", c.estado === "listo" ? "ok" : c.estado === "error" ? "warn" : "mut");
+  }
+  fila("Acceso directo en el escritorio", E.pasos.acceso.estado === "listo" ? "Creado" : "Falta", E.pasos.acceso.estado === "listo" ? "ok" : "warn");
+  const ch = el("label"); ch.style.cssText = "display:flex;gap:8px;align-items:center;color:var(--dim);font-size:14px";
+  const cb = el("input"); cb.type = "checkbox"; cb.id = "auto"; cb.checked = E.autoarranque !== false; ch.append(cb, "Abrir Atlas al encender el computador");
+  $m.append(l, ch);
+  pie(el("span", "t small", "Lo pendiente sigue en Ajustes › Instalación"), btn("ABRIR ATLAS", async () => { await api("/api/terminar", { autoarranque: document.getElementById("auto").checked }); $m.replaceChildren(el("h1", "", "Abriendo Atlas…")); $f.replaceChildren(); }, "p", !inst));
+};
+
+// ------------------------------------------------------------------------------------ ciclo
+function pantallaInicial() {
+  if (E.fase === "terminado") return "listo";
+  if (E.fase === "bienvenida") return "bienvenida";
+  if (E.fase === "instalando") return "instalando";
+  for (const id of CUENTAS) { const s = cta(id).estado; if (s !== "listo" && s !== "saltado") return id; }
+  return "listo";
+}
+function pintar(forzar) {
+  if (!E) return;
+  const foco = document.activeElement && document.activeElement.id;
+  const pos = foco && document.activeElement.selectionStart;
+  if (!forzar && document.activeElement && document.activeElement.tagName === "INPUT") {
+    // mientras la persona escribe solo se repinta si cambió algo del estado de esta pantalla
+  }
+  $m.replaceChildren(); P[pant]();
+  if (foco) { const e = document.getElementById(foco); if (e) { e.focus(); try { if (pos != null) e.setSelectionRange(pos, pos); } catch (_) {} } }
+}
+let firma = "";
+async function leer() {
+  try { E = await api("/api/estado"); } catch (_) { return; }
+  document.getElementById("sim").hidden = !E.simulado;
+  if (!pant) pant = pantallaInicial();
+  if (pant === "bienvenida" && !Object.keys(E.requisitos || {}).length && !leer.req) { leer.req = true; api("/api/requisitos").then((r) => { E.requisitos = r; pintar(true); }); }
+  if (pant === "hermes_cel") { try { sync = await api("/api/syncthing"); } catch (_) {} }
+  const f = JSON.stringify([E.pasos, E.cuentas, E.fase, E.requisitos, sync, pant]);
+  if (f !== firma) { firma = f; pintar(); }
+}
+leer(); setInterval(leer, 1000);
+</script>
+<script src="/qrcode.js"></script>
+</body>
+</html>

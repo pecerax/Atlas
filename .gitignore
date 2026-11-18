@@ -221,3 +221,120 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+# ============================================================
+# Atlas: lo que NUNCA se sube a GitHub
+# (datos personales, credenciales, respaldos y archivos pesados)
+# ============================================================
+
+# --- Credenciales (aunque hoy son "sobres" sin secretos, no se suben) ---
+.openjarvis/
+connectors/
+*token*.json
+google_client*.json
+client_secret*.json
+*.session
+*.session-journal
+*.dpapi
+clave_*.txt
+.env
+.env.*
+*.pem
+*.key
+
+# --- Datos personales de hud/ ---
+hud/contactos.json
+hud/contactos_saltados.json
+hud/cuentas.json
+hud/calendarios.json
+hud/agenda_*.ics
+hud/ucursos_sesion.json
+hud/ucursos_notas.json
+hud/accesos_datos.json
+hud/memoria.json
+hud/recordatorios.json
+hud/pendientes.json
+hud/tareas_listas.json
+hud/vigilancias.json
+hud/eventos_avisados.json
+hud/eventos_contactos.json
+hud/whatsapp_verificados.json
+hud/ultima_app.json
+hud/contexto_correo.json
+hud/ramos.json
+hud/historial/
+hud/claude_consultas/
+hud/historia/historia.db
+hud/historia/bip.txt
+hud/historia/chats/
+hud/historia/sii/
+hud/historia/geonames/
+hud/historia/modelos/
+/datos/
+cronologia_maps/*.db
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# --- Apolo e Isis (si alguna vez van en el mismo repositorio) ---
+cartolas/
+movimientos*.json
+presupuestos.json
+fondos_cmf*.json
+respaldo/
+
+# --- Registros y diagnósticos ---
+*.log
+logs/
+*debug*.txt
+evaluacion_modelo.txt
+
+# --- Respaldos y versiones viejas ---
+*.bak
+*.antes_*
+*_antes_*
+hud/hud_server-1.py
+seguridad_paso*/
+respaldo_logo/
+respaldos/
+
+# --- Perfiles de navegador, modelos y entorno ---
+hud-profile/
+music-profile/
+ucursos-profile/
+voices/
+/src/
+.venv/
+__pycache__/
+*.pyc
+digests/
+*.wav
+
+# --- Agregado al publicar (17-11-2026) ---
+accesos.json
+repertorio.json
+categorias.json
+ajustes.json
+canvas_*.json
+*.html.bak
+canvas-profile/
+_migracion_atlas/
+_publicar/
+reemplazos.local.json
+*.local.json
+*.mp3
+*.onnx
+*.ico.bak
+node_modules/
+.venv_viejo/
+historia.db-journal
+*.pdf
+
+# Llave OAuth de Google y lo que construir.ps1 agrega al instalador: nunca al repositorio (auditoría 18-11-2026)
+google_cliente.json
+instalador/uv.exe
+instalador/ruedas/
+instalador/estado.json
+instalador/descargas/

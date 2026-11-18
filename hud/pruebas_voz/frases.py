@@ -1,0 +1,35 @@
+# Frases de prueba: (texto de referencia, palabras clave que DEBEN salir bien)
+FRASES = [
+    ("Atlas, ¿qué evaluaciones tengo en Intro a la progra?", ["intro a la progra"]),
+    ("Revisa U-Cursos y dime las notas de Introducción a la Programación", ["u-cursos", "introducción a la programación"]),
+    ("¿Cuándo es la próxima auxiliar de la progra?", ["auxiliar", "progra"]),
+    ("Léeme los correos sin leer", ["sin leer"]),
+    ("Marca como leídos los mails sin leer de la cuenta personal", ["marca como leídos", "sin leer", "cuenta personal"]),
+    ("Mándale un mensaje a Zander por Discord", ["zander", "discord"]),
+    ("Dile a Zander que llego en diez minutos", ["zander"]),
+    ("Abre Hermes", ["hermes"]),
+    ("Abre Fortuna", ["fortuna"]),
+    ("Pon música de Sheena Ringo", ["pon", "sheena ringo"]),
+    ("Ponme una canción de Ado", ["ponme", "ado"]),
+    ("Recuérdame en veinte minutos sacar la ropa", ["recuérdame"]),
+    ("Pon un temporizador de cinco minutos", ["temporizador"]),
+    ("Agéndame una reunión el jueves a las cuatro con Felipe Morales", ["agéndame", "felipe morales"]),
+    ("Ve el estado de la red", ["estado de la red"]),
+    ("¿Qué tareas tengo pendientes en Lenguajes de Programación?", ["lenguajes de programación"]),
+    ("¿Cuándo es el control de EH?", ["eh"]),
+    ("Revisa si hay algo nuevo en el Minor", ["minor"]),
+    ("Pregúntale a Claude cómo arreglar el error", ["pregúntale a claude"]),
+    ("Llama a Cristóbal Vera", ["cristóbal vera"]),
+    ("Escríbele a Ian Gómez por WhatsApp", ["ian gómez", "whatsapp"]),
+    ("Borra el último recordatorio", ["borra", "recordatorio"]),
+    ("Pide un Cabify a la Universidad de Chile", ["cabify", "universidad de chile"]),
+    ("Oye, cachai si mañana hay clases en la U", ["la u"]),
+    ("Resume los correos del trabajo de hoy", ["resume", "cuenta del trabajo"][:1]),
+    ("Guarda esta canción", ["guarda esta canción"]),
+    ("Cancela la alarma de las siete", ["cancela", "alarma"]),
+    ("Mueve la reunión con Catalina Pérez para el viernes", ["catalina pérez"]),
+]
+
+# Vocabulario "extra" que hoy NO está entre las hotwords (apodos de contactos, variantes de ramos, comandos)
+EXTRA_VOCAB = ["Zander", "sin leer", "Intro a la progra", "la progra", "intro", "auxiliar", "WhatsApp",
+               "Cristóbal Vera", "Ian Gómez", "Catalina Pérez", "Felipe Morales"]

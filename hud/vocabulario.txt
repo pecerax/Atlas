@@ -1,0 +1,36 @@
+# YA NO SE USA (18-11-2026): el vocabulario de voz se migró a ~/.atlas/diccionario.json
+# (panel DICCIONARIO > VOCABULARIO DE VOZ). Respaldo: vocabulario.txt.antes_unificar.bak.
+# Una palabra o frase por línea: nombres, marcas o términos que Atlas
+# debe reconocer mejor al escucharte.
+Atlas
+Jarvis
+Gmail
+correo
+correos
+bandeja
+cuenta personal
+cuenta del trabajo
+Empresa
+Universidad de Chile
+la U
+Spotify
+Discord
+Steam
+YouTube
+PedidosYa
+Cabify
+Platanus
+pon
+ponme
+Chud Maxxing
+Shego
+Zander
+Cronos
+Hermes
+Fortuna
+Apolo
+Atenea
+U-Cursos
+Canvas
+WhatsApp
+Telegram

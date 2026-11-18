@@ -1,0 +1,108 @@
+diff --git a/deploy/windows/jarvis-service.ps1 b/deploy/windows/jarvis-service.ps1
+index de076b6..c074f65 100644
+--- a/deploy/windows/jarvis-service.ps1
++++ b/deploy/windows/jarvis-service.ps1
+@@ -1,4 +1,4 @@
+-<#
++﻿<#
+ .SYNOPSIS
+     Register / unregister the OpenJarvis Windows scheduled task.
+ 
+@@ -206,3 +206,4 @@ switch ($Command) {
+     'uninstall' { Uninstall-Task }
+     'status'    { Show-Status }
+ }
++
+diff --git a/src/openjarvis/connectors/oauth.py b/src/openjarvis/connectors/oauth.py
+index d0fc010..1cee7e2 100644
+--- a/src/openjarvis/connectors/oauth.py
++++ b/src/openjarvis/connectors/oauth.py
+@@ -247,14 +247,10 @@ def load_tokens(path: str) -> Optional[Dict[str, Any]]:
+     Returns ``None`` if the file is missing, unreadable, or contains
+     invalid JSON.
+     """
+-    p = Path(path)
+-    if not p.exists():
+-        return None
+-    try:
+-        raw = p.read_text(encoding="utf-8")
+-        return json.loads(raw)
+-    except (OSError, json.JSONDecodeError):
+-        return None
++    # Jarvis: los archivos reales son «sobres»; lo secreto está en el Administrador de credenciales
++    from openjarvis.security import jarvis_secretos
++
++    return jarvis_secretos.cargar_json(path)
+ 
+ 
+ def save_tokens(path: str, tokens: Dict[str, Any]) -> None:
+@@ -262,8 +258,13 @@ def save_tokens(path: str, tokens: Dict[str, Any]) -> None:
+ 
+     Creates parent directories as needed.
+     """
++    from openjarvis.security import jarvis_secretos
+     from openjarvis.security.file_utils import secure_write_json
+ 
++    # Jarvis: si es un archivo real de Jarvis en Windows, lo secreto va al Administrador de credenciales
++    if jarvis_secretos.nombre_para(path) and jarvis_secretos.disponible():
++        jarvis_secretos.guardar_json(path, tokens)
++        return
+     secure_write_json(Path(path), tokens)
+ 
+ 
+@@ -284,9 +285,9 @@ def require_access_token(tokens: Any) -> str:
+ 
+ def delete_tokens(path: str) -> None:
+     """Delete the credentials file at *path* if it exists."""
+-    p = Path(path)
+-    if p.exists():
+-        p.unlink()
++    from openjarvis.security import jarvis_secretos
++
++    jarvis_secretos.borrar_json(path)  # Jarvis: también borra su entrada cifrada
+ 
+ 
+ def refresh_google_token(path: str) -> Optional[str]:
+diff --git a/src/openjarvis/speech/kokoro_tts.py b/src/openjarvis/speech/kokoro_tts.py
+index 6c553f6..0f87941 100644
+--- a/src/openjarvis/speech/kokoro_tts.py
++++ b/src/openjarvis/speech/kokoro_tts.py
+@@ -167,7 +167,11 @@ class KokoroTTSBackend(TTSBackend):
+             try:
+                 # KModel is language-blind and is by far the heaviest part of
+                 # Kokoro. Reuse one model across every language pipeline.
+-                pipeline = KPipeline(lang_code=lang_code, model=self._ensure_model())
++                pipeline = KPipeline(
++                    lang_code=lang_code,
++                    repo_id="hexgrad/Kokoro-82M",
++                    model=self._ensure_model(),
++                )
+             except ImportError as exc:
+                 # Kokoro loads language-specific G2P resources at init time and
+                 # several languages need extra dependencies that aren't pulled in
+@@ -226,6 +230,7 @@ class KokoroTTSBackend(TTSBackend):
+                     device = "cpu"
+ 
+         model_kwargs = {"model": self._model_path} if self._model_path else {}
++        model_kwargs.setdefault("repo_id", "hexgrad/Kokoro-82M")
+         try:
+             self._model = KModel(**model_kwargs).to(device).eval()
+         except RuntimeError as exc:
+diff --git a/src/openjarvis/tools/__init__.py b/src/openjarvis/tools/__init__.py
+index efb2095..d494042 100644
+--- a/src/openjarvis/tools/__init__.py
++++ b/src/openjarvis/tools/__init__.py
+@@ -184,3 +184,13 @@ except ImportError:
+     pass
+ 
+ __all__ = ["BaseTool", "ToolExecutor", "ToolSpec"]
++
++try:
++    import openjarvis.tools.gmail_mark_read  # noqa: F401
++except ImportError:
++    pass
++
++try:
++    import openjarvis.tools.jarvis_pc  # noqa: F401
++except ImportError:
++    pass

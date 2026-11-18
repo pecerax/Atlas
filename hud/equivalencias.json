@@ -1,0 +1,36 @@
+{
+  "_aviso": "YA NO SE USA (18-11-2026): todo se migró a ~/.atlas/diccionario.json (palabras y reglas). Se edita en el lápiz de la consola, pestaña DICCIONARIO. Respaldo: equivalencias.json.antes_unificar.bak.",
+  "_como_se_usa": "Errores típicos de la voz que Atlas corrige ANTES de decidir qué hacer. Cada regla: 'de' es una expresión regular (sin distinguir mayúsculas), 'a' es el reemplazo y 'nota' explica de dónde salió. Para agregar una: copia una regla, cámbiala y corre Probar-Atlas.cmd. Si una regla toca frases normales, bórrala.",
+  "reglas": [
+    {"de": "^\\s*(?:uh|eh|em|um|mm+|ah)[,.]?\\s+", "a": "", "nota": "muletillas al inicio: 'Uh, guarda esta canción'"},
+    {"de": "^\\s*un,?\\s+(?=(?:atlas|jarvis|guarda|pon|ponme|abre|marca|agenda|ag[eé]ndame|recu[eé]rdame|qu[eé]|cu[aá]l|cu[aá]ndo|c[oó]mo|dime|busca|lee|l[eé]elo|resume|reproduce|sube|baja|cierra)\\b)", "a": "", "nota": "'Un guarda esta canción', 'Un Atlas, ¿qué hora es?'"},
+    {"de": "\\b(?:y|ch|j)[ae]rvis\\b", "a": "Jarvis", "nota": "Yarvis, Charvis, Jervis"},
+    {"de": "\\b(?:h?[aá]tl[aá]s|at\\s+las|a\\s+tlas|hat\\s+las)\\b", "a": "Atlas", "nota": "Átlas, hatlas, at las (nombre nuevo)"},
+
+    {"de": "\\b(?:u|o|hu)[\\s-]?cursos?\\b", "a": "U-Cursos", "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"},
+    {"de": "\\bconect\\s+a\\b", "a": "conecta a", "nota": "'Conect a U-Cursos'"},
+
+    {"de": "\\b(?:vela|ve la|vel)\\s+esta(?:bela|do de la|do la)\\s+red\\b", "a": "ve el estado de la red", "nota": "'Vela Estabela Red, a Internet'"},
+    {"de": "\\bque est[aá] cenando\\b", "a": "que está sonando", "nota": "'guarda la canción que está cenando'"},
+    {"de": "\\b(?:recomindame|recomi[eé]ndeme|recomendemos|recu[eé]rdame)\\s+(?=(?:una|un|alguna|algo de)\\s+(?:canci[oó]n|tema|m[uú]sica)\\b)", "a": "recomiéndame ", "nota": "'Recomindame/Recuérdame una canción' (con 'recuérdame' solo si sigue 'una canción')"},
+    {"de": "^\\s*(?:mejor\\s+)?por\\s+(?=(?:una|la|el|un|algo de)\\s+(?:canci[oó]n|m[uú]sica|tema)\\b)", "a": "pon ", "nota": "'Mejor por una canción de Ado'"},
+    {"de": "^\\s*pon essa\\b", "a": "pon esa", "nota": "'Pon essa'"},
+    {"de": "\\b(?:you\\s?tube|yutub|yutu|llutub)\\b", "a": "YouTube", "nota": "variantes de YouTube"},
+    {"de": "\\b(?:espotifai|spotifai|espotify)\\b", "a": "Spotify", "nota": "variantes de Spotify"},
+    {"de": "\\b(?:discor|discort|d[ií]scor)\\b", "a": "Discord", "nota": "variantes de Discord"},
+    {"de": "\\b(por|en|al|desde)\\s+(?:el\\s+)?(?:disco|diskord|dis\\s+cord|this\\s+cord)\\b(?!\\s+(?:de|del|duro|compacto)\\b)", "a": "\\1 Discord", "nota": "'escríbele hola a tipo por Disco' (solo tras por/en/al/desde: 'pon el disco de…' no cambia)"},
+
+    {"de": "\\b(?:chego|chegu|shegu)\\b", "a": "Shego", "nota": "apodo de Diego Salas; la voz lo escribe 'Chego' (uso real 16-11-2026: evento 'reunión con Chego por Discord')"},
+
+    {"de": "\\b(?:jimeil|gimeil|gimail|yimeil)\\b", "a": "Gmail", "nota": "variantes de Gmail"},
+    {"de": "\\ble[ií]os\\b", "a": "leídos", "nota": "'Marca como leíos'"},
+    {"de": "\\b(correos?|mails?|mensajes?)\\s+que me llev[oó]\\b", "a": "\\1 que me llegó", "nota": "'el último correo que me llevó' (solo después de correo/mail/mensaje)"},
+    {"de": "^\\s*(?:s[ií],?\\s+)?leelu\\b", "a": "léelo", "nota": "'Si, Leelu'"},
+    {"de": "^\\s*res[uú]mele\\b", "a": "resúmelo", "nota": "'Resumele'"},
+
+    {"de": "\\bque\\s+((?:tambi[eé]n\\s+|me\\s+)?)agentes\\b", "a": "que \\1agendes", "nota": "'Quiero que también agentes…' (solo después de 'que')"},
+    {"de": "\\belse mismo\\b", "a": "ese mismo", "nota": "'agentes else mismo viernes'"},
+    {"de": "\\b(?:jacat[oó]n|hacat[oó]n|jakat[oó]n|hackat[oó]n)\\b", "a": "Hackathon", "nota": "'Jacatón', 'Hacatón'"},
+    {"de": "\\b(cu[aá]ndo) en (?=(?:mi|el|la)\\s+(?:pr[oó]xim|siguiente))", "a": "\\1 es ", "nota": "'¿Cuándo en mi próxima reunión?'"}
+  ]
+}
