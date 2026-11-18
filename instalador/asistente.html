@@ -62,7 +62,7 @@ code{font:13px var(--mono);color:var(--a)}
 <main id="m" aria-live="polite"></main>
 <footer id="f"></footer>
 <script>
-const MACRO_URL = "https://github.com/pecerax/Atlas/raw/main/instalador/Avisos_banco.macro";
+const MACRO_URL = "https://pecerax.github.io/Atlas/macro.html";   // página con el botón «Descargar macro» (docs/macro.html)
 "use strict";
 const $m = document.getElementById("m"), $f = document.getElementById("f");
 let E = null, pant = null, sync = null, uni = "", campos = {};
@@ -210,12 +210,26 @@ P.hermes = () => {
   fila("Programa en este PC", pc.estado === "listo" ? "Instalado y corriendo" : "Falta", pc.estado === "listo" ? "ok" : "bad");
   const co = cta("correo"); fila("Correo conectado", co.estado === "listo" ? (E.correo || "Conectado") : "Falta: vuelva al paso del correo", co.estado === "listo" ? "ok" : "warn");
   fila("Su celular Android", "Siguiente pantalla", "warn");
-  $m.append(l, campo("clave", "Contraseña de los PDF del banco (los comprobantes que el banco manda con clave)", "password", "Opcional"),
+  const bx = el("div"); bx.style.cssText = "display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px 14px;margin:4px 0 10px";
+  for (const [id, nombre] of BANCOS) {
+    const lb = el("label"); lb.style.cssText = "display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer";
+    const cb = el("input"); cb.type = "checkbox"; cb.checked = bancosSel.has(id);
+    cb.onchange = () => { cb.checked ? bancosSel.add(id) : bancosSel.delete(id); };
+    lb.append(cb, nombre); bx.append(lb);
+  }
+  $m.append(l, el("p", "t", "¿Qué bancos o apps de pago usa? Hermes leerá solo los avisos de esas apps."), bx, campo("clave", "Contraseña de los PDF del banco (los comprobantes que el banco manda con clave)", "password", "Opcional"),
     el("p", "lock", "🔒 Se guarda en el Administrador de credenciales de Windows."), estadoCuenta("hermes", "Guardando…"));
   pie(el("span", "t small", "¿Tiene iPhone? Hermes aún no funciona ahí"), saltar("hermes"),
     c.estado === "listo" ? btn("SIGUIENTE", sig, "p") :
       btn("SIGUIENTE", () => { const d = { clave: campos.clave || "" }; campos.clave = ""; api("/api/cuenta/hermes", d).then(leer); }, "p", c.estado === "corriendo"));
 };
+
+// Bancos para la macro (ids iguales a los de docs/macro.html, que arma la macro en el celular con estos)
+const BANCOS = [["bancoestado", "BancoEstado"], ["santander", "Santander"], ["bci", "Bci"], ["bancochile", "Banco de Chile"],
+  ["edwards", "Banco Edwards"], ["scotia", "Scotiabank"], ["itau", "Itaú"], ["falabella", "Banco Falabella"], ["ripley", "Banco Ripley"],
+  ["security", "Banco Security"], ["bice", "BICE"], ["coopeuch", "Coopeuch"], ["mach", "MACH"], ["tenpo", "Tenpo"], ["mercadopago", "Mercado Pago"]];
+const bancosSel = new Set();
+const macroUrl = () => MACRO_URL + (bancosSel.size ? "?b=" + [...bancosSel].join(",") : "");
 
 let qrHecho = "";
 P.hermes_cel = () => {
@@ -228,12 +242,12 @@ P.hermes_cel = () => {
   ol.append(el("li", "", "En Play Store instale «MacroDroid» y «Syncthing-Fork»."),
     el("li", "", "Abra Syncthing, toque «+» › Agregar dispositivo › el ícono de cámara, y escanee el código de la izquierda."),
     el("li", "", "Cuando le pregunte, acepte la carpeta «avisos_banco», elija la carpeta «Atlas» de la memoria interna y el modo «Solo enviar»."),
-    el("li", "", E.macro ? "Escanee con la cámara el código de la derecha: baja la macro «Avisos banco». Ábrala y elija MacroDroid; ya viene armada." : "En MacroDroid cree la macro «Avisos banco» siguiendo Ajustes › Guía de las apps › Hermes."),
+    el("li", "", E.macro ? "Escanee con la cámara el código de la derecha y presione «Descargar macro» (ya trae sus bancos). En MacroDroid: Macros › ⋮ › Importar › Avisos_banco.macro; ya viene armada." : "En MacroDroid cree la macro «Avisos banco» siguiendo Ajustes › Guía de las apps › Hermes."),
     el("li", "", "Dele a MacroDroid permiso para leer notificaciones y escribir archivos."));
   fila.append(q, ol);
   if (E.macro) {   // la macro se baja del repositorio público (el PC solo recibe de esa carpeta, no puede mandarla)
     const caja = el("div"); caja.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:6px";
-    const q2 = el("div", "qr"); const m2 = qrcode(0, "M"); m2.addData(MACRO_URL); m2.make(); q2.innerHTML = m2.createSvgTag({ cellSize: 3, margin: 0 });
+    const q2 = el("div", "qr"); const m2 = qrcode(0, "M"); m2.addData(macroUrl()); m2.make(); q2.innerHTML = m2.createSvgTag({ cellSize: 3, margin: 0 });
     caja.append(q2, el("span", "mut small", "La macro")); fila.append(caja);
   }
   $m.append(fila);

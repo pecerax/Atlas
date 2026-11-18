@@ -13,6 +13,8 @@
   h1 { font-size: 2.2rem; margin: 0 0 4px; letter-spacing: .04em; }
   .lema { color: var(--suave); margin: 0 0 32px; }
   a { color: var(--acento); }
+  .boton { display: inline-block; padding: 12px 20px; border-radius: 10px; background: var(--acento); color: var(--fondo); font-weight: 600; text-decoration: none; }
+  .nota { color: var(--suave); font-size: .95rem; }
   footer { margin-top: 48px; color: var(--suave); font-size: .9rem; }
 </style>
 </head>
@@ -24,6 +26,9 @@
   <p>Atlas es un asistente de voz que corre en el propio computador, con un modelo local (Ollama). Lee el correo, la agenda y las notas de los cursos, avisa lo importante y responde por voz. También trae tres aplicaciones: Hermes (finanzas personales), Fortuna (fondos mutuos) y Cronos (historia diaria).</p>
 
   <p>Con Google Calendar, Atlas muestra los eventos del calendario y crea los que se le piden. Todo se procesa en el computador de quien lo usa.</p>
+
+  <p><a class="boton" href="https://github.com/pecerax/Atlas/releases/latest/download/Atlas-Instalar.exe">Descargar Atlas para Windows</a></p>
+  <p class="nota">Atlas-Instalar.exe copia Atlas y abre un asistente que instala lo demás (unos 8 GB): Python, el núcleo, Ollama y el modelo, el reconocimiento de voz y las voces, y el programa para los avisos del banco. Al final pide las cuentas, una por una, y cada paso se puede dejar para después. Necesita Windows 10 u 11 de 64 bits.</p>
 
   <p>El código es abierto: <a href="https://github.com/pecerax/Atlas">github.com/pecerax/Atlas</a>.</p>
 
