@@ -1,6 +1,7 @@
 """Conecta Atlas con Google Calendar (una sola vez). Todo queda guardado solo en este PC.
 
-Antes hay que crear la credencial en Google Cloud (tipo "App de escritorio") y descargar su archivo JSON.
+Usa la llave de Google propia de Atlas (instalador\google_cliente.json, la trae Atlas-Instalar.exe). Si no está, busca
+un JSON de cliente tipo "App de escritorio" descargado de Google Cloud.
 """
 
 import shutil
@@ -18,7 +19,12 @@ except Exception:  # noqa: BLE001
 import atlas_gcal as gcal  # noqa: E402
 
 
+LLAVE_ATLAS = HERE.parent / "instalador" / "google_cliente.json"   # la app «Atlas» publicada (18-11-2026)
+
+
 def find_client_file() -> Path | None:
+    if LLAVE_ATLAS.exists():
+        return LLAVE_ATLAS
     cands = []
     for folder in (Path.home() / "Downloads", Path.home() / "Descargas", Path.home() / "Desktop", HERE, HERE.parent):
         if folder.is_dir():
@@ -40,7 +46,8 @@ def main() -> None:
 
         gcal.atlas_secretos.guardar_json(gcal.CLIENT, _json.loads(f.read_text(encoding="utf-8")))
         print(f"Credencial encontrada: {f.name}  (guardada cifrada en el Administrador de credenciales)")
-        print(f"Ya puede borrar {f} de su carpeta: Atlas no lo necesita más.")
+        if f != LLAVE_ATLAS:
+            print(f"Ya puede borrar {f} de su carpeta: Atlas no lo necesita más.")
     try:
         gcal._client()
     except Exception as exc:  # noqa: BLE001

@@ -1,0 +1,831 @@
+{
+ "_nota": "Reglas base de Atlas: correcciones generales de la voz que se suman al diccionario de cada persona una vez por versión, sin pisar las suyas ni volver a poner lo que borró. Las arma _publicar/exportar.py; no se editan a mano.",
+ "version": "cd15268ec17f",
+ "palabras": [
+  {
+   "escuchado": "eernes",
+   "correcto": "Hermes",
+   "contexto": "app"
+  },
+  {
+   "escuchado": "heernes",
+   "correcto": "Hermes",
+   "contexto": "app"
+  },
+  {
+   "escuchado": "ernes",
+   "correcto": "Hermes",
+   "contexto": "app"
+  },
+  {
+   "escuchado": "hernes",
+   "correcto": "Hermes",
+   "contexto": "app"
+  },
+  {
+   "escuchado": "ermes",
+   "correcto": "Hermes",
+   "contexto": "app"
+  },
+  {
+   "escuchado": "jermes",
+   "correcto": "Hermes",
+   "contexto": "app"
+  },
+  {
+   "escuchado": "hermez",
+   "correcto": "Hermes",
+   "contexto": "app"
+  },
+  {
+   "escuchado": "fortunna",
+   "correcto": "Fortuna",
+   "contexto": "app"
+  },
+  {
+   "escuchado": "fortuma",
+   "correcto": "Fortuna",
+   "contexto": "app"
+  },
+  {
+   "escuchado": "kronos",
+   "correcto": "Cronos",
+   "contexto": "app"
+  },
+  {
+   "escuchado": "crono",
+   "correcto": "Cronos",
+   "contexto": "app"
+  },
+  {
+   "escuchado": "krono",
+   "correcto": "Cronos",
+   "contexto": "app"
+  },
+  {
+   "escuchado": "cronus",
+   "correcto": "Cronos",
+   "contexto": "app"
+  },
+  {
+   "escuchado": "conect a",
+   "correcto": "conecta a",
+   "nota": "'Conect a U-Cursos'"
+  },
+  {
+   "escuchado": "espotifai",
+   "correcto": "Spotify",
+   "nota": "variantes de Spotify"
+  },
+  {
+   "escuchado": "spotifai",
+   "correcto": "Spotify",
+   "nota": "variantes de Spotify"
+  },
+  {
+   "escuchado": "espotify",
+   "correcto": "Spotify",
+   "nota": "variantes de Spotify"
+  },
+  {
+   "escuchado": "jimeil",
+   "correcto": "Gmail",
+   "nota": "variantes de Gmail"
+  },
+  {
+   "escuchado": "gimeil",
+   "correcto": "Gmail",
+   "nota": "variantes de Gmail"
+  },
+  {
+   "escuchado": "gimail",
+   "correcto": "Gmail",
+   "nota": "variantes de Gmail"
+  },
+  {
+   "escuchado": "yimeil",
+   "correcto": "Gmail",
+   "nota": "variantes de Gmail"
+  },
+  {
+   "escuchado": "else mismo",
+   "correcto": "ese mismo",
+   "nota": "'agentes else mismo viernes'"
+  },
+  {
+   "escuchado": "Garmes",
+   "correcto": "Hermes"
+  },
+  {
+   "escuchado": "Suto Mayo",
+   "correcto": "ZUTOMAYO"
+  }
+ ],
+ "reglas": [
+  {
+   "tipo": "cambiar",
+   "escuchado": "A nota",
+   "correcto": "Anota",
+   "cerca": [
+    {
+     "w": "pendiente",
+     "lado": "después",
+     "justo": true,
+     "parecido": true,
+     "parecidas": []
+    }
+   ]
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "Enmarca",
+   "correcto": "Anota",
+   "cerca": [
+    {
+     "w": "pendiente",
+     "lado": "después",
+     "justo": true,
+     "parecido": true,
+     "parecidas": [
+      "pendientes"
+     ]
+    }
+   ]
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "Marca",
+   "correcto": "Anota",
+   "cerca": [
+    {
+     "w": "pendiente",
+     "lado": "después",
+     "justo": true,
+     "parecido": true,
+     "parecidas": [
+      "pendientes",
+      "abiertos"
+     ]
+    }
+   ]
+  },
+  {
+   "tipo": "quitar",
+   "escuchado": "uh",
+   "inicio": true,
+   "nota": "muletillas al inicio: 'Uh, guarda esta canción'"
+  },
+  {
+   "tipo": "quitar",
+   "escuchado": "eh",
+   "inicio": true,
+   "nota": "muletillas al inicio: 'Uh, guarda esta canción'"
+  },
+  {
+   "tipo": "quitar",
+   "escuchado": "em",
+   "inicio": true,
+   "nota": "muletillas al inicio: 'Uh, guarda esta canción'"
+  },
+  {
+   "tipo": "quitar",
+   "escuchado": "um",
+   "inicio": true,
+   "nota": "muletillas al inicio: 'Uh, guarda esta canción'"
+  },
+  {
+   "tipo": "quitar",
+   "escuchado": "mm",
+   "inicio": true,
+   "nota": "muletillas al inicio: 'Uh, guarda esta canción'"
+  },
+  {
+   "tipo": "quitar",
+   "escuchado": "mmm",
+   "inicio": true,
+   "nota": "muletillas al inicio: 'Uh, guarda esta canción'"
+  },
+  {
+   "tipo": "quitar",
+   "escuchado": "ah",
+   "inicio": true,
+   "nota": "muletillas al inicio: 'Uh, guarda esta canción'"
+  },
+  {
+   "tipo": "quitar",
+   "escuchado": "un",
+   "inicio": true,
+   "orden": true,
+   "nota": "'Un guarda esta canción', 'Un Atlas, ¿qué hora es?'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "yarvis",
+   "correcto": "Jarvis",
+   "nota": "Yarvis, Charvis, Jervis"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "yervis",
+   "correcto": "Jarvis",
+   "nota": "Yarvis, Charvis, Jervis"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "charvis",
+   "correcto": "Jarvis",
+   "nota": "Yarvis, Charvis, Jervis"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "chervis",
+   "correcto": "Jarvis",
+   "nota": "Yarvis, Charvis, Jervis"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "jervis",
+   "correcto": "Jarvis",
+   "nota": "Yarvis, Charvis, Jervis"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "átlas",
+   "correcto": "Atlas",
+   "nota": "Átlas, hatlas, at las (nombre nuevo)"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "hatlas",
+   "correcto": "Atlas",
+   "nota": "Átlas, hatlas, at las (nombre nuevo)"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "at las",
+   "correcto": "Atlas",
+   "nota": "Átlas, hatlas, at las (nombre nuevo)"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "a tlas",
+   "correcto": "Atlas",
+   "nota": "Átlas, hatlas, at las (nombre nuevo)"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "hat las",
+   "correcto": "Atlas",
+   "nota": "Átlas, hatlas, at las (nombre nuevo)"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "u cursos",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "u curso",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "ucursos",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "ucurso",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "u-curso",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "o cursos",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "o curso",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "ocursos",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "ocurso",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "o-cursos",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "o-curso",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "hu cursos",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "hu curso",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "hucursos",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "hucurso",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "hu-cursos",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "hu-curso",
+   "correcto": "U-Cursos",
+   "nota": "'Conecta o cursos', 'u Cursos', 'U Cursos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "vela estabela red",
+   "correcto": "ve el estado de la red",
+   "nota": "'Vela Estabela Red, a Internet'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "vela estado de la red",
+   "correcto": "ve el estado de la red",
+   "nota": "'Vela Estabela Red, a Internet'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "vela estado la red",
+   "correcto": "ve el estado de la red",
+   "nota": "'Vela Estabela Red, a Internet'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "ve la estabela red",
+   "correcto": "ve el estado de la red",
+   "nota": "'Vela Estabela Red, a Internet'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "ve la estado de la red",
+   "correcto": "ve el estado de la red",
+   "nota": "'Vela Estabela Red, a Internet'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "ve la estado la red",
+   "correcto": "ve el estado de la red",
+   "nota": "'Vela Estabela Red, a Internet'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "vel estabela red",
+   "correcto": "ve el estado de la red",
+   "nota": "'Vela Estabela Red, a Internet'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "vel estado de la red",
+   "correcto": "ve el estado de la red",
+   "nota": "'Vela Estabela Red, a Internet'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "vel estado la red",
+   "correcto": "ve el estado de la red",
+   "nota": "'Vela Estabela Red, a Internet'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "cenando",
+   "correcto": "sonando",
+   "cerca": [
+    {
+     "w": "que",
+     "lado": "antes",
+     "justo": true
+    },
+    {
+     "w": "está",
+     "lado": "antes",
+     "justo": true
+    }
+   ],
+   "nota": "'guarda la canción que está cenando'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "recomindame",
+   "correcto": "recomiéndame",
+   "cerca": [
+    {
+     "w": "canción",
+     "lado": "después",
+     "justo": true,
+     "parecido": true,
+     "parecidas": [
+      "canciones",
+      "tema",
+      "temas",
+      "música",
+      "playlist"
+     ]
+    }
+   ],
+   "nota": "'Recomindame/Recuérdame una canción' (con 'recuérdame' solo si sigue 'una canción')"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "recomiéndeme",
+   "correcto": "recomiéndame",
+   "cerca": [
+    {
+     "w": "canción",
+     "lado": "después",
+     "justo": true,
+     "parecido": true,
+     "parecidas": [
+      "canciones",
+      "tema",
+      "temas",
+      "música",
+      "playlist"
+     ]
+    }
+   ],
+   "nota": "'Recomindame/Recuérdame una canción' (con 'recuérdame' solo si sigue 'una canción')"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "recomendemos",
+   "correcto": "recomiéndame",
+   "cerca": [
+    {
+     "w": "canción",
+     "lado": "después",
+     "justo": true,
+     "parecido": true,
+     "parecidas": [
+      "canciones",
+      "tema",
+      "temas",
+      "música",
+      "playlist"
+     ]
+    }
+   ],
+   "nota": "'Recomindame/Recuérdame una canción' (con 'recuérdame' solo si sigue 'una canción')"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "recuérdame",
+   "correcto": "recomiéndame",
+   "cerca": [
+    {
+     "w": "canción",
+     "lado": "después",
+     "justo": true,
+     "parecido": true,
+     "parecidas": [
+      "canciones",
+      "tema",
+      "temas",
+      "música",
+      "playlist"
+     ]
+    }
+   ],
+   "nota": "'Recomindame/Recuérdame una canción' (con 'recuérdame' solo si sigue 'una canción')"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "mejor por",
+   "correcto": "pon",
+   "inicio": true,
+   "cerca": [
+    {
+     "w": "canción",
+     "lado": "después",
+     "justo": true,
+     "parecido": true,
+     "parecidas": [
+      "canciones",
+      "tema",
+      "temas",
+      "música",
+      "playlist"
+     ]
+    }
+   ],
+   "nota": "'Mejor por una canción de Ado'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "por",
+   "correcto": "pon",
+   "inicio": true,
+   "cerca": [
+    {
+     "w": "canción",
+     "lado": "después",
+     "justo": true,
+     "parecido": true,
+     "parecidas": [
+      "canciones",
+      "tema",
+      "temas",
+      "música",
+      "playlist"
+     ]
+    }
+   ],
+   "nota": "'Mejor por una canción de Ado'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "pon essa",
+   "correcto": "pon esa",
+   "inicio": true,
+   "nota": "'Pon essa'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "you tube",
+   "correcto": "YouTube",
+   "nota": "variantes de YouTube"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "yutub",
+   "correcto": "YouTube",
+   "nota": "variantes de YouTube"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "yutu",
+   "correcto": "YouTube",
+   "nota": "variantes de YouTube"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "llutub",
+   "correcto": "YouTube",
+   "nota": "variantes de YouTube"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "discor",
+   "correcto": "Discord",
+   "nota": "variantes de Discord"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "discort",
+   "correcto": "Discord",
+   "nota": "variantes de Discord"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "disco",
+   "correcto": "Discord",
+   "cerca": [
+    {
+     "w": "por",
+     "lado": "antes",
+     "justo": true,
+     "tambien": [
+      "en",
+      "al",
+      "desde"
+     ]
+    }
+   ],
+   "excepto": [
+    {
+     "w": "de",
+     "lado": "después"
+    },
+    {
+     "w": "del",
+     "lado": "después"
+    },
+    {
+     "w": "duro",
+     "lado": "después"
+    },
+    {
+     "w": "compacto",
+     "lado": "después"
+    }
+   ],
+   "nota": "'escríbele hola a tipo por Disco' (solo tras por/en/al/desde: 'pon el disco de…' no cambia)"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "diskord",
+   "correcto": "Discord",
+   "nota": "'escríbele hola a tipo por Disco' (solo tras por/en/al/desde: 'pon el disco de…' no cambia)"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "dis cord",
+   "correcto": "Discord",
+   "nota": "'escríbele hola a tipo por Disco' (solo tras por/en/al/desde: 'pon el disco de…' no cambia)"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "this cord",
+   "correcto": "Discord",
+   "nota": "'escríbele hola a tipo por Disco' (solo tras por/en/al/desde: 'pon el disco de…' no cambia)"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "leíos",
+   "correcto": "leídos",
+   "nota": "'Marca como leíos'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "llevó",
+   "correcto": "llegó",
+   "cerca": [
+    {
+     "w": "correo",
+     "lado": "antes",
+     "justo": false,
+     "parecido": true,
+     "parecidas": [
+      "correos",
+      "mail",
+      "mails",
+      "mensaje",
+      "mensajes",
+      "email"
+     ]
+    }
+   ],
+   "nota": "'el último correo que me llevó' (solo después de correo/mail/mensaje)"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "sí leelu",
+   "correcto": "léelo",
+   "inicio": true,
+   "nota": "'Si, Leelu'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "leelu",
+   "correcto": "léelo",
+   "inicio": true,
+   "nota": "'Si, Leelu'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "resúmele",
+   "correcto": "resúmelo",
+   "inicio": true,
+   "nota": "'Resumele'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "agentes",
+   "correcto": "agendes",
+   "cerca": [
+    {
+     "w": "que",
+     "lado": "antes",
+     "justo": true
+    }
+   ],
+   "nota": "'Quiero que también agentes…' (solo después de 'que')"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "jacatón",
+   "correcto": "Hackathon",
+   "nota": "'Jacatón', 'Hacatón'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "hacatón",
+   "correcto": "Hackathon",
+   "nota": "'Jacatón', 'Hacatón'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "jakatón",
+   "correcto": "Hackathon",
+   "nota": "'Jacatón', 'Hacatón'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "hackatón",
+   "correcto": "Hackathon",
+   "nota": "'Jacatón', 'Hacatón'"
+  },
+  {
+   "tipo": "cambiar",
+   "escuchado": "en",
+   "correcto": "es",
+   "cerca": [
+    {
+     "w": "cuándo",
+     "lado": "antes",
+     "justo": true
+    },
+    {
+     "w": "próxima",
+     "lado": "después",
+     "justo": true,
+     "parecido": true,
+     "parecidas": [
+      "próximo",
+      "próximas",
+      "próximos",
+      "siguiente"
+     ]
+    }
+   ],
+   "nota": "'¿Cuándo en mi próxima reunión?'"
+  }
+ ],
+ "vocabulario": [
+  "Atlas",
+  "Jarvis",
+  "Gmail",
+  "correo",
+  "correos",
+  "bandeja",
+  "cuenta personal",
+  "cuenta del trabajo",
+  "Universidad de Chile",
+  "la U",
+  "Spotify",
+  "Discord",
+  "Steam",
+  "YouTube",
+  "PedidosYa",
+  "Cabify",
+  "pon",
+  "ponme",
+  "Cronos",
+  "Hermes",
+  "Fortuna",
+  "Apolo",
+  "Atenea",
+  "U-Cursos",
+  "Canvas",
+  "WhatsApp",
+  "Telegram"
+ ],
+ "frases": [
+  {
+   "frase": "Qué tengo para esta semana",
+   "accion": "muéstrame mi horario"
+  },
+  {
+   "frase": "Cómo están mis inversiones",
+   "accion": "cómo están mis inversiones"
+  }
+ ]
+}

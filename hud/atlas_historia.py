@@ -1154,6 +1154,24 @@ def importar_chats_horas(con, archivos: list[Path] | None = None, borrar: bool =
     return res
 
 
+def _rutas_error() -> dict | None:
+    """19-11: si la descarga nocturna de Rutas de Maps está fallando, desde cuándo (lee solo fecha y estado del log)."""
+    try:
+        lineas = [x for x in (CRONO_DB.parent / "sincronizacion.log").read_text(encoding="utf-8", errors="replace").splitlines() if x.strip()]
+    except OSError:
+        return None
+    desde = None
+    for x in reversed(lineas):
+        partes = x.split()
+        if len(partes) < 2 or partes[1] != "ERROR":
+            break
+        desde = partes[0][:16].replace("T", " ")
+    if not desde:
+        return None
+    google = "BadAuthentication" in lineas[-1]
+    return {"desde": desde, "motivo": "Google cerró el acceso de Atlas a sus Rutas" if google else "la descarga está fallando"}
+
+
 def fuentes() -> dict:
     """Cómo se arma la historia (modo) y el estado de cada fuente, solo con conteos y fechas."""
     con = db()
@@ -1181,7 +1199,8 @@ def fuentes() -> dict:
     except Exception:  # noqa: BLE001
         pass
     return {"modo": config().get("modo_ubicacion") or "",
-            "rutas": {"activa": bool(rutas_n and rutas_n[0]), "dias": (rutas_n or (0,))[0], "ultimo": (rutas_n or (0, None))[1]},
+            "rutas": {"activa": bool(rutas_n and rutas_n[0]), "dias": (rutas_n or (0,))[0], "ultimo": (rutas_n or (0, None))[1],
+                      "error": _rutas_error()},
             "pendientes_chats": len(chats_pendientes()),
             "fuentes": [
                 f("auto", "Recibos de viajes, gastos y calendario", q.get("gasto"), True, "Llegan solos (Gmail, Hermes y su calendario)."),
@@ -2432,6 +2451,39 @@ def _viajes_mandan(B: list[dict]) -> int:
     return n
 
 
+def _es_prueba(b: dict) -> bool:
+    """Rutas de Maps, un viaje real (recibo, bip!), lo que él escribió o una visita segura."""
+    if b["fila"] == "viaje" and not b.get("_inferido") and "supuest" not in b["titulo"]:
+        return True
+    return "Rutas de Google Maps" in (b.get("por") or "") or b["fila"] == "dicho" or (b["fila"] == "lugar" and b.get("conf") == "alta")
+
+
+def _hay_ubicacion(B: list[dict], ini: str | None = None, fin: str | None = None, margen: int = 180) -> bool:
+    """¿Algo real dice dónde estuvo? Con ini/fin, solo cuenta lo que cae a menos de «margen» minutos de ese tramo
+    (19-11: Rutas traía solo la madrugada del 18 y eso hacía creer que había pruebas para las clases de la tarde)."""
+    for b in B:
+        if not _es_prueba(b):
+            continue
+        if ini is None or not b.get("ini"):
+            return True
+        if _m(b["ini"]) - margen < _m(fin or ini) and _m(b.get("fin") or b["ini"]) + margen > _m(ini):
+            return True
+    return False
+
+
+def _sin_ubicacion(B: list[dict]) -> int:
+    """19-11: sin ningún dato de ubicación, el calendario es solo lo agendado: no prueba que fue a clases ni a la U."""
+    n = 0
+    for b in B:
+        if _es_prueba(b) or not b.get("ini") or _hay_ubicacion(B, b["ini"], b.get("fin")):
+            continue
+        if b["fila"] in ("actividad", "lugar") and b.get("lugar") != "casa" and not b.get("_sin_ubic"):
+            n += b.get("conf") != "baja"
+            b["conf"], b["_sin_ubic"] = "baja", True  # aunque sus revisiones digan que esa regla suele acertar
+            b["por"] = (b.get("por") or "") + "; ese día no hay datos de ubicación: no se sabe si fue"
+    return n
+
+
 def bloques(d: dict, f: date) -> list[dict]:
     """Bloques del día para la línea de tiempo: [{ini, fin, fila (lugar|actividad|sueno|viaje), titulo, conf, por}].
     Cruza las pistas: un recibo de Cabify fija de dónde salió y adónde llegó; una dirección buscada varias veces
@@ -2690,6 +2742,9 @@ def bloques(d: dict, f: date) -> list[dict]:
     for b in B:
         b["regla"] = regla_de(b)
     ajustar_con_revisiones(B)
+    # 11) sin Rutas, viajes ni nada que lo ubique, lo del calendario queda en «no se sabe si fue» (va después de las
+    # revisiones: que la regla suela acertar no prueba que ese día fue)
+    _sin_ubicacion(B)
     B.sort(key=lambda b: (b["ini"] or "99", {"sueno": 0, "lugar": 1, "viaje": 2, "actividad": 3, "quieto": 4, "dicho": 5}.get(b["fila"], 6)))
     return B
 
@@ -2704,6 +2759,10 @@ def texto_para_modelo(d: dict, max_lineas: int = 110) -> str:
         if bl:
             lineas.append("LÍNEA DEL DÍA (bloques deducidos, con confianza):")
             lineas += [f"  {b['ini']}–{b['fin']} {b['titulo']} [confianza {b['conf']}: {b['por']}]" for b in bl]
+            if any(b.get("_sin_ubic") for b in bl):
+                lineas.append("UBICACIÓN: los bloques que dicen «no hay datos de ubicación» no tienen ningún dato real de "
+                              "dónde estuvo a esa hora (ni Rutas de Maps, ni viajes, ni bip!). Son solo lo que tenía "
+                              "agendado: no digas que fue a clases, a la U ni a ese lugar; di que no se sabe.")
         lineas.append("DÓNDE (pistas, con confianza):" if x["lugares"] else "DÓNDE: sin pistas de lugar ese día")
         lineas += [f"  {h or '--:--'} {t} [confianza {c}]" for h, t, c in x["lugares"][:15]]
         if x["hechos"]:

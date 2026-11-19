@@ -266,7 +266,7 @@ H._chat_dice, _cd4 = (lambda f, m: []), H._chat_dice
 B10 = H.bloques(D10, date(2001, 3, 6))
 H._chat_dice = _cd4
 check("vuelta a casa supuesta", [(b["fila"], b["ini"], b["fin"], b["conf"]) for b in B10 if b["fila"] in ("lugar", "viaje")],
-      [("lugar", "12:45", "17:45", "media"), ("viaje", "17:55", "18:40", "baja"), ("lugar", "18:40", "23:59", "baja")])
+      [("lugar", "12:45", "17:45", "baja"), ("viaje", "17:55", "18:40", "baja"), ("lugar", "18:40", "23:59", "baja")])
 
 # 17-11: pidió ruta a unas cabañas en la costa y Cronos lo dejaba en su casa los días siguientes (datos inventados)
 con = H.db()
@@ -488,6 +488,33 @@ H._correos_imap = _imap_falla
 H._correos(date(2001, 7, 5), date(2001, 7, 5))
 check("correos: si Gmail falla se reintenta pronto", _ti.time() - H._cache_correos[(date(2001, 7, 5), date(2001, 7, 5), 40)][0] > 500, True)
 H._correos_imap = _orig_imap
+
+# 19-11: sin ningún dato de ubicación el calendario no prueba que fue (datos inventados)
+BS = [{"ini": "14:30", "fin": "16:00", "fila": "actividad", "titulo": "Ramo X (como profesor auxiliar)", "lugar": "U", "conf": "media", "por": "ramo"}]
+check("sin ubicación: la clase baja a «no se sabe»", (H._sin_ubicacion(BS), BS[0]["conf"]), (1, "baja"))
+BS = [{"ini": "14:30", "fin": "16:00", "fila": "actividad", "titulo": "Ramo X (rindió)", "lugar": "U", "conf": "media", "por": "x"},
+      {"ini": "13:00", "fin": "13:40", "fila": "viaje", "titulo": "Cabify: su casa → la U", "conf": "alta", "por": "recibo del viaje"}]
+check("con un viaje real no se toca", (H._sin_ubicacion(BS), BS[0]["conf"]), (0, "media"))
+_d = H.dia(date(2001, 3, 6), correos=False); _d["bloques"] = {"2001-03-06": B10}
+check("aviso al modelo sin ubicación", "no hay ningún dato de dónde estuvo" in H.texto_para_modelo(_d) or not H.clasificar(_d), True)
+check("sin ubicación: la U supuesta también baja", all(b["conf"] == "baja" for b in B10 if b.get("lugar") == "U"), True)
+
+# 19-11: Rutas de Maps desconectado se avisa (log inventado)
+_cd_db, _tmp_r = H.CRONO_DB, Path(tempfile.mkdtemp())
+H.CRONO_DB = _tmp_r / "c.db"
+(_tmp_r / "sincronizacion.log").write_text("2001-01-01T21:00:03  OK   1 visitas\n2001-01-02T21:00:03  ERROR  x (BadAuthentication). y\n"
+                                          "2001-01-03T21:00:03  ERROR  x (BadAuthentication). y\n", encoding="utf-8")
+check("rutas: avisa desde cuándo falla", H._rutas_error(), {"desde": "2001-01-02 21:00", "motivo": "Google cerró el acceso de Atlas a sus Rutas"})
+(_tmp_r / "sincronizacion.log").write_text("2001-01-03T21:00:03  ERROR  x\n2001-01-04T21:00:03  OK   1 visitas\n", encoding="utf-8")
+check("rutas: si volvió a funcionar no avisa", H._rutas_error(), None)
+H.CRONO_DB = _cd_db
+
+# 19-11: Rutas de solo la madrugada no prueba las clases de la tarde (datos inventados)
+BP = [{"ini": "00:00", "fin": "01:33", "fila": "lugar", "titulo": "En un lugar", "lugar": "x", "conf": "alta", "por": "Rutas de Google Maps (ubicación real del celular)"},
+      {"ini": "14:30", "fin": "16:00", "fila": "actividad", "titulo": "Ramo X (como alumno)", "lugar": "U", "conf": "media", "por": "x"},
+      {"ini": "03:30", "fin": "04:00", "fila": "actividad", "titulo": "Ramo Y", "lugar": "U", "conf": "media", "por": "x"}]
+H._sin_ubicacion(BP)
+check("rutas parciales: la clase lejos queda sin pruebas y la cercana no", [b["conf"] for b in BP], ["alta", "baja", "media"])
 
 print(f"{ok} de {ok + fail} pruebas pasan")
 sys.exit(1 if fail else 0)

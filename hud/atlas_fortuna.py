@@ -2,7 +2,9 @@
 
 «¿cómo van los fondos?», «¿cuánto ha rentado MACH Moderado este año?», «¿cuál fondo va mejor?»,
 «¿hasta cuándo hay datos de la CMF?». Lee apps\\fortuna\\fondos_cmf.json (lo baja «actualiza Fortuna»).
-Lo que usted tiene invertido vive en la página (en el navegador): Atlas no lo ve.
+«¿Cómo están mis inversiones?» (18-11-2026) responde con lo SUYO: los aportes anotados en Fortuna
+(~/.atlas/fortuna_aportes.json, ver atlas_fortuna_aportes.py) valorizados con el valor cuota de la CMF, igual que
+la pestaña «Mis inversiones» de la página: es_mis_inversiones() y responder_mis_inversiones().
 """
 from __future__ import annotations
 
@@ -86,6 +88,7 @@ def cargar() -> list[dict]:
             k -= 1
         adm = f.get("adm") or ("BCI" if re.search(r"mach", f["name"], re.I) else "Scotia")
         out.append({"nombre": f["name"], "valores": vals[: k + 1], "ultimo": vals[k], "adm": adm,
+                    "key": f"{f.get('rut', '')}-{f.get('serie', '')}",
                     "perfil": f.get("perfil"), "otro": bool(f.get("otro"))})
     return out
 
@@ -231,6 +234,149 @@ def responder(texto: str) -> dict | None:
             else f" Bajaron {_y(bajan)}." if len(bajan) <= 3
             else f" Bajaron {len(bajan)} de {len(rs)}.")
     return {"reply": f"{txt} {al}, señor."}
+
+
+# ---------------------------------------------------------------- lo suyo: «¿cómo están mis inversiones?»
+_MIAS = re.compile(
+    r"\b(?:mis inversiones|mi inversion|mi cartera|mi portafolio|mis fondos|mi fondo|mis ahorros invertidos|"
+    r"(?:lo|la plata|el dinero|la plata que tengo|lo que tengo) (?:que )?(?:tengo |he )?invertid[oa]|mi plata invertida|"
+    r"(?:cuanto|que) (?:he |e )?(?:ganado|perdido|gane|perdi)\b.*\b(?:fondos|invertid\w*|inversion\w*|fortuna)|"
+    r"(?:cuanto|que) (?:me )?(?:ha|han) (?:dado|rendido|rentado)\b.*\b(?:mis|mi) (?:fondos?|inversion\w*|plata))\b")
+
+
+def es_mis_inversiones(texto: str) -> bool:
+    """«¿Cómo están mis inversiones?», «¿cómo van mis fondos?», «¿cuánto he ganado con mis fondos?»: lo que USTED tiene.
+    No si nombra un fondo o una administradora («¿cuánto rentó MACH Moderado?» es el mercado), ni «abre mis fondos»."""
+    t = re.sub(r"\s+", " ", re.sub(r"[¿?¡!,;:.]", " ", _plain(texto))).strip()
+    t = re.sub(r"^(?:oye |atlas |jarvis )+", "", t)
+    if re.match(r"^(?:abre|abrir|actualiza\w*|cierra|refresca\w*|recarga\w*|anota\w*|agrega\w*|borra\w*)\b", t):
+        return False
+    # «muéstrame mis fondos» abre la página de Fortuna (acceso), no es una pregunta
+    if re.search(r"\b(?:muestra\w*|ensena\w*|abre\w*|abrir|ve a|ir a|anda a|pon(?:me)?)\b", t):
+        return False
+    if not _MIAS.search(t) or re.search(r"\b(?:otros|todos los|demas) fondos\b|\bdatos\b|\bcmf\b|valor (?:de (?:la )?)?cuota", t):
+        return False
+    if _adm_en(t) or any(re.search(rf"\b{re.escape(c)}\b", t) for c in _claves_datos()):
+        return False
+    return True
+
+
+def _pesos(n: float) -> str:
+    """1234567.8 -> «1.234.568 pesos»."""
+    return f"{round(abs(n)):,}".replace(",", ".") + " pesos"
+
+
+def _gano(g: float, base: float) -> str:
+    """«ganó 12.345 pesos (0,8 %)» / «perdió …» / «se mantuvo»."""
+    p = g / base * 100 if base else 0.0
+    if abs(g) < 1 and abs(p) < 0.05:
+        return "no ha ganado ni perdido"
+    return f"{'ganó' if g > 0 else 'perdió'} {_pesos(g)} ({pct(abs(p))})"
+
+
+def posiciones(fondos: list[dict], aportes: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Agrupa los aportes por fondo y los valoriza como la página (cuotas = monto / valor cuota del día del aporte).
+    -> (posiciones [{f, aportes:[{monto, fecha, cuotas}], puesto, ahora, sin_valor}], aportes de fondos sin datos)."""
+    por_key = {f["key"]: f for f in fondos}
+    pos: dict[str, dict] = {}
+    sueltos = []
+    for a in aportes:
+        f = por_key.get(a["key"])
+        d = date.fromisoformat(a["date"])
+        v0 = valor_en(f, d) if f else None
+        if not v0:
+            sueltos.append(a)
+            continue
+        p = pos.setdefault(f["key"], {"f": f, "aportes": [], "puesto": 0.0, "ahora": 0.0, "sin_valor": False})
+        cuotas = a["amount"] / v0
+        p["aportes"].append({"monto": a["amount"], "fecha": d, "cuotas": cuotas})
+        p["puesto"] += a["amount"]
+        p["ahora"] += cuotas * f["ultimo"][1]
+        p["sin_valor"] |= d > f["ultimo"][0]   # aporte posterior al último dato de la CMF: vale lo que puso
+    return list(pos.values()), sueltos
+
+
+def _cambio_desde(ps: list[dict], desde: date) -> tuple[float, float]:
+    """Ganancia en el período y la base sobre la que se mide: lo que valía al inicio más lo que aportó después."""
+    base = ahora = 0.0
+    for p in ps:
+        for a in p["aportes"]:
+            v = valor_en(p["f"], desde) if a["fecha"] <= desde else None
+            base += a["cuotas"] * v if v else a["monto"]
+        ahora += p["ahora"]
+    return ahora - base, base
+
+
+def responder_mis_inversiones(texto: str, aportes: list[dict] | None = None) -> dict | None:
+    if not es_mis_inversiones(texto):
+        return None
+    t = re.sub(r"\s+", " ", re.sub(r"[¿?¡!,;:.]", " ", _plain(texto))).strip()
+    if aportes is None:
+        import atlas_fortuna_aportes
+        aportes = atlas_fortuna_aportes.leer()["aportes"]
+    if not aportes:
+        return {"reply": "Aún no tiene inversiones anotadas en Fortuna, señor. Ábrala y anote sus aportes en "
+                         "«Mis inversiones»; si quiere ver cómo se movió el mercado, pregunte «¿cómo van los fondos?»."}
+    try:
+        fondos = cargar()
+    except FileNotFoundError:
+        return {"reply": "Aún no tengo los valores cuota de la CMF para calcular sus inversiones, señor. "
+                         "Diga «actualiza Fortuna» y los bajo."}
+    ps, sueltos = posiciones(fondos, aportes)
+    if not ps:
+        return {"reply": "No encuentro los fondos de sus aportes en los datos de la CMF, señor. "
+                         "Diga «actualiza Fortuna» y vuelva a preguntar."}
+    hasta = max(p["f"]["ultimo"][0] for p in ps)
+    puesto = sum(p["puesto"] for p in ps)
+    ahora = sum(p["ahora"] for p in ps)
+    primero = min(a["fecha"] for p in ps for a in p["aportes"])
+    partes = [f"Sus inversiones valen {_pesos(ahora)}. Aportó {_pesos(puesto)} y desde entonces "
+              f"{_gano(ahora - puesto, puesto)}."]
+
+    # un período: el que pidió («este año», «esta semana») o, si invirtió hace más de un mes, el último mes
+    pidio = re.search(r"este ano|en el ano|del ano|ultimo ano|un ano|12 meses|doce meses|este mes|en el mes|"
+                      r"semana|hoy|ayer|ultimo dia|ultimo mes|un mes|30 dias", t)
+    desde, dicho = periodo(t, hasta)
+    if desde > primero and (pidio or (hasta - primero).days > 31):
+        g, base = _cambio_desde(ps, desde)
+        partes.append(f"{dicho[:1].upper() + dicho[1:]} {_gano(g, base)}.")
+    elif pidio:
+        partes.append(f"Invirtió el {fecha(primero)}, así que no hay más historia que esa.")
+
+    # cada inversión, de la que mejor va a la que peor (pedido 18-11-2026: una por una, aunque esté en cero)
+    rp = lambda p: (p["ahora"] / p["puesto"] - 1) * 100   # noqa: E731
+    rs = sorted(ps, key=lambda p: -rp(p))
+    if len(rs) > 1:
+        partes.append(f"Fondo por fondo:")
+    for p in rs:
+        g = _gano(p["ahora"] - p["puesto"], p["puesto"])
+        if g == "no ha ganado ni perdido":
+            g += " (0,0 %)"
+        extra = ""
+        if p["sin_valor"]:
+            ult = max(a["fecha"] for a in p["aportes"])
+            extra = f", porque el aporte del {ult.day} de {MESES[ult.month - 1]} aún no tiene valor cuota publicado"
+        partes.append(f"{p['f']['nombre']}: aportó {_pesos(p['puesto'])}, hoy vale {_pesos(p['ahora'])} y {g}{extra}.")
+    if len(rs) > 2 and abs(rp(rs[0]) - rp(rs[-1])) >= 0.05:
+        partes.append(f"El que mejor va es {rs[0]['f']['nombre']} y el que peor, {rs[-1]['f']['nombre']}.")
+
+    # meta y pérdida máxima que anotó en la página
+    avisos = []
+    for p in ps:
+        rp = (p["ahora"] / p["puesto"] - 1) * 100
+        metas = [a.get("target") for a in aportes if a["key"] == p["f"]["key"] and a.get("target")]
+        topes = [a.get("stop") for a in aportes if a["key"] == p["f"]["key"] and a.get("stop")]
+        if metas and rp >= min(metas):
+            avisos.append(f"{p['f']['nombre']} ya llegó a su meta de {pct(min(metas))}")
+        elif topes and rp <= -max(topes):
+            avisos.append(f"{p['f']['nombre']} pasó su pérdida máxima de {pct(max(topes))}")
+    if avisos:
+        partes.append(_y(avisos)[:1].upper() + _y(avisos)[1:] + ".")
+    if sueltos:
+        partes.append(f"{len(sueltos)} aporte{'s' if len(sueltos) > 1 else ''} no se pudo valorizar porque su fondo "
+                      f"no tiene datos para esa fecha.")
+    partes.append(f"Valores cuota de la CMF al {fecha(hasta)}, señor.")
+    return {"reply": " ".join(partes)}
 
 
 def _num(v: float) -> str:

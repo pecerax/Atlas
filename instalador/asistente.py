@@ -26,6 +26,7 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.error
 import urllib.request
 import webbrowser
 import zipfile
@@ -169,6 +170,13 @@ def venv_py(nombre: str = "python.exe") -> Path:
     return ATLAS / "src" / ".venv" / "Scripts" / nombre
 
 
+def python_atlas() -> str:
+    """El Python que el instalador descomprime en Atlas\python (sin uv ni enlaces). Si no está, «3.13» para que uv
+    use uno suyo (camino antiguo)."""
+    py = ATLAS / "python" / "python.exe"
+    return str(py) if py.exists() else "3.13"
+
+
 def uv() -> str:
     for c in (AQUI / "uv.exe", HOME / ".local" / "bin" / "uv.exe"):
         if c.exists():
@@ -229,9 +237,10 @@ def paso_componentes(av) -> str:
     oj = ATLAS / "openjarvis"                  # BASE.txt, atlas.patch y archivos\ (los trae el repositorio)
     sha = re.search(r"[0-9a-f]{40}", (oj / "BASE.txt").read_text(encoding="utf-8")).group(0)
     av(0.02, "Preparando Python")
-    r = correr([uv(), "python", "install", "3.13"], timeout=1800)
-    if r.returncode:
-        raise RuntimeError("No se pudo instalar Python: " + r.stderr[-300:])
+    if python_atlas() == "3.13":
+        r = correr([uv(), "python", "install", "3.13", "--no-bin"], timeout=1800)
+        if r.returncode:
+            raise RuntimeError("No se pudo instalar Python: " + r.stderr[-300:])
     if not (src / "pyproject.toml").exists():
         av(0.08, "Descargando el núcleo de Atlas")
         z = AQUI / "descargas" / f"openjarvis-{sha[:7]}.zip"
@@ -255,7 +264,7 @@ def paso_componentes(av) -> str:
                 shutil.copy2(f, d)
     if not venv_py().exists():
         av(0.25, "Creando el entorno de Atlas")
-        r = correr([uv(), "venv", str(src / ".venv"), "--python", "3.13", "--prompt", "atlas"], cwd=src)
+        r = correr([uv(), "venv", str(src / ".venv"), "--python", python_atlas(), "--prompt", "atlas"], cwd=src)
         if r.returncode:
             raise RuntimeError("No se pudo crear el entorno: " + r.stderr[-300:])
     av(0.3, "Instalando componentes (unos minutos)")
@@ -356,30 +365,65 @@ def paso_ollama(av) -> str:
     return "Listo"
 
 
+class ErrorOllama(Exception):
+    """Ollama contestó con un error propio (no es un corte de internet)."""
+
+
+def hay_internet() -> bool:
+    try:
+        with urllib.request.urlopen("https://registry.ollama.ai/v2/", timeout=10):
+            return True
+    except urllib.error.HTTPError:
+        return True                      # respondió (401): hay internet
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def paso_modelo(av) -> str:
+    """Baja el modelo con Ollama. Ollama guarda lo descargado y retoma donde quedó, así que reintentar no pierde nada.
+    Mientras la descarga avance se sigue intentando; solo se rinde tras varios intentos seguidos sin avanzar, y el
+    mensaje dice la causa real: sin internet, sin espacio o un error de Ollama (antivirus o firewall, por lo común)."""
     modelo = ESTADO["modelo"]
-    with urllib.request.urlopen(OLLAMA_API + "/api/tags", timeout=10) as r:
-        if any(m.get("name") == modelo for m in json.loads(r.read()).get("models") or []):
-            return "Descargado"
-    for intento in range(8):
-        req = urllib.request.Request(OLLAMA_API + "/api/pull", data=json.dumps({"model": modelo}).encode(),
-                                     headers={"Content-Type": "application/json"})
+    fallos, mejor, ultimo = 0, 0, ""
+    while fallos < 10:
         try:
-            with urllib.request.urlopen(req, timeout=120) as r:
+            if not ollama_responde():
+                paso_ollama(lambda *a, **k: None)     # Ollama se cerró: se vuelve a levantar
+            with urllib.request.urlopen(OLLAMA_API + "/api/tags", timeout=10) as r:
+                if any(m.get("name") == modelo for m in json.loads(r.read()).get("models") or []):
+                    return "Descargado"
+            req = urllib.request.Request(OLLAMA_API + "/api/pull", data=json.dumps({"model": modelo}).encode(),
+                                         headers={"Content-Type": "application/json"})
+            # 15 minutos sin noticias: al final Ollama revisa el archivo grande y puede estar callado un buen rato.
+            with urllib.request.urlopen(req, timeout=900) as r:
                 for linea in r:
                     ev = json.loads(linea or b"{}")
                     if ev.get("error"):
-                        raise RuntimeError(ev["error"])
+                        raise ErrorOllama(ev["error"])
                     tot, hecho = ev.get("total") or 0, ev.get("completed") or 0
                     if tot > 5e8:              # la capa grande del modelo es la que importa para la barra
                         av(hecho / tot, f"{gb(hecho)} · {round(100 * hecho / tot)} %")
+                        if hecho > mejor:
+                            mejor, fallos = hecho, 0      # avanzó: el contador de intentos vuelve a cero
                     if ev.get("status") == "success":
                         return "Descargado"
+            raise ErrorOllama("la descarga terminó sin confirmarse")
         except Exception as exc:  # noqa: BLE001
-            registro(f"  modelo: se cortó ({type(exc).__name__}); Ollama retoma donde quedó")
-            av(None, "Se cortó la conexión: retomando", pausa=True)
-            time.sleep(min(60, 10 * (intento + 1)))
-    raise RuntimeError("Se cortó la conexión a internet y no se pudo retomar la descarga del modelo")
+            fallos += 1
+            texto = str(exc)[:200]
+            registro(f"  modelo: intento {fallos} falló ({type(exc).__name__}: {texto})")
+            if "space" in texto.lower() or "espacio" in texto.lower():
+                raise RuntimeError("Se llenó el disco. Libere espacio (el modelo necesita unos 7 GB) y presione Reintentar.")
+            if not hay_internet():
+                ultimo = "Se cortó la conexión a internet."
+                av(None, "Sin internet: esperando para seguir", pausa=True)
+            else:
+                ultimo = ("Hay internet, pero Ollama no pudo descargar el modelo"
+                          + (f" ({texto})" if isinstance(exc, ErrorOllama) else "")
+                          + ". Puede ser un antivirus, un firewall o la red (por ejemplo, la de una universidad o empresa).")
+                av(None, f"Reintentando ({fallos} de 10)…")
+            time.sleep(min(60, 10 * fallos))
+    raise RuntimeError(ultimo + " Lo ya descargado no se pierde: presione Reintentar para seguir desde ahí.")
 
 
 # ------------------------------------------------------------------------------------------------ 3 · voz
@@ -620,7 +664,7 @@ def cronos_rutas(datos: dict) -> dict:
     py = cm / ".venv" / "Scripts" / "python.exe"
     marcar("cuentas", "cronos", detalle="Preparando el programa de Rutas")
     if not py.exists():
-        r = correr([uv(), "venv", str(cm / ".venv"), "--python", "3.13"], cwd=cm)
+        r = correr([uv(), "venv", str(cm / ".venv"), "--python", python_atlas()], cwd=cm)
         if r.returncode:
             return {"ok": False, "detalle": "No se pudo preparar el programa de Rutas"}
     r = correr([uv(), "pip", "install", "--python", str(py), "-r", str(cm / "requirements.txt")], cwd=cm, timeout=1800)
@@ -809,10 +853,50 @@ def abrir_ventana(url: str) -> None:
     e = edge()
     perfil = AQUI / "ventana"
     if e:
-        subprocess.Popen([e, f"--app={url}", f"--user-data-dir={perfil}", "--window-size=980,760",
-                          "--no-first-run", "--no-default-browser-check"])
-    else:
-        webbrowser.open(url)
+        try:
+            subprocess.Popen([e, f"--app={url}", f"--user-data-dir={perfil}", "--window-size=980,760",
+                              "--no-first-run", "--no-default-browser-check"])
+            registro("ventana abierta con Edge")
+            return
+        except OSError as exc:
+            registro(f"Edge no abrió: {exc}")
+    if not webbrowser.open(url):
+        registro("no hay navegador para abrir la ventana")
+        aviso("No pude abrir la ventana del asistente.\n\nAbra su navegador y escriba esta dirección:\n" + url)
+
+
+def aviso(texto: str) -> None:
+    """Mensaje de Windows para cuando la ventana del asistente no puede mostrarse: nunca fallar en silencio."""
+    try:
+        ctypes.windll.user32.MessageBoxW(None, texto, "Instalador de Atlas", 0x10 | 0x40000)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def ocultar_consola() -> None:
+    """Abierto desde el menú Inicio, uv deja una consola negra: se esconde apenas el asistente arranca."""
+    try:
+        h = ctypes.windll.kernel32.GetConsoleWindow()
+        if h:
+            ctypes.windll.user32.ShowWindow(h, 0)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+ARCHIVO_PUERTO = AQUI / "asistente.puerto"
+
+
+def ya_abierto() -> str | None:
+    """Si otro asistente ya corre (por ejemplo, la persona lo abrió dos veces), devuelve su dirección."""
+    try:
+        puerto = int(ARCHIVO_PUERTO.read_text(encoding="utf-8").strip())
+        url = f"http://127.0.0.1:{puerto}/"
+        with urllib.request.urlopen(url + "api/estado", timeout=3) as r:
+            if r.status == 200:
+                return url
+    except Exception:  # noqa: BLE001
+        pass
+    return None
 
 
 def vigilar_ventana() -> None:
@@ -826,6 +910,17 @@ def vigilar_ventana() -> None:
 
 
 def main() -> None:
+    try:
+        _main()
+    except Exception:  # noqa: BLE001
+        import traceback
+        registro("el asistente se cayó al abrir:\n" + traceback.format_exc())
+        aviso("El asistente de Atlas no pudo abrirse.\n\nEl detalle quedó en:\n" + str(AQUI / "instalacion.log")
+              + "\n\nMándele ese archivo a quien le pasó el instalador.")
+        sys.exit(1)
+
+
+def _main() -> None:
     global PUERTO, SIMULAR, ATLAS
     ap = argparse.ArgumentParser()
     ap.add_argument("--atlas", help="carpeta de Atlas (por defecto, la de arriba de este archivo)")
@@ -835,6 +930,13 @@ def main() -> None:
     if a.atlas:
         ATLAS = Path(a.atlas)
     SIMULAR = a.simular
+    ocultar_consola()
+    otro = ya_abierto()
+    if otro:
+        registro("el asistente ya estaba abierto: muestro esa ventana")
+        if not a.sin_ventana:
+            abrir_ventana(otro)
+        return
     try:
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("Atlas.Instalador")
     except Exception:  # noqa: BLE001
@@ -843,7 +945,11 @@ def main() -> None:
     srv = ThreadingHTTPServer(("127.0.0.1", 0), Manejador)
     PUERTO = srv.server_address[1]
     url = f"http://127.0.0.1:{PUERTO}/"
-    registro(f"asistente abierto (simular={SIMULAR})")
+    try:
+        ARCHIVO_PUERTO.write_text(str(PUERTO), encoding="utf-8")
+    except OSError:
+        pass
+    registro(f"asistente abierto (simular={SIMULAR}, Python {sys.version.split()[0]})")
     print(url, flush=True)
     if not a.sin_ventana:
         abrir_ventana(url)

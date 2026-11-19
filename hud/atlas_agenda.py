@@ -987,6 +987,10 @@ def answer(text: str, now: datetime | None = None, semana_completa: bool = False
         and not re.search(r"evaluaciones|controles|ejercicios|examenes|tareas|auxiliares|catedras|clases|proximos|proximas|reuniones|eventos|citas|compromisos", p)
     single = single or (inherit_single and not re.search(r"evaluaciones|controles|ejercicios|examenes|tareas|auxiliares|catedras|clases|reuniones|eventos", p))
     rng = parse_range(range_src, now) if range_src else None
+    if rng is None and horario and not single and not followup and not specific:
+        # «muéstrame mi horario» (acción «Horario de la semana») es la semana: lo hablado decía «hoy y mañana»
+        # mientras la vista abría la semana (uso real 18-11-2026, frase guardada con ✎ Corregir)
+        rng = parse_range("esta semana", now)
     day0 = datetime.combine(now.date(), datetime.min.time())
     _LAST = {"t": time.time(), "want_eval": want_eval, "kinds": kinds, "clases": clases, "personal": personal,
              "horario": horario, "asked_nicks": list(asked_nicks), "asked_words": list(asked_words),

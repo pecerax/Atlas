@@ -176,11 +176,25 @@ def say_date(d: date, year: bool = True) -> str:
     return f"{DIAS[d.weekday()]} {d.day} de {MESES[d.month - 1]}" + (f" de {d.year}" if year else "")
 
 
+def estacion(d) -> str:
+    """Estación del año en Chile (hemisferio sur; fechas aproximadas de equinoccios y solsticios). Uso real 18-11-2026:
+    el modelo dijo que en noviembre en Chile «todavía es otoño» (es primavera)."""
+    md = (d.month, d.day)
+    if md >= (12, 21) or md < (3, 20):
+        return "verano"
+    if md < (6, 21):
+        return "otoño"
+    if md < (9, 22):
+        return "invierno"
+    return "primavera"
+
+
 def clock_line() -> str:
-    """Línea para <datos herramienta="reloj">: lo que el modelo debe saber siempre."""
+    """Línea para <datos herramienta="reloj">: lo que el modelo debe saber siempre (fecha, hora, estación y lugar)."""
     n = _local_now()
     return (f"Ahora es {say_date(n.date())}, {n.hour}:{n.minute:02d} (hora de Santiago de Chile). "
-            f"Mañana es {say_date(n.date() + timedelta(days=1), year=False)}.")
+            f"Mañana es {say_date(n.date() + timedelta(days=1), year=False)}. "
+            f"En Chile (hemisferio sur) es {estacion(n.date())}.")
 
 
 def _time_answer(p: str) -> str | None:

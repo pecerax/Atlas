@@ -88,19 +88,36 @@ def generar(version: str, faltantes: dict, ajustes: dict, modelo: str = "") -> s
     h("1. QUÉ ES ATLAS")
     L += ["Atlas es un asistente de voz y pantalla que corre localmente en Windows. Está construido sobre OpenJarvis,",
           "un proyecto libre de asistente personal (todo el crédito de la base a sus autores). Atlas le agrega una pantalla",
-          "propia (HUD), voz en español, correo, agenda, avisos, mensajería y apps propias que se abren dentro de la ventana."]
+          "propia (HUD), voz en español, correo, agenda, avisos, mensajería y apps propias que se abren dentro de la ventana.",
+          "- Apps propias: Hermes (gastos del banco), Fortuna (fondos mutuos) y Cronos (su historia día a día). Baco",
+          "  (entretenimiento) y Atenea (educación) aparecen como «próximamente»: todavía no hacen nada.",
+          "- Telegram: un bot llamado «Atlas» le responde y le avisa desde el celular cuando no está frente al PC.",
+          "- Código: repositorio público github.com/pecerax/Atlas (sin datos personales). La versión está en el archivo",
+          "  %LOCALAPPDATA%\\Atlas\\VERSION."]
+
+    h("1b. LA FORMA FÁCIL: EL INSTALADOR")
+    L += ["- Atlas-Instalar.exe (sin permisos de administrador) copia Atlas en %LOCALAPPDATA%\\Atlas y abre un asistente",
+          "  que instala Python, los componentes, Ollama, el modelo, las voces, Syncthing y el acceso directo, y al final",
+          "  pide las cuentas una por una (U-Cursos, Canvas, correo, Google Calendar, Hermes y Cronos). Todo se puede saltar",
+          "  y retomar en Ajustes › Instalación. Al abrir Atlas por primera vez, un asistente corto prueba el micrófono y",
+          "  deja elegir la voz.",
+          "- Si la persona usa el instalador, la IA solo acompaña: lo de abajo es para revisar o hacerlo a mano."]
 
     h("2. REQUISITOS")
     L += ["- Windows 10 u 11, con micrófono y parlantes o audífonos.",
           "- Microsoft Edge (Atlas abre su ventana con Edge en modo aplicación).",
-          "- Python gestionado con uv (lo instala el instalador de OpenJarvis para Windows).",
+          "- Python 3.13 gestionado con uv (el instalador de Atlas trae uv y lo deja listo).",
           f"- Ollama, con el modelo {modelo} descargado (`ollama pull {modelo}`).",
-          "- Tarjeta gráfica opcional pero recomendada (NVIDIA con 8 GB de VRAM o más); sin ella el modelo corre en CPU, más lento.",
+          "- Tarjeta gráfica opcional pero recomendada (NVIDIA con 8 GB de VRAM o más); sin ella el instalador elige un",
+          "  modelo más chico (4B) que corre en CPU, más lento.",
           "- Espacio: unos 15 GB entre el modelo, las voces y el reconocimiento de voz."]
 
     h("3. CARPETAS")
     L += ["- %LOCALAPPDATA%\\Atlas            programa: src (OpenJarvis y su entorno .venv), hud (la pantalla y la lógica),",
           "                                   voices (voces y reconocimiento), los scripts .cmd y los perfiles de Edge (*-profile).",
+          "- %LOCALAPPDATA%\\Atlas\\apps        las apps: hermes (gastos), fortuna (fondos) y cronos (historia; dentro",
+          "                                   está cronologia_maps, la descarga de Rutas de Google Maps).",
+          "- %LOCALAPPDATA%\\Atlas\\instalador  el asistente de instalación (asistente.py) y lo que usa.",
           "- %USERPROFILE%\\.atlas            configuración (config.toml: motor «ollama» y modelo) y connectors (conexiones).",
           "- %LOCALAPPDATA%\\Atlas\\hud\\ajustes.json   los ajustes que se cambian desde la rueda de Ajustes."]
 
@@ -129,10 +146,10 @@ def generar(version: str, faltantes: dict, ajustes: dict, modelo: str = "") -> s
         if atajos:
             L.append("    Atajo: " + "; ".join(dict.fromkeys(atajos)) + ".")
         L.append("    Cómo verificar: " + _limpio(VERIFICAR.get(p["titulo"], "En Ajustes › Instalación este paso debe quedar en verde (botón VOLVER A REVISAR).")))
-    # Instalación de cada app: vive en Ajustes › Guía de las apps (Cronos y Fortuna no requieren nada extra)
+    # Instalación de cada app: vive en Ajustes › Guía de las apps (Hermes y Cronos traen su guía; Fortuna no requiere nada)
     h("5b. INSTALACIÓN DE LAS APPS (Ajustes › Guía de las apps › cada app › Instalación)")
-    L += ["- Cronos: no requiere nada extra. Usa el historial por día que Atlas arma solo.",
-          "- Fortuna: no requiere nada extra. Usa los valores cuota públicos de la CMF y los aportes que usted anota a mano."]
+    L += ["- Fortuna: no requiere nada extra. Usa los valores cuota públicos de la CMF y los aportes que usted anota a mano.",
+          "- Baco y Atenea: próximamente; no hay nada que instalar."]
     for app, g in ((faltantes or {}).get("guia") or {}).items():
         L += ["", f"- {app}: {_limpio(g.get('titulo', ''))}  [{EST.get(g.get('estado'), '')}]",
               f"    Para qué sirve: {_limpio(g.get('que', ''))}"]
@@ -165,7 +182,9 @@ def generar(version: str, faltantes: dict, ajustes: dict, modelo: str = "") -> s
                      f" Número ({'minutos' if a.get('unidad') == 'min' else 'segundos'}, mínimo {a.get('min')})." if a.get("tipo") == "num" else "")
             L.append(f"    - {_limpio(a['nombre'])}: {_limpio(a['explica'])}{extra} [{donde}]")
     L += ["", "    Diccionario tiene además un panel propio: correcciones de lo que el oído entiende mal y apodos de",
-          "    contactos, accesos y artistas. Se llena solo con el uso o a mano desde ese panel."]
+          "    contactos, accesos y artistas. Se llena solo con el uso o a mano desde ese panel.",
+          "    Corrector: el botón ✎ Corregir de cada mensaje pregunta «¿Qué quería que hiciera Atlas?» y guarda la",
+          "    corrección en el diccionario, para que la próxima vez lo haga bien."]
 
     h("8. CREDENCIALES Y SEGURIDAD")
     L += ["- Cada conexión pide su credencial en la ventana de su propio script .cmd o en la página oficial (Google,",
@@ -173,7 +192,8 @@ def generar(version: str, faltantes: dict, ajustes: dict, modelo: str = "") -> s
           "- Correo: use una contraseña de aplicación del proveedor (por ejemplo de Google), no la contraseña normal.",
           "- Los secretos (contraseñas, tokens, cookies) se guardan en el Administrador de credenciales de Windows, en",
           "  entradas que empiezan con «Atlas-» (por ejemplo Atlas-Correo-<cuenta>, Atlas-GoogleCalendar, Atlas-Telegram-Bot,",
-          "  Atlas-UCursos, Atlas-Canvas), cifradas por Windows para su usuario. Lo hace el módulo",
+          "  Atlas-UCursos, Atlas-Canvas, Atlas-Hermes-PDF, Atlas-Syncthing-GUI), cifradas por Windows para su usuario.",
+          "  Nunca se escriben en archivos ni en registros. Lo hace el módulo",
           "  %LOCALAPPDATA%\\Atlas\\src\\src\\openjarvis\\security\\atlas_secretos.py. Las entradas viejas «Jarvis-…» se",
           "  siguen leyendo solo si falta la «Atlas-…» equivalente.",
           "- En %USERPROFILE%\\.atlas\\connectors quedan solo «sobres»: archivos con datos no secretos (servidor, fecha) y",
@@ -182,6 +202,8 @@ def generar(version: str, faltantes: dict, ajustes: dict, modelo: str = "") -> s
           "  que muestra solo los nombres). Para quitar una conexión, borre su entrada «Atlas-…».",
           "- Proteger-credenciales.cmd (con Atlas cerrado) sirve para instalaciones antiguas que aún tengan secretos en",
           "  archivos: primero muestra qué haría, deja un respaldo cifrado y luego los pasa al Administrador de credenciales.",
+          "- La página de Syncthing (127.0.0.1:8384) queda con usuario y contraseña al azar (Atlas-Syncthing-GUI); Atlas",
+          "  habla con Syncthing con su clave de API y no los necesita.",
           "- Nunca pegue en el chat de la IA contraseñas, tokens, códigos de verificación ni el contenido de esos archivos."]
 
     h("9. PRUEBAS")

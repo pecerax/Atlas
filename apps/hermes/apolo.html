@@ -303,6 +303,89 @@ body.top-c .months{grid-template-columns:auto auto minmax(0,1fr) auto}
 .hupd-btn[disabled]{cursor:progress;opacity:.75;box-shadow:none}
 @media (max-width:900px){body.top-a .months,body.top-c .months{grid-template-columns:auto minmax(0,1fr) auto}
   body.top-a .months > .pills,body.top-c .months > .pills,body.top-a .months > .sel,body.top-c .months > .sel,body.top-a .months > .badge,.months > .hupd{grid-column:1 / -1;justify-self:start}}
+
+/* ==== primera fila como barra de pestañas (diseño 2, elegido 18-11-2026): una sola barra con borde, como
+   HOY · CORREO · TAREAS en Atlas. Banco con cartera a la izquierda, meses como pestañas, acciones con ícono a la derecha.
+   Vista previa en hermes_rediseno.html; respaldo en _respaldos_hermes_fila_2026-11-18. */
+nav.months{border:1px solid var(--line);background:var(--panel);gap:0;align-items:stretch;position:relative;z-index:5}
+body.top-a nav.months{grid-template-columns:auto auto minmax(0,1fr) auto auto}
+nav.months > *{align-self:stretch}
+nav.months .arr{border:0;border-left:1px solid var(--grid);border-right:1px solid var(--grid);background:transparent;color:var(--muted);padding:0 11px}
+nav.months .arr:hover{color:var(--accent);background:var(--accent-soft)}
+nav.months #mstrip{gap:0}
+nav.months .mbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:9px 2px 8px;border:0;border-bottom:2px solid transparent;background:transparent;box-shadow:none}
+nav.months .mbtn b{font-family:var(--f-body);font-weight:600;font-size:.86rem;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-2)}
+nav.months .mbtn span{font-family:var(--f-mono);font-size:.74rem;color:var(--muted)}
+nav.months .mbtn:hover{background:rgba(255,184,107,.06)} nav.months .mbtn:hover b{color:var(--fg)}
+nav.months .mbtn[aria-pressed="true"]{border-bottom-color:var(--accent);background:linear-gradient(to top,rgba(255,184,107,.16),transparent);box-shadow:none}
+nav.months .mbtn[aria-pressed="true"] b{color:var(--accent)} nav.months .mbtn[aria-pressed="true"] span{color:var(--fg)}
+nav.months .mbtn small{display:none}
+nav.months .mbtn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+/* banco: el mismo «Banco ▾» de Fortuna (botón + menú propio), en ámbar (pedido 18-11-2026) */
+.bankbox{position:relative;display:flex;align-items:center;padding:3px;border-right:1px solid var(--line);min-width:130px}
+.bankbox .sel{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden}
+.bankbox .fsel{border:0;background:transparent;padding:7px 14px;min-height:34px;width:100%;color:var(--fg-2);font-family:var(--f-body);font-size:.9rem;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bankbox .fsel::after{content:"";border:5px solid transparent;border-top:6px solid currentColor;border-bottom:0;margin-top:2px;flex:none}
+.bankbox .fsel:hover{color:var(--fg);background:rgba(255,184,107,.08)}
+.bankbox .fsel.on{background:var(--accent);color:var(--bg);font-weight:600;box-shadow:0 0 14px rgba(255,184,107,.35)}
+.bankbox .fsel:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bankmenu{position:absolute;left:-1px;top:calc(100% + 6px);z-index:30;width:260px;max-height:min(70vh,520px);overflow:auto;background:#140B03;border:1px solid var(--accent);
+  box-shadow:0 14px 36px rgba(0,0,0,.6),0 0 18px rgba(255,184,107,.12);padding:6px}
+.bankmenu[hidden]{display:none}
+.bankmenu .mono-label{display:block;padding:8px 10px 4px;font-size:.64rem}
+.bankmenu .sep{border-top:1px solid var(--line);margin:6px 4px}
+.bankmenu button{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;padding:7px 10px;cursor:pointer;color:var(--fg);font-family:var(--f-body);font-size:.92rem}
+.bankmenu button small{font-family:var(--f-mono);font-size:.72rem;color:var(--muted)}
+.bankmenu button:hover,.bankmenu button:focus-visible{background:rgba(255,184,107,.1);outline:none}
+.bankmenu button[aria-selected="true"]{background:var(--accent-soft);color:var(--accent)}
+.bankmenu .add{color:var(--muted);font-size:.86rem}
+.bankmenu .vacio{padding:6px 10px;font-size:.82rem;color:var(--muted)}
+/* acciones: ícono + etiqueta chica; el número de pendientes en un punto */
+nav.months .hupd{all:unset;display:flex;align-self:stretch;border-left:1px solid var(--line)}
+nav.months .hupd[hidden]{display:none}
+nav.months #askOpen,nav.months .hupd-btn{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 16px;min-width:96px;
+  font-family:var(--f-mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:transparent;border:0;border-radius:0;white-space:nowrap}
+nav.months > #askOpen{border-left:1px solid var(--line)}
+nav.months #askOpen[hidden]{display:none}
+nav.months .hupd-btn{border-left:1px solid var(--grid)}
+nav.months #askOpen:hover,nav.months .hupd-btn:hover{color:var(--fg);background:var(--accent-soft);box-shadow:none}
+nav.months #askOpen:focus-visible,nav.months .hupd-btn:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+nav.months .hico{width:18px;height:18px;color:var(--accent);flex:none}
+nav.months #askOpen > i{display:none}
+nav.months #askOpen .dot{position:absolute;top:5px;right:calc(50% - 22px);min-width:15px;height:15px;padding:0 4px;border-radius:8px;background:var(--warn);color:#090502;font:600 .6rem/15px var(--f-mono);letter-spacing:0;text-align:center}
+nav.months .hupd-t{display:inline-flex;align-items:center;gap:6px}
+nav.months .hupd-msg{font-size:.58rem;letter-spacing:.02em;text-transform:none;padding:0;color:var(--muted)}
+nav.months .hupd-msg.warn{color:var(--warn)}
+@media (max-width:900px){
+  body.top-a nav.months{grid-template-columns:auto minmax(0,1fr) auto}
+  nav.months .bankbox{grid-column:1 / -1;border-right:0;border-bottom:1px solid var(--line)}
+  nav.months > .hupd,nav.months > #askOpen{grid-column:1 / -1;justify-self:stretch;border-left:0;border-top:1px solid var(--line)}
+  nav.months .hupd > *{flex:1}
+}
+/* ---- balance: «Balance» a la altura de «Resumen» y el número llena la columna (opción 4: Consolas negrita con brillo) · lo que salió va en rojo */
+.flow > h2,.flow > .per,.flow > div:not(.bal){grid-column:1}
+.flow > .bal{grid-column:2;grid-row:1 / span 3;align-self:stretch;display:flex;flex-direction:column;container-type:inline-size}
+.flow > .bal .mono-label{font-size:.78rem;font-weight:500;color:var(--accent);line-height:1.45}
+.flow > .bal .v{flex:1;display:flex;align-items:center;margin:6px 0;font-family:var(--f-mono);font-weight:700;font-size:min(19.5cqw,6rem);letter-spacing:-.02em;line-height:1;white-space:nowrap;font-variant-numeric:tabular-nums}
+.flow > .bal .v.bad{text-shadow:0 0 6px rgba(255,138,122,.6),0 0 24px rgba(255,138,122,.35)}
+.flow > .bal .v.good{text-shadow:0 0 6px rgba(98,240,180,.55),0 0 24px rgba(98,240,180,.3)}
+/* ---- filtros de movimientos como Fortuna (propuesta A): barra cuadrada, el activo relleno, «Categoría ▾» con el menú del banco */
+.movbar{position:relative}
+.movbar .filters{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:stretch;width:100%;border:1px solid var(--line);background:rgba(20,11,3,.6);padding:3px;gap:3px}
+.movbar .segs{display:flex;gap:2px}
+.movbar .seg,.movbar #catbtn{border:0;border-radius:0;background:transparent;padding:7px 14px;min-height:34px;color:var(--fg-2);font-family:var(--f-body);font-size:.9rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.movbar .seg .c{font-family:var(--f-mono);font-size:.72rem;opacity:.75}
+.movbar .seg:hover,.movbar #catbtn:hover{color:var(--fg);background:rgba(255,184,107,.08)}
+.movbar .seg[aria-pressed="true"],.movbar #catbtn.on{background:var(--accent);color:var(--bg);font-weight:600;box-shadow:0 0 14px rgba(255,184,107,.35)}
+.movbar #catbtn{justify-self:end;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.movbar #catbtn::after{content:"";border:5px solid transparent;border-top:6px solid currentColor;border-bottom:0;margin-top:2px;flex:none}
+.movbar .seg:focus-visible,.movbar #catbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.movbar .catmenu{left:auto;right:0;max-height:min(50vh,360px)}
+@media (max-width:520px){.movbar .filters{grid-template-columns:minmax(0,1fr)}.movbar .segs > .seg{flex:1}.movbar #catbtn{justify-self:stretch}}
+.fl.out .amt{color:var(--bad)}
+.fl.out .track i:not(.back){background:var(--bad);filter:drop-shadow(0 0 5px rgba(255,138,122,.7))}
+@media (max-width:700px){.flow > h2,.flow > .per,.flow > div:not(.bal),.flow > .bal{grid-column:1;grid-row:auto}.flow > .bal .v{font-size:min(17cqw,4rem)}}
 </style>
 </head>
 <body class="cargando">
@@ -316,9 +399,12 @@ body.top-c .months{grid-template-columns:auto auto minmax(0,1fr) auto}
 <main class="app">
   <header class="bar">
     <div class="brand"><span class="logo" role="img" aria-label="Hermes"><svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M330.9 70.6 A200 200 0 0 1 438.7 337.3" fill="none" stroke="currentColor" stroke-width="40" stroke-linecap="round"/><path d="M349.9 432.6 A200 200 0 0 1 132.9 413.6" fill="none" stroke="currentColor" stroke-width="40" stroke-linecap="round"/><path d="M65.8 317.8 A200 200 0 0 1 65.8 194.2" fill="none" stroke="currentColor" stroke-width="40" stroke-linecap="round"/><path d="M256 168 V404" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="16"/><circle cx="256" cy="150" r="15" fill="currentColor"/><path d="M246 172 C214 150 176 138 136 146 C160 156 178 164 192 172 C172 172 156 178 144 190 C176 192 214 188 246 184 Z" fill="currentColor"/><path d="M 266 172 C 298 150 336 138 376 146 C 352 156 334 164 320 172 C 340 172 356 178 368 190 C 336 192 298 188 266 184 Z" fill="currentColor"/><path d="M256 392 C302 372 302 340 256 318 C210 296 210 266 256 244 C292 228 298 208 280 196" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="13"/><path d="M 256 392 C 210 372 210 340 256 318 C 302 296 302 266 256 244 C 220 228 214 208 232 196" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="13"/><circle cx="282" cy="194" r="9" fill="currentColor"/><circle cx="230" cy="194" r="9" fill="currentColor"/></svg></span><div><b id="marcaNombre">Hermes</b><small>Mis finanzas</small></div></div>
-    <select class="sel" id="banco" aria-label="Banco"><option value="">Todos los bancos</option></select>
+    <!-- selector de banco (18-11-2026, diseño 2): el <select> queda escondido como fuente de datos; se elige con el menú propio -->
+    <div class="bankbox" id="bankbox"><select class="sel" id="banco" aria-label="Banco" tabindex="-1" aria-hidden="true"><option value="">Todos los bancos</option></select>
+      <button type="button" class="fsel" id="bankbtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="bankmenu"><span id="bankval">Banco</span></button>
+      <div class="bankmenu" id="bankmenu" role="listbox" aria-label="Bancos" hidden></div></div>
     <button class="badge" id="askOpen" hidden></button>
-    <span class="hupd" id="hupd" hidden><button class="hupd-btn" type="button" id="hupd-btn"><span class="hupd-t">Actualizar</span><span class="hupd-msg" id="hupd-msg" role="status" aria-live="polite"></span></button></span>
+    <span class="hupd" id="hupd" hidden><button class="hupd-btn" type="button" id="hupd-btn"><svg class="hico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 0 1-14 5.3M4 12a8 8 0 0 1 14-5.3"/><path d="M18 3v4h-4M6 21v-4h4"/></svg><span class="hupd-t">Actualizar</span><span class="hupd-msg" id="hupd-msg" role="status" aria-live="polite"></span></button></span>
   </header>
 
   <nav class="months" aria-label="Elegir mes">
@@ -345,8 +431,10 @@ body.top-c .months{grid-template-columns:auto auto minmax(0,1fr) auto}
   <section class="panel cut mov">
     <h2>Movimientos</h2>
     <div class="movbar">
-      <div class="pills" id="vista" role="group" aria-label="Ver"><button data-v="" aria-pressed="true">Todo</button><button data-v="out" aria-pressed="false">Salidas</button><button data-v="in" aria-pressed="false">Entradas</button></div>
-      <select class="sel" id="catf" aria-label="Categoría"></select>
+      <div class="filters"><div class="segs" id="vista" role="group" aria-label="Ver"><button type="button" class="seg" data-v="" aria-pressed="true">Todo<span class="c"></span></button><button type="button" class="seg" data-v="out" aria-pressed="false">Salidas<span class="c"></span></button><button type="button" class="seg" data-v="in" aria-pressed="false">Entradas<span class="c"></span></button></div>
+        <button type="button" class="fsel" id="catbtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="catmenu">Categoría</button></div>
+      <select class="sel" id="catf" aria-label="Categoría" tabindex="-1" aria-hidden="true" hidden></select>
+      <div class="bankmenu catmenu" id="catmenu" role="listbox" aria-label="Categorías" hidden></div>
     </div>
     <div class="rows" id="rows"></div>
   </section>
@@ -535,6 +623,7 @@ body.top-c .months{grid-template-columns:auto auto minmax(0,1fr) auto}
   marcarPer();
   window.__hermesPeriodos = {corteDe, perDe, perIni, perFin, PER, CORTES, DIA_AUTO, marcarPer, ponerPer};   // para las pruebas
   const st = {banco: "", cat: "", vista: "", mes: null};
+  let catOpts = [];   // [valor, texto, cuántos] del menú «Categoría ▾» (lo llena render)
   const last = MOV.length ? MOV.reduce((a, m) => m.f > a ? m.f : a, MOV[0].f) : new Date();
   st.mes = perDe(last);
   const $ = id => document.getElementById(id);
@@ -552,7 +641,7 @@ body.top-c .months{grid-template-columns:auto auto minmax(0,1fr) auto}
   const VAR_MOV = "c";
   const VAR_TOP = "a";  // dónde van el filtro de banco y «¿Para qué fue?»: a tira de meses · b resumen · c meses + movimientos
   function ubicarArriba() {
-    const V = new URLSearchParams(location.search).get("top") || VAR_TOP, b = $("banco"), a = $("askOpen");
+    const V = new URLSearchParams(location.search).get("top") || VAR_TOP, b = $("bankbox") || $("banco"), a = $("askOpen");
     const mon = document.querySelector("nav.months"), fl = document.querySelector(".flow"), mh = document.querySelector(".mov h2");
     let fh = document.querySelector(".fhead");
     if (!fh) { fh = document.createElement("div"); fh.className = "fhead"; fl.insertBefore(fh, fl.firstChild); fh.appendChild($("mes")); fh.appendChild($("per")); }
@@ -706,8 +795,9 @@ body.top-c .months{grid-template-columns:auto auto minmax(0,1fr) auto}
     });
     $("blab").innerHTML = ult.map(d => `<span>${MESES[d.getMonth()].slice(0, 3)}</span>`).join("");
     // tira de meses: mismo periodo; cada mes con tu parte gastada
-    $("mstrip").innerHTML = ult.map((d, i) => `<button class="mbtn" data-i="${i}" aria-pressed="${key(d) === key(st.mes)}" aria-label="${nomP(d)}">
-      <b>${MESES[d.getMonth()].slice(0, 3)}${d.getMonth() === 0 || i === 0 ? " " + String(d.getFullYear()).slice(2) : ""}</b><span>${vals[i] ? clp(vals[i]) : "—"}${ests[i] ? `<span class="q" title="${ciclo() ? "ciclo" : "mes"} incompleto"> *</span>` : ""}</span>${ciclo() ? `<small>${rangoDe(d)}</small>` : ""}</button>`).join("");
+    // pestañas (18-11-2026): solo el mes, sin el año; año y fechas del ciclo en el aviso al pasar el mouse
+    $("mstrip").innerHTML = ult.map((d, i) => `<button class="mbtn" data-i="${i}" aria-pressed="${key(d) === key(st.mes)}" aria-label="${nomP(d)}" title="${MESES[d.getMonth()]} ${d.getFullYear()}${ciclo() ? " · " + rangoDe(d) : ""}">
+      <b>${MESES[d.getMonth()].slice(0, 3)}</b><span>${vals[i] ? clp(vals[i]) : "—"}${ests[i] ? `<span class="q" title="${ciclo() ? "ciclo" : "mes"} incompleto"> *</span>` : ""}</span></button>`).join("");
     $("mstrip").querySelectorAll(".mbtn").forEach(b => b.onclick = () => { st.mes = ult[+b.dataset.i]; render(); });
     }
 
@@ -716,6 +806,11 @@ body.top-c .months{grid-template-columns:auto auto minmax(0,1fr) auto}
     if (st.cat && !opts.includes(st.cat)) st.cat = "";
     $("catf").innerHTML = `<option value="">Todas las categorías</option>` + opts.map(c => `<option value="${esc(c)}"${c === st.cat ? " selected" : ""}>${esc(c)}</option>`).join("");
     document.querySelectorAll("#vista button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === st.vista));
+    const enVista = (m, v) => v === "out" ? m.monto < 0 : v === "in" ? m.monto > 0 : true;
+    document.querySelectorAll("#vista .seg").forEach(b => { b.querySelector(".c").textContent = ms.filter(m => (!st.cat || m.categoria === st.cat) && enVista(m, b.dataset.v)).length; });
+    $("catbtn").textContent = st.cat || "Categoría";
+    $("catbtn").classList.toggle("on", !!st.cat);
+    catOpts = [["", "Todas las categorías", ms.filter(m => enVista(m, st.vista)).length], ...opts.map(c => [c, c, ms.filter(m => (m.categoria || "Otros") === c && enVista(m, st.vista)).length])];
     const lista = ms.filter(m => (!st.cat || m.categoria === st.cat) && (st.vista === "out" ? m.monto < 0 : st.vista === "in" ? m.monto > 0 : true)).sort((a, b) => b.f - a.f);
     const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
     let html = "", dia = "";
@@ -743,7 +838,9 @@ body.top-c .months{grid-template-columns:auto auto minmax(0,1fr) auto}
     });
     const pend = pendientes().length;
     $("askOpen").hidden = false;   // siempre visible (pedido 18-11-2026); el número solo si hay pendientes
-    $("askOpen").innerHTML = `¿Para qué fue?<i>${pend ? pend + " por clasificar" : "todo clasificado"}</i>`;
+    // barra de pestañas (18-11-2026): ícono + etiqueta; el número de pendientes va en un punto, como Correo y Tareas en Atlas
+    $("askOpen").innerHTML = `<svg class="hico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.4 2.4 0 1 1 3.4 2.2c-.6.3-1 .8-1 1.5v.5M12 16.6h0"/></svg><span class="hupd-t">¿Para qué fue?</span>${pend ? `<span class="dot">${pend}</span>` : ""}<i>${pend ? pend + " por clasificar" : "todo clasificado"}</i>`;
+    $("askOpen").setAttribute("aria-label", "¿Para qué fue? " + (pend ? pend + " por clasificar" : "todo clasificado"));
 
     $("foot").textContent = D.actualizado ? "Actualizado " + D.actualizado + " · " + MOV.length + " movimientos" : "Sin datos todavía";
     $("foot").hidden = location.pathname.startsWith("/acceso/");   // en Atlas la fecha y «Al día» salen en el botón Actualizar
@@ -885,7 +982,7 @@ body.top-c .months{grid-template-columns:auto auto minmax(0,1fr) auto}
   // bancos: la lista sale de los movimientos más los que usted agregó (aunque todavía no tengan movimientos)
   (() => {
     const sel = $("banco"), dlg = $("addb"), nom = $("addbNom"), AGREGAR = "__agregar__";
-    let extra = [];
+    let extra = [], pintarB = () => {};
     try { extra = JSON.parse(localStorage.getItem("hermes-bancos") || "[]"); } catch (e) {}
     const llenar = () => {
       const cuenta = {};
@@ -895,8 +992,9 @@ body.top-c .months{grid-template-columns:auto auto minmax(0,1fr) auto}
       Object.keys(cuenta).sort((a, b) => cuenta[b] - cuenta[a] || a.localeCompare(b, "es")).forEach(b => sel.add(new Option(cuenta[b] ? b : b + " · sin movimientos aún", b)));
       sel.add(new Option("+ Agregar banco…", AGREGAR));
       sel.value = st.banco;
+      pintarB();
     };
-    const cerrar = () => { dlg.classList.remove("open"); sel.focus(); };
+    const cerrar = () => { dlg.classList.remove("open"); ($("bankbtn") || sel).focus(); };
     sel.onchange = () => {
       if (sel.value === AGREGAR) { sel.value = st.banco; nom.value = ""; dlg.classList.add("open"); nom.focus(); return; }
       st.banco = sel.value; render();
@@ -916,6 +1014,42 @@ body.top-c .months{grid-template-columns:auto auto minmax(0,1fr) auto}
     $("addbSi").onclick = agregar;
     nom.addEventListener("keydown", e => { if (e.key === "Enter") agregar(); });
     llenar();
+    // menú propio del banco (18-11-2026): el <select> nativo abría la lista blanca de Windows. Lee las opciones del
+    // <select> escondido y, al elegir, le cambia el valor y dispara «change» (así «+ Agregar banco…» sigue igual)
+    const bbtn = $("bankbtn"), menu = $("bankmenu"), bval = $("bankval");
+    // igual que «Banco ▾» de Fortuna (pedido 18-11-2026): dice «Banco» o el banco elegido, relleno cuando filtra
+    pintarB = () => { const on = !!sel.value && sel.value !== AGREGAR; bval.textContent = on ? sel.value : "Banco"; bbtn.classList.toggle("on", on); };
+    const opcs = () => [...menu.querySelectorAll("[data-v]")];
+    const abrirB = si => {
+      menu.hidden = !si; bbtn.setAttribute("aria-expanded", String(si));
+      if (!si) return;
+      const n = {}; MOV.forEach(m => { if (m.banco) n[m.banco] = (n[m.banco] || 0) + 1; });
+      const ops = [...sel.options].filter(o => o.value && o.value !== AGREGAR);
+      const item = (v, txt, c) => `<button type="button" role="option" data-v="${esc(v)}" aria-selected="${v === sel.value}">${esc(txt)}${c != null ? `<small>${c}</small>` : ""}</button>`;
+      const con = ops.filter(o => n[o.value]), sin = ops.filter(o => !n[o.value]);
+      menu.innerHTML = item("", "Todos los bancos", MOV.length)
+        + '<div class="sep" role="separator"></div><span class="mono-label">Sus bancos</span>'
+        + (con.length ? con.map(o => item(o.value, o.value, n[o.value])).join("") : '<div class="vacio">Aún no hay movimientos de ningún banco.</div>')
+        + (sin.length ? '<span class="mono-label">Sin movimientos aún</span>' + sin.map(o => item(o.value, o.value, 0)).join("") : "")
+        + `<div class="sep" role="separator"></div><button type="button" role="option" data-v="${AGREGAR}" aria-selected="false" class="add">+ Agregar banco…</button>`;
+      (opcs().find(o => o.getAttribute("aria-selected") === "true") || opcs()[0]).focus();
+    };
+    bbtn.onclick = () => abrirB(menu.hidden);
+    bbtn.onkeydown = e => { if (e.key === "ArrowDown") { e.preventDefault(); abrirB(true); } };
+    menu.onclick = e => {
+      const o = e.target.closest("[data-v]"); if (!o) return;
+      abrirB(false); bbtn.focus();
+      if (o.dataset.v !== sel.value) { sel.value = o.dataset.v; sel.dispatchEvent(new Event("change")); }
+      pintarB();
+    };
+    menu.onkeydown = e => {
+      const l = opcs(), k = l.indexOf(document.activeElement);
+      if (e.key === "Escape") { e.preventDefault(); abrirB(false); bbtn.focus(); }
+      else if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); l[(k + (e.key === "ArrowDown" ? 1 : l.length - 1)) % l.length].focus(); }
+      else if (e.key === "Tab") abrirB(false);
+    };
+    document.addEventListener("click", e => { if (!menu.hidden && !e.target.closest("#bankbox")) abrirB(false); });
+    pintarB();
   })();
   document.querySelectorAll("#vista button").forEach(b => b.onclick = () => { st.vista = b.dataset.v; render(); });
   function pintarPer() {
@@ -936,6 +1070,28 @@ body.top-c .months{grid-template-columns:auto auto minmax(0,1fr) auto}
   $("corteDia").onchange = () => { const v = $("corteDia").value.trim(); cambiarPer({dia: v === "" ? 0 : +v}); };
   ubicarArriba();
   $("catf").onchange = () => { st.cat = $("catf").value; render(); };
+  // «Categoría ▾»: el mismo menú del selector de banco
+  (() => {
+    const btn = $("catbtn"), menu = $("catmenu");
+    const cerrar = (foco) => { menu.hidden = true; btn.setAttribute("aria-expanded", "false"); if (foco) btn.focus(); };
+    const abrir = () => {
+      const [todas, ...resto] = catOpts;
+      if (!todas) return;
+      const op = ([v, l, n]) => `<button type="button" role="option" data-c="${esc(v)}" aria-selected="${v === st.cat}">${esc(l)}<small>${n}</small></button>`;
+      menu.innerHTML = op(todas) + (resto.length ? `<span class="mono-label">Categorías</span>` + resto.map(op).join("") : "");
+      menu.hidden = false; btn.setAttribute("aria-expanded", "true");
+      (menu.querySelector('[aria-selected="true"]') || menu.querySelector("button"))?.focus();
+    };
+    btn.onclick = (e) => { e.stopPropagation(); menu.hidden ? abrir() : cerrar(); };
+    menu.onclick = (e) => { const o = e.target.closest("[data-c]"); if (!o) return; st.cat = o.dataset.c; cerrar(true); render(); };
+    menu.onkeydown = (e) => {
+      const bs = [...menu.querySelectorAll("button")], i = bs.indexOf(document.activeElement);
+      if (e.key === "Escape") { e.preventDefault(); cerrar(true); }
+      else if (e.key === "ArrowDown") { e.preventDefault(); bs[Math.min(bs.length - 1, i + 1)]?.focus(); }
+      else if (e.key === "ArrowUp") { e.preventDefault(); bs[Math.max(0, i - 1)]?.focus(); }
+    };
+    document.addEventListener("click", (e) => { if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) cerrar(); });
+  })();
   $("prev").onclick = () => { st.mes = new Date(st.mes.getFullYear(), st.mes.getMonth() - 1, 1); render(); };
   $("next").onclick = () => { st.mes = new Date(st.mes.getFullYear(), st.mes.getMonth() + 1, 1); render(); };
   render();

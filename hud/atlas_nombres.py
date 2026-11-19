@@ -19,6 +19,11 @@ Uso real: «Conecta Ucursos» se transcribió «Conecta Ursus» y Atlas buscó �
   3. Las rutas normales y, al final, el menú Inicio.
 Las dos listas se editan con el lápiz ✎ de cada mensaje en la consola; por voz no se guarda nada.
 Nada de esto va al modelo.
+
+Reglas base (19-11-2026, pedido del usuario: «exportar mis reglas comunes para que el modelo empiece a aprender»):
+hud/reglas_base.json viaja en el instalador con las correcciones generales del creador de Atlas (sin nombres ni nada
+personal; lo arma _publicar/exportar.py). Cada Atlas las SUMA a su diccionario.json y frases.json una vez por versión:
+no pisa lo que la persona ya tiene y no vuelve a poner lo que ella borró («base»: versión y claves ya ofrecidas).
 """
 from __future__ import annotations
 
@@ -48,7 +53,8 @@ INTENCIONES = [
     ("Correos sin leer", "¿tengo correos sin leer?"), ("Mensajes sin leer", "¿tengo mensajes sin leer?"),
     ("Pendientes", "mis pendientes"), ("Gastos del ciclo (Hermes)", "cuánto he gastado"),
     ("Actualizar Hermes", "actualiza Hermes"), ("Actualizar Fortuna", "actualiza Fortuna"),
-    ("Cómo van mis fondos (Fortuna)", "cómo van mis fondos"), ("Clima", "cómo está el clima"),
+    ("Mis inversiones (Fortuna)", "cómo están mis inversiones"),
+    ("Cómo se movieron los fondos (mercado CMF)", "cómo van los fondos"), ("Clima", "cómo está el clima"),
     ("Pon música", "pon música"), ("Siguiente canción", "siguiente canción"), ("Estado de la red", "estado de la red"),
     ("Notas nuevas (Canvas)", "¿tengo notas nuevas en Canvas?"),
     ("Conectar U-Cursos", "conecta U-Cursos"), ("Conectar Canvas", "conecta Canvas"),
@@ -176,6 +182,10 @@ _NOTA_DIC = ("Única lista de correcciones de Atlas. «palabras»: lo que la voz
              "Se edita en el Diccionario y con ✎ Corregir del Historial.")
 # Cómo se pasó cada expresión antigua a reglas del Diccionario (se usa al migrar; ver _reglas_de_expresion)
 TABLA_MIGRACION = HERE / "reglas_migracion.json"
+# Reglas base que trae el instalador (ver arriba). ATLAS_REGLAS_BASE="" las apaga (las pruebas lo usan).
+_RB = os.environ.get("ATLAS_REGLAS_BASE")
+REGLAS_BASE: Path | None = None if _RB == "" else Path(_RB) if _RB else HERE / "reglas_base.json"
+_NOTA_FRASES = "Frase dicha -> orden que Atlas ejecuta (accion). Se edita con el lápiz de la consola."
 
 
 def _migrar(p: Path, doc: dict) -> dict:
@@ -275,7 +285,119 @@ def _cargar(path: Path | None = None) -> dict:
             _escribir_doc(p, doc)
         except OSError:
             doc["reglas"] = nuevas
+    if _sumar_base(p, doc):
+        try:
+            _escribir_doc(p, doc)
+        except OSError:
+            pass
     return doc
+
+
+# ---------------------------------------------------------------------------------------------- reglas base
+_BASE_CACHE: dict = {}
+
+
+def _base(ruta: Path | None = None) -> dict:
+    """hud/reglas_base.json (o {} si no hay); se relee solo si cambió."""
+    r = ruta or REGLAS_BASE
+    if r is None:
+        return {}
+    try:
+        k = (str(r), r.stat().st_mtime_ns)
+    except OSError:
+        return {}
+    if _BASE_CACHE.get("k") != k:
+        _BASE_CACHE.update(k=k, d=_doc(r))
+    return _BASE_CACHE["d"]
+
+
+def clave_base(tipo: str, x) -> str:
+    """Identidad de una entrada base, para no duplicarla ni volver a ponerla si la persona la borró."""
+    if tipo == "palabra":
+        return "p:" + _clave(str(x.get("escuchado", "")))
+    if tipo == "regla":
+        return "r:" + "|".join((str(x.get("tipo", "")), _clave(str(x.get("escuchado", ""))),
+                                _clave(str(x.get("correcto", ""))), "i" if x.get("inicio") else ""))
+    if tipo == "frase":
+        return "f:" + _clave(str(x.get("frase", "")))
+    return "v:" + _clave(str(x))
+
+
+def _sumar_base(p: Path, doc: dict, base: dict | None = None, frases_path: Path | None = None) -> bool:
+    """Suma a «doc» (diccionario.json) y a frases.json lo nuevo de las reglas base, una vez por versión. Nunca cambia
+    ni borra lo que la persona ya tiene; lo que ya se ofreció una vez («base.vistas») no se vuelve a poner aunque lo
+    haya borrado. True si «doc» cambió (hay que escribirlo)."""
+    b = _base() if base is None else base
+    ver = str((b or {}).get("version") or "")
+    est = doc.get("base") if isinstance(doc.get("base"), dict) else {}
+    if not ver or est.get("version") == ver:
+        return False
+    vistas, hoy = set(est.get("vistas") or []), time.strftime("%Y-%m-%d")
+    sumadas = {"palabras": 0, "reglas": 0, "vocabulario": 0, "frases": 0}
+
+    pal = [x for x in doc.get("palabras", []) if isinstance(x, dict)]
+    tiene = {clave_base("palabra", x) for x in pal}
+    for x in b.get("palabras", []):
+        if not isinstance(x, dict) or not _clave(str(x.get("escuchado", ""))) or not str(x.get("correcto", "")).strip():
+            continue
+        k = clave_base("palabra", x)
+        if k in vistas or k in tiene:
+            vistas.add(k)
+            continue
+        vistas.add(k)
+        tiene.add(k)
+        pal.append({**{c: x[c] for c in ("escuchado", "correcto", "contexto", "nota") if x.get(c)},
+                    "fecha": hoy, "veces": 0, "origen": "base"})
+        sumadas["palabras"] += 1
+
+    rs = [x for x in doc.get("reglas", []) if isinstance(x, dict)]
+    tiene = {clave_base("regla", x) for x in rs}
+    for x in b.get("reglas", []):
+        if not isinstance(x, dict) or x.get("tipo") not in ("cambiar", "quitar") or not _clave(str(x.get("escuchado", ""))):
+            continue
+        k = clave_base("regla", x)
+        if k in vistas or k in tiene:
+            vistas.add(k)
+            continue
+        vistas.add(k)
+        tiene.add(k)
+        rs.append({"id": _nuevo_id(), **{c: v for c, v in x.items() if c not in ("id", "fecha", "veces", "origen")},
+                   "origen": "base", "fecha": hoy})
+        sumadas["reglas"] += 1
+
+    voc = [w for w in doc.get("vocabulario", []) if isinstance(w, str)]
+    tiene = {clave_base("vocab", w) for w in voc}
+    for w in b.get("vocabulario", []):
+        if not isinstance(w, str) or not _clave(w):
+            continue
+        k = clave_base("vocab", w)
+        if k not in vistas and k not in tiene:
+            voc.append(w.strip())
+            sumadas["vocabulario"] += 1
+        vistas.add(k)
+        tiene.add(k)
+
+    fp = frases_path or (FRASES if p == DICCIONARIO else p.with_name("frases.json"))
+    fr = _leer(fp, "frases")
+    tiene, n0 = {clave_base("frase", x) for x in fr}, len(fr)
+    for x in b.get("frases", []):
+        if not isinstance(x, dict) or len(_clave(str(x.get("frase", "")))) < 3 or not str(x.get("accion", "")).strip():
+            continue
+        k = clave_base("frase", x)
+        if k not in vistas and k not in tiene:
+            fr.append({"frase": x["frase"], "accion": x["accion"], "fecha": hoy, "veces": 0, "origen": "base"})
+            sumadas["frases"] += 1
+        vistas.add(k)
+        tiene.add(k)
+    if len(fr) != n0:
+        try:
+            _escribir(fp, "frases", fr, _NOTA_FRASES)
+        except OSError:
+            return False   # se vuelve a intentar la próxima vez
+
+    doc.update(palabras=pal, reglas=rs, vocabulario=voc,
+               base={"version": ver, "fecha": time.strftime("%Y-%m-%d %H:%M"), "sumadas": sumadas, "vistas": sorted(vistas)})
+    return True
 
 
 def palabras(path: Path | None = None) -> list[dict]:
@@ -680,8 +802,7 @@ def guardar_frase(frase: str, accion: str, antes: str = "", path: Path | None = 
     lista = [x for x in frases(path) if _clave(x["frase"]) not in (_clave(frase), _clave(antes or frase))]
     item = {"frase": frase, "accion": accion, "fecha": time.strftime("%Y-%m-%d"), "veces": int((previo or {}).get("veces", 0)) + 1}
     lista.append(item)
-    _escribir(path or FRASES, "frases", lista,
-              "Frase dicha -> orden que Atlas ejecuta (accion). Se edita con el lápiz de la consola.")
+    _escribir(path or FRASES, "frases", lista, _NOTA_FRASES)
     return item
 
 
@@ -697,7 +818,7 @@ def borrar_frase(frase: str, path: Path | None = None) -> bool:
     lista = frases(path)
     nueva = [x for x in lista if _clave(x["frase"]) != _clave(frase)]
     if len(nueva) != len(lista):
-        _escribir(path or FRASES, "frases", nueva, "Frase dicha -> orden que Atlas ejecuta (accion). Se edita con el lápiz de la consola.")
+        _escribir(path or FRASES, "frases", nueva, _NOTA_FRASES)
     return len(nueva) != len(lista)
 
 

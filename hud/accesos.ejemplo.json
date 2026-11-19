@@ -57,6 +57,38 @@
    "ruta": "%LOCALAPPDATA%\\Atlas\\apps\\cronos\\historia.html",
    "se_dice": "Cronos, su línea de tiempo",
    "en_atlas": true
+  },
+  {
+   "nombre": "Baco",
+   "dice": [
+    "baco",
+    "bacco",
+    "vaco",
+    "proyecto baco",
+    "mi baco",
+    "entretenimiento",
+    "mi entretenimiento",
+    "la app de entretenimiento"
+   ],
+   "ruta": "%LOCALAPPDATA%\\Atlas\\apps\\baco\\baco.html",
+   "se_dice": "Baco, su entretenimiento",
+   "en_atlas": true
+  },
+  {
+   "nombre": "Atenea",
+   "dice": [
+    "atenea",
+    "athena",
+    "atena",
+    "proyecto atenea",
+    "mi atenea",
+    "aprendizaje",
+    "mi aprendizaje",
+    "la app de aprendizaje"
+   ],
+   "ruta": "%LOCALAPPDATA%\\Atlas\\apps\\atenea\\atenea.html",
+   "se_dice": "Atenea, su aprendizaje",
+   "en_atlas": true
   }
  ]
 }

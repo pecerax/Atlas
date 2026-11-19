@@ -627,6 +627,20 @@ def _uia_ytm_impl(want: str | None, dbg: list[str]) -> dict:
     return last
 
 
+def _primer_video(entries: list):
+    """El primer resultado que sea un video que se pueda escuchar (19-11-2026).
+
+    Con un artista («pon zutomayo») YouTube pone primero su CANAL: su id (UC…) no es un video y la
+    ventana de música quedaba sin nada que reproducir. También se saltan los directos y los en vivo
+    de más de 20 minutos, salvo que no haya otra cosa.
+    """
+    vids = [e for e in entries if e and re.fullmatch(r"[\w-]{11}", str(e.get("id") or ""))
+            and "/channel/" not in str(e.get("url") or "") and "/playlist" not in str(e.get("url") or "")]
+    buenos = [e for e in vids if e.get("live_status") not in ("is_live", "is_upcoming", "was_live")
+              and (e.get("duration") or 0) <= 1200]
+    return (buenos or vids or [None])[0]
+
+
 class _MusicWindow:
     """Ventana propia de YouTube Music (Edge, perfil aparte) con reproducción automática.
 
@@ -2021,8 +2035,8 @@ class PCTool(BaseTool):
 
             opts = {"quiet": True, "no_warnings": True, "extract_flat": True, "skip_download": True}
             with YoutubeDL(opts) as ydl:
-                info = ydl.extract_info(f"ytsearch1:{q}", download=False)
-            entry = (info.get("entries") or [None])[0]
+                info = ydl.extract_info(f"ytsearch6:{q}", download=False)
+            entry = _primer_video(info.get("entries") or [])
             if entry and entry.get("id"):
                 webbrowser.open(f"https://music.youtube.com/watch?v={entry['id']}")
                 title = _latin_only(entry.get("title") or "") or q

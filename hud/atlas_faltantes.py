@@ -175,6 +175,36 @@ def _peor(estados) -> str:
     return "x" if "x" in e else "y" if "y" in e else "g" if e else "o"
 
 
+def rutas_estado(ahora: _dt.datetime | None = None) -> tuple[str, str]:
+    """19-11: ¿Rutas de Maps está conectado? -> (g|y|x, texto). Lee solo estado.json y fecha/estado del log de la
+    descarga de cada noche (nunca el token). x = Google cortó el acceso o falla; y = hace más de 2 días sin descargar."""
+    ahora = ahora or _dt.datetime.now()
+    base = OJ / "datos" / "cronologia_maps"
+    est = _json(base / "estado.json") or {}
+    if not est:
+        return "x", "Nunca se ha descargado"
+    if est.get("ok") is False:
+        desde = None
+        try:
+            for x in reversed([y for y in (base / "sincronizacion.log").read_text(encoding="utf-8", errors="replace").splitlines() if y.strip()]):
+                partes = x.split()
+                if len(partes) < 2 or partes[1] != "ERROR":
+                    break
+                desde = partes[0][:16].replace("T", " ")
+        except OSError:
+            pass
+        motivo = "Google cortó el acceso" if "BadAuthentication" in str(est.get("detalle") or "") else "Falla la descarga"
+        return "x", f"{motivo}{' desde el ' + desde if desde else ''}: pida a Atlas «reconecta Rutas de Maps»"
+    ult = str(est.get("ultimo_intento") or "")[:16]
+    try:
+        dias = (ahora - _dt.datetime.fromisoformat(ult)).days
+    except ValueError:
+        dias = 0
+    if dias > 2:
+        return "y", f"Conectado, pero sin descargar hace {dias} días (¿Atlas estuvo apagado a las 21:00?)"
+    return "g", "Conectado · última descarga " + ult.replace("T", " ")
+
+
 def cronos_instalacion(cfg: dict, ahora: _dt.datetime | None = None) -> dict:
     """Ajustes › Guía de las apps › Cronos › Instalación (pedido del usuario, 18-11-2026): los dos modos de Cronos,
     automático (Rutas de Maps, vía cronologia_maps) y manual (señales), cada uno con sus pasos."""
@@ -188,13 +218,7 @@ def cronos_instalacion(cfg: dict, ahora: _dt.datetime | None = None) -> dict:
     if modo == "rutas":
         s.append(_s("g" if cm else "x", "Programa de Rutas", "apps\\cronos\\cronologia_maps",
                     "Instalado" if cm else "No está instalado"))
-        if not est:
-            s.append(_s("x", "Descarga de cada noche", "estado.json", "Nunca se ha descargado"))
-        elif est.get("ok") is False:
-            s.append(_s("x", "Descarga de cada noche", "estado.json", str(est.get("detalle") or "Falló la última descarga")))
-        else:
-            s.append(_s("g", "Descarga de cada noche", "estado.json",
-                        "Última: " + str(est.get("ultimo_ok") or est.get("ultimo_intento") or "")[:16].replace("T", " ")))
+        s.append(_s(*rutas_estado(ahora)[:1], "Conexión con Google", "Rutas de Maps", rutas_estado(ahora)[1]))
     else:
         s.append(_s("g", "Recibos, gastos y calendario", "Gmail, Hermes y Calendar", "Llegan solos"))
         s.append(_s("o", "bip!, Takeout y chats", "Cronos › ⚙ › Fuentes", "Se agregan a mano de vez en cuando"))
@@ -361,8 +385,11 @@ def revisar(version: str, boot: dict | None = None, vigilancias: dict | None = N
     g = _boot(boot, "google", "Conectado", "No está conectado", "Falló la conexión") if tok else ("x", "No está conectado")
     paso("Google Calendar", "Ver su agenda, crear eventos y avisarle antes de cada uno.",
          [_s(g[0], "Google Calendar", "google_calendar_token.json", g[1])],
-         ["En `console.cloud.google.com` active la Google Calendar API.",
-          "Cree una credencial OAuth de escritorio y descargue el JSON.", "Ejecute `Conectar-Google-Calendar.cmd`."],
+         ["Presione CONECTAR (o ejecute `Conectar-Google-Calendar.cmd`): se abre Google, elija su cuenta y acepte el permiso "
+          "del calendario. Usa la llave de la app «Atlas» que trae el instalador; no hay que entrar a Google Cloud.",
+          "Google mostrará «Google no verificó esta app»: presione Configuración avanzada › Ir a Atlas. Es normal: Atlas "
+          "corre solo en su computador.",
+          "Queda conectado sin vencer. Para quitar el acceso: myaccount.google.com/permissions."],
          [] if g[0] == "g" else [_b("CONECTAR", "abrir", "google", primario=True)])
 
     # 6 · Universidad: Canvas y U-Cursos son OPCIONALES e INDEPENDIENTES (pedido del usuario, 18-11-2026): se configura
@@ -430,22 +457,22 @@ def revisar(version: str, boot: dict | None = None, vigilancias: dict | None = N
           _s("g" if AVISOS_DIR.is_dir() else "x", "Carpeta avisos_banco", "%USERPROFILE%\\.atlas\\avisos_banco",
              "Presente" if AVISOS_DIR.is_dir() else "No existe: acéptela en Syncthing"),
           _s(av[0], "Último aviso", "avisos_banco.txt", av[1])],
-        como=["En el celular (Android) instale MacroDroid y cree la macro «Avisos banco». Disparador: «Notificación "
-          "recibida» de las apps Scotiabank y MACH.",
-          "Acción: «Escribir en archivo» en `Documents/Atlas/avisos_banco.txt`, agregando al final (sin sobrescribir). "
-          "Escriba a mano solo los separadores `@@|` y `|`; cada dato insértelo con el botón «…» (texto mágico): año, "
-          "mes en número, día, hora, minuto, nombre de la app, título de la notificación y texto de la notificación. "
-          "Termine con un salto de línea.",
-          "Queda parecido a `@@|{year}-{month_digit}-{dayofmonth} {hour}:{minute}|{not_app_name}|{not_title}|{notification}` "
-          "(los nombres exactos dependen de la versión de MacroDroid). Si en el archivo aparecen llaves en la fecha, "
-          "se escribieron a mano: vuelva a insertarlas con «…». «Probar acción» corre sin una notificación real y deja "
-          "vacíos la app, el título y el texto: eso es normal.",
-          "Dele a MacroDroid acceso a las notificaciones y a los archivos.",
-          "En el celular instale Syncthing-Fork y comparta la carpeta `Documents/Atlas` como «avisos_banco», en modo Solo enviar.",
-          "En el PC instale Syncthing: `winget install --id Syncthing.Syncthing -e --source winget` (usted acepta los "
-          "términos). Arranca oculto con un `.vbs` en la carpeta Inicio y su página queda solo en `127.0.0.1:8384`.",
-          "Empareje los dos equipos intercambiando sus ID de dispositivo. En el PC acepte la carpeta en modo Solo "
-          "recibir, en `%USERPROFILE%\\.atlas\\avisos_banco`.",
+        como=["Lo más fácil es el instalador (`Atlas-Instalar.exe`): instala Syncthing, muestra un código para emparejar el "
+          "celular y otro que baja la macro con sus bancos. A mano es así:",
+          "En el celular (Android) instale MacroDroid y Syncthing-Fork desde Play Store.",
+          "Macro: abra `pecerax.github.io/Atlas/macro.html` en el celular, marque sus bancos o apps de pago (BancoEstado, "
+          "Santander, Bci, Banco de Chile, Scotiabank, MACH, Tenpo y otros) y presione «Descargar macro». En MacroDroid: "
+          "Macros › ⋮ › Importar › `Avisos_banco.macro`. La macro escribe cada aviso en `avisos_banco.txt` de la carpeta "
+          "«Atlas» de la memoria interna.",
+          "Dele a MacroDroid acceso a las notificaciones y a los archivos. «Probar acción» corre sin una notificación "
+          "real y deja vacíos la app, el título y el texto: eso es normal.",
+          "En el PC instale Syncthing: `winget install --id Syncthing.Syncthing -e --source winget`. Arranca oculto con un "
+          "`.vbs` en la carpeta Inicio y su página queda solo en `127.0.0.1:8384`, protegida con un usuario y una "
+          "contraseña al azar guardados en el Administrador de credenciales (`Atlas-Syncthing-GUI`; los pone el instalador "
+          "o `instalador\\Proteger-Syncthing.cmd`). Atlas no los necesita.",
+          "Empareje los dos equipos: en Syncthing-Fork toque «+» › Agregar dispositivo y escanee el ID de este PC. "
+          "En el celular comparta la carpeta «Atlas» de la memoria interna como «avisos_banco», en modo Solo enviar; "
+          "en el PC acéptela en modo Solo recibir, en `%USERPROFILE%\\.atlas\\avisos_banco`.",
           "Contraseña de los PDF del banco (los comprobantes que el banco manda con clave): escríbala en «Contraseña de PDF del banco», "
           "aquí mismo. Queda en el Administrador de credenciales de Windows (entrada `Atlas-Hermes-PDF`); Atlas nunca la muestra.",
           "Listo: Atlas revisa el archivo solo (`actualizar_apolo.py --solo-avisos`). Ciclos, qué cuenta como gasto y "
@@ -461,6 +488,9 @@ def revisar(version: str, boot: dict | None = None, vigilancias: dict | None = N
         if nombre not in apps:
             s.append(_s("x", nombre, "accesos.json", "No está registrada"))
         # «pausado» de Cronos solo detenía el análfortuna de fotos, que ya no se usa; no es un pendiente (17-11)
+        elif nombre == "Cronos" and cfg.get("modo_ubicacion") == "rutas" and rutas_estado(ahora)[0] != "g":
+            e_r, t_r = rutas_estado(ahora)   # 19-11: Rutas de Maps caído se ve en el chequeo, no solo dentro de Cronos
+            s.append(_s("y", nombre, "Rutas de Maps", t_r))
         else:
             s.append(_s("g", nombre, "accesos.json", que))
     cronos_y = any(x["nombre"] == "Cronos" and x["estado"] == "y" for x in s)

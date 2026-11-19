@@ -73,20 +73,47 @@ def poll() -> None:
         time.sleep(0.12)
 
 
+_DIAG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "flotante.log")
+_diag_ult: dict[str, float] = {}
+
+
+def _diag(msg: str) -> None:
+    """Registro corto del círculo (flotante.log, máx. ~50 KB, sin datos personales): ver la ventana, perderla,
+    apagar. Para saber por qué cerrar la ventana no apagó Atlas (18-11-2026). Cada mensaje igual, a lo más 1 por minuto."""
+    if time.time() - _diag_ult.get(msg, 0) < 60:
+        return
+    _diag_ult[msg] = time.time()
+    try:
+        if os.path.exists(_DIAG) and os.path.getsize(_DIAG) > 50_000:
+            os.replace(_DIAG, _DIAG + ".1")
+        with open(_DIAG, "a", encoding="utf-8") as f:
+            f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} [{os.getpid()}] {msg}\n")
+    except OSError:
+        pass
+
+
 def atlas_windows() -> list[tuple[int, str]]:
     """Ventanas de Atlas (la app de Edge cuyo título es «Atlas», o «Atlas · Fortuna» con Fortuna abierta dentro)."""
     user32 = ctypes.windll.user32
+    # tipos explícitos: sin ellos, un hwnd de 64 bits podía hacer fallar la búsqueda y el círculo nunca veía
+    # que la ventana se cerró (18-11-2026: cerrar la ventana dejó el servidor corriendo, con el código viejo)
+    user32.GetWindowTextLengthW.argtypes = [ctypes.c_void_p]
+    user32.GetWindowTextW.argtypes = [ctypes.c_void_p, ctypes.c_wchar_p, ctypes.c_int]
+    user32.IsWindowVisible.argtypes = [ctypes.c_void_p]
     found = []
 
     @ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
     def each(hwnd, _):
-        n = user32.GetWindowTextLengthW(hwnd)
-        if n:
-            buf = ctypes.create_unicode_buffer(n + 1)
-            user32.GetWindowTextW(hwnd, buf, n + 1)
-            t = buf.value.strip()
-            if (t in ("Atlas", "Jarvis") or t.startswith(("Atlas \u00b7", "Jarvis \u00b7"))) and user32.IsWindowVisible(hwnd):
-                found.append((hwnd, t))
+        try:
+            n = user32.GetWindowTextLengthW(hwnd)
+            if n:
+                buf = ctypes.create_unicode_buffer(n + 1)
+                user32.GetWindowTextW(hwnd, buf, n + 1)
+                t = buf.value.strip()
+                if (t in ("Atlas", "Jarvis") or t.startswith(("Atlas \u00b7", "Jarvis \u00b7"))) and user32.IsWindowVisible(hwnd):
+                    found.append((hwnd, t))
+        except Exception as exc:  # noqa: BLE001  una ventana rara no corta la búsqueda de las demás
+            _diag(f"ventana {hwnd}: {type(exc).__name__}: {exc}")
         return True
 
     user32.EnumWindows(each, 0)
@@ -118,19 +145,30 @@ def watch_window() -> None:
     """El círculo solo se muestra si la ventana de Atlas está minimizada, o si dentro tiene abierta otra
     página (Fortuna), donde no se ve el círculo grande. Si la ventana se cierra, se cierra todo Atlas."""
     seen, gone_since = False, None
+    _diag("círculo iniciado")
     while True:
         try:
             wins = atlas_windows()
             if wins:
+                if not seen:
+                    _diag(f"vi la ventana de Atlas ({len(wins)})")
                 seen, gone_since = True, None
             elif seen:
                 if not gone_since:  # recién desapareció: la voz se corta ya, sin esperar los 2,5 s
                     detener_voz()
+                    _diag("la ventana desapareció")
                 gone_since = gone_since or time.time()
                 if time.time() - gone_since > 2.5:  # margen por si Edge recrea la ventana
+                    _diag("apagando Atlas")
                     shutdown_atlas()
-            state["show"] = any(ctypes.windll.user32.IsIconic(h) or "\u00b7" in t for h, t in wins)
-        except Exception:  # noqa: BLE001
+            user32 = ctypes.windll.user32
+            user32.IsIconic.argtypes = [ctypes.c_void_p]
+            state["show"] = any(user32.IsIconic(h) or "\u00b7" in t for h, t in wins)
+            # menú de música: con Atlas minimizado o con una app abierta dentro de Atlas («Atlas · Hermes»), menos Baco,
+            # que ya muestra su música (usuario, 19-11-2026: «igual que con pantalla minimizada»)
+            state["min"] = any(user32.IsIconic(h) or ("\u00b7" in t and "baco" not in t.lower()) for h, t in wins)
+        except Exception as exc:  # noqa: BLE001
+            _diag(f"vigilar ventana: {type(exc).__name__}: {exc}")
             state["show"] = True
         time.sleep(0.3)
 
@@ -430,6 +468,8 @@ def render(angle: float, mode: str, now: float, label_mask, angle2: float | None
     sz = 30 * NK * esc
     star = (np.sqrt(NU_ATL_U / sz) + np.sqrt(NU_ATL_V / sz))
     f.over(_lerp(c1, white, .85), np.clip((1 - star) * sz * 0.6 + 0.5, 0, 1))
+    if ORBITA.get("p") is not None:  # música de Atlas sonando: arco de avance alrededor (menú «Órbita», 19-11-2026)
+        orbita_capa(f, c1, c2, ORBITA["p"])
     if label_mask is not None:
         pill, text = label_mask
         f.over(BG, pill * 0.92)  # fondo oscuro para leerlo sobre cualquier fondo de pantalla
@@ -468,6 +508,498 @@ def render_reactor(angle: float, mode: str, now: float, label_mask, angle2: floa
     return f.bgra()
 
 
+# ------------------------------------------------------------------ menú de música «Órbita» (usuario, 19-11-2026)
+# Con Atlas minimizado y música que puso Atlas («pon …») o la cola de Baco sonando en la ventana de música de Atlas
+# (Edge, perfil music-profile, CDP 9223): un arco de luz alrededor del círculo avanza con la canción y al lado sale
+# una placa con el título, el artista, el tiempo y ⏮ ⏯ ⏭. También con la cola de Baco andando, aunque esa parte suene
+# en Spotify (usuario, 19-11-2026: «cuando Baco reproduce debería ser lo mismo»). Música puesta a mano en otra app no lo abre.
+MUSICA_CDP = "http://127.0.0.1:9223/json"
+musica: dict = {"v": None, "t": 0.0, "suya": {}, "cambio": 0.0}
+ORBITA: dict = {"p": None}
+
+
+def _cdp_paginas() -> list[dict]:
+    with urllib.request.urlopen(MUSICA_CDP, timeout=0.8) as r:
+        return [p for p in json.loads(r.read()) if p.get("type") == "page" and "music.youtube.com" in str(p.get("url", ""))]
+
+
+def _cdp_titulo(pag: dict) -> str:
+    """Título que la ventana de música le informa a Windows (mediaSession). '' si no se puede leer."""
+    try:
+        from websockets.sync.client import connect
+    except Exception:  # noqa: BLE001
+        return ""
+    js = "(navigator.mediaSession&&navigator.mediaSession.metadata&&navigator.mediaSession.metadata.title)||''"
+    with connect(pag["webSocketDebuggerUrl"], open_timeout=2, max_size=2**20) as ws:
+        ws.send(json.dumps({"id": 1, "method": "Runtime.evaluate", "params": {"expression": js, "returnByValue": True}}))
+        fin = time.time() + 2
+        while time.time() < fin:
+            m = json.loads(ws.recv(timeout=2))
+            if m.get("id") == 1:
+                return str(((m.get("result") or {}).get("result") or {}).get("value") or "")
+    return ""
+
+
+def musica_es_de_atlas(v: dict) -> bool:
+    """¿Lo que suena salió de la ventana de música de Atlas? (Lo usan «pon …» y la cola de Baco.)"""
+    try:
+        pags = _cdp_paginas()
+    except Exception:  # noqa: BLE001  la ventana de música de Atlas no está abierta
+        return False
+    if not pags:
+        return False
+    tit = str(v.get("titulo") or "").strip().lower()
+    app = str(v.get("app") or "").lower()
+    # 19-11-2026: el Python de Atlas no siempre trae «websockets» (sin él no se lee el título de la ventana); la ventana de
+    # música es Edge, así que basta con que Windows diga que suena Edge y la ventana de Atlas tenga una canción puesta.
+    if "msedge" in app and any("/watch" in str(p.get("url", "")) for p in pags):
+        return True
+    for p in pags:
+        try:
+            t = _cdp_titulo(p).strip().lower()
+        except Exception:  # noqa: BLE001
+            t = ""
+        if t and tit and (t == tit or t in tit or tit in t):
+            return True
+        if not t and tit and tit in str(p.get("title", "")).lower():
+            return True
+    # sin poder leer el título: vale si Windows dice que es Edge (la ventana de música es Edge)
+    return not tit and "edge" in app
+
+
+def cola_baco(v: dict | None) -> dict | None:
+    """La cola de Baco si está andando ({id, j, n, fin}), según /acceso/baco/api/media."""
+    c = (v or {}).get("cola")
+    return c if isinstance(c, dict) and c.get("id") and not c.get("fin") and c.get("n") else None
+
+
+MARCA_BACO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "musica_baco.json")   # la escribe hud_server.py
+baco: dict = {"t_marca": 0.0, "espera": None, "app": "", "visto": 0.0}
+
+
+def _marca_baco() -> dict:
+    try:
+        with open(MARCA_BACO, encoding="utf-8") as fh:
+            m = json.load(fh)
+        return m if isinstance(m, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def musica_es_de_baco(v: dict | None, now: float) -> bool:
+    """¿Lo que suena lo puso Baco con ▶ (una canción suelta, en el navegador o en Spotify)? Baco deja una marca al
+    abrirla; la app que empieza a sonar en el minuto siguiente queda como «de Baco» mientras siga sonando (aunque pase
+    a la canción siguiente). Se suelta tras 2 min sin sonar, o si suena otra app."""
+    m = _marca_baco()
+    t = float(m.get("t") or 0)
+    if t > baco["t_marca"] and now - t < 60:   # marca nueva: se espera la música que corresponda
+        baco.update(t_marca=t, espera={"t": t, "spotify": "spotify" in str(m.get("u") or "").lower()}, app="")
+    app = str((v or {}).get("app") or "")
+    suena = bool(v and v.get("hay") and v.get("estado") == "Playing")
+    e = baco["espera"]
+    if e and now - e["t"] > 60:
+        baco["espera"] = e = None
+    if e and suena and app and (("spotify" in app.lower()) == e["spotify"]):
+        baco.update(app=app, visto=now, espera=None)
+    if baco["app"]:
+        if v and v.get("hay") and app == baco["app"]:
+            if suena:
+                baco["visto"] = now
+        elif suena:   # suena otra app: ya no es lo de Baco
+            baco["app"] = ""
+        if baco["app"] and now - baco["visto"] > 120:
+            baco["app"] = ""
+    return bool(baco["app"]) and bool(v and v.get("hay")) and app == baco["app"]
+
+
+MUSICA_ACTUAL = os.path.join(os.path.dirname(os.path.abspath(__file__)), "musica_actual.json")   # la lee hud_server.py
+_pub: dict = {"k": None, "t": 0.0}
+
+
+def _publicar_musica() -> None:
+    """Lo mismo que decide el menú minimizado (música de Atlas o de Baco), para la ficha de música del panel derecho
+    de la ventana de Atlas (19-11-2026). Se escribe al cambiar algo, y cada 3 s para que se vea vigente."""
+    v = musica.get("v")
+    d = None
+    if v:
+        cb = cola_baco(v)
+        d = {"titulo": str(v.get("titulo") or ""), "artista": str(v.get("artista") or ""), "album": str(v.get("album") or ""),
+             "estado": str(v.get("estado") or ""), "pos": float(v.get("pos") or 0), "fin": float(v.get("fin") or 0),
+             "baco": bool(cb or v.get("_baco")),
+             "cola": {"j": int(cb.get("j") or 0), "n": int(cb.get("n") or 0)} if cb else None}
+    k = json.dumps(d, sort_keys=True)
+    now = time.time()
+    if k == _pub["k"] and now - _pub["t"] < 3:
+        return
+    try:
+        tmp = MUSICA_ACTUAL + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump({"t": musica.get("t") or now, "v": d}, fh)
+        os.replace(tmp, MUSICA_ACTUAL)
+        _pub.update(k=k, t=now)
+    except OSError:   # el servidor justo lo estaba leyendo: va en la vuelta siguiente
+        pass
+
+
+def poll_musica() -> None:
+    """Lo que suena, ~1 vez por segundo con el círculo a la vista (cada 2 s si no, para no perder lo que Baco pone con
+    Atlas abierto). Pregunta a Baco (/acceso/baco/api/media)."""
+    clave_ok, t_ok, suya, ult_diag = None, 0.0, False, None
+    while True:
+        try:
+            clave_ok, t_ok, suya, ult_diag = _poll_musica_1(clave_ok, t_ok, suya, ult_diag)
+            _publicar_musica()
+        except Exception as exc:  # noqa: BLE001  que un error raro no apague el menú para siempre
+            _diag(f"menú de música (lectura): {type(exc).__name__}: {exc}")
+        time.sleep(0.8 if state["show"] else 2.0)
+
+
+def _poll_musica_1(clave_ok, t_ok, suya, ult_diag):
+    """Una lectura: qué suena y si es de Atlas o de Baco."""
+    v, t = None, time.time()
+    try:
+        with urllib.request.urlopen(URL + "/acceso/baco/api/media", timeout=4) as r:
+            v = json.loads(r.read())
+        t = time.time()
+    except Exception as exc:  # noqa: BLE001
+        v = None
+        if ult_diag != "error":
+            _diag(f"menú de música: no pude leer lo que suena ({type(exc).__name__})")
+            ult_diag = "error"
+    if v and v.get("hay") and v.get("titulo") and v.get("estado") in ("Playing", "Paused"):
+        if cola_baco(v) or musica_es_de_baco(v, time.time()):   # cola de Baco o canción que Baco puso con ▶
+            suya, clave_ok = True, None
+            v["_baco"] = True
+        else:
+            clave = (v.get("titulo"), v.get("artista"), v.get("app"))
+            if clave != clave_ok or time.time() - t_ok > 15:  # ¿es de Atlas? se vuelve a mirar al cambiar o cada 15 s
+                suya, clave_ok, t_ok = musica_es_de_atlas(v), clave, time.time()
+        musica["v"], musica["t"] = (v if suya else None), t
+        d = f"suena {v.get('app_n') or v.get('app') or '?'}: {'de Baco' if v.get('_baco') else 'de Atlas' if suya else 'no es de Atlas ni de Baco'}"
+        if d != ult_diag:   # sin títulos (datos personales): solo la app y la decisión, al cambiar
+            _diag("menú de música: " + d)
+            ult_diag = d
+    else:
+        musica_es_de_baco(v, time.time())   # que lleve la cuenta aunque no suene nada
+        musica["v"], musica["t"], clave_ok = None, t, None
+    return clave_ok, t_ok, suya, ult_diag
+
+
+def musica_accion(accion: str) -> None:
+    def enviar():
+        try:
+            req = urllib.request.Request(URL + "/acceso/baco/api/media", data=json.dumps({"accion": accion}).encode(),
+                                         method="POST", headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=12) as r:
+                v = json.loads(r.read())
+            if v.get("hay"):
+                if (musica.get("v") or {}).get("_baco"):
+                    v["_baco"] = True
+                musica["v"], musica["t"] = v, time.time()
+                _publicar_musica()
+        except Exception:  # noqa: BLE001
+            pass
+
+    threading.Thread(target=enviar, daemon=True).start()
+
+
+def _mmss(s) -> str:
+    try:
+        s = max(0, int(float(s)))
+    except (TypeError, ValueError):
+        return "0:00"
+    return f"{s // 3600}:{s % 3600 // 60:02d}:{s % 60:02d}" if s >= 3600 else f"{s // 60}:{s % 60:02d}"
+
+
+def musica_pos(v: dict, now: float) -> tuple[float, float]:
+    """(posición, duración) en segundos, avanzando entre una lectura y otra si está sonando."""
+    pos, fin = float(v.get("pos") or 0), float(v.get("fin") or 0)
+    if v.get("estado") == "Playing":
+        pos += max(0.0, now - musica["t"])
+    return (min(pos, fin) if fin > 0 else pos), fin
+
+
+_TXT: dict = {}
+
+
+def texto_mask(text: str, w: int, h: int, font: str = "Bahnschrift", size: float = 12, weight: int = 400,
+               flags: int = 0x8824) -> np.ndarray:
+    """Cobertura (0..1) de un texto dibujado por Windows. flags por omisión: izquierda, centrado vertical, una línea,
+    sin «&» y con «…» si no cabe."""
+    key = (text, w, h, font, size, weight, flags)
+    m = _TXT.get(key)
+    if m is not None:
+        return m
+    if len(_TXT) > 300:
+        _TXT.clear()
+    dc, bmp, bits = make_dib(w, h)
+    f = gdi32.CreateFontW(-round(size * SCALE), 0, 0, 0, weight, 0, 0, 0, 1, 0, 0, 4, 0, font)  # 4 = ANTIALIASED
+    gdi32.SelectObject(dc, f)
+    gdi32.SetTextColor(dc, 0xFFFFFF)
+    gdi32.SetBkMode(dc, 1)
+    rect = wintypes.RECT(0, 0, w, h)
+    user32.DrawTextW(dc, text, -1, ctypes.byref(rect), flags)
+    px = np.frombuffer(ctypes.string_at(bits, w * h * 4), dtype=np.uint8).reshape(h, w, 4)
+    m = px[:, :, 1].astype(np.float32) / 255
+    gdi32.DeleteObject(f)
+    gdi32.DeleteObject(bmp)
+    gdi32.DeleteDC(dc)
+    _TXT[key] = m
+    return m
+
+
+def orbita_capa(f, c1, c2, p: float) -> None:
+    """Arco de avance alrededor del círculo (diseño A «Órbita»): sale de arriba y gira a la derecha, con una estrella
+    en la punta. p = 0..1."""
+    white = np.array((255, 255, 255), np.float32)
+    ro = R - 1.6 * SCALE
+    f.over(c1, band(ro, 0.45 * SCALE) * 0.16)                              # órbita completa, tenue
+    ext = max(1.0, min(1.0, p) * 360)
+    am = arc_mask(90 - ext, ext)
+    q = np.clip(((90 - TH) % 360) / ext, 0, 1)                             # 0 arriba … 1 en la punta
+    col = np.where((q < .6)[..., None], _lerp(c1, white, np.clip(q / .6, 0, 1)[..., None]),
+                   _lerp(white, c2, np.clip((q - .6) / .4, 0, 1)[..., None]))
+    f.over(col, np.exp(-((RR - ro) ** 2) / (2 * (1.8 * SCALE) ** 2)) * am * 0.45)   # brillo
+    f.over(col, band(ro, 0.85 * SCALE) * am)
+    a = math.radians(90 - ext)
+    hx, hy = CX + ro * math.cos(a), CY - ro * math.sin(a)
+    du, dv = np.abs(XX - hx), np.abs(YY - hy)
+    f.over(c2, np.clip(1 - np.hypot(du, dv) / (5 * SCALE), 0, 1) * 0.5)
+    sz = 4.2 * SCALE
+    f.over(white, np.clip((1 - (np.sqrt(du / sz) + np.sqrt(dv / sz))) * sz * 0.8 + 0.5, 0, 1))
+
+
+class PanelMusica:
+    """Placa al lado del círculo: «● SONANDO · ATLAS», título, artista, tiempo y ⏮ ⏯ ⏭. Va a la izquierda del círculo
+    (o a la derecha si el círculo está pegado al borde izquierdo). Termina en un disco oscuro detrás del círculo, así el
+    arco de avance se lee sobre cualquier fondo de pantalla; el círculo se dibuja encima."""
+
+    PW = round(316 * SCALE)          # de la punta de la placa al centro del círculo
+    EXT = round(R + 5 * SCALE)       # lo que sigue más allá del centro (medio disco)
+    PWT = PW + EXT                   # ancho de la ventana
+    DISCO = R + 3 * SCALE            # radio del disco detrás del círculo
+    GLYPH = {"prev": "\uE892", "next": "\uE893", "play": "\uE768", "pause": "\uE769"}   # Segoe MDL2 Assets
+
+    def __init__(self, owner) -> None:
+        self.owner = owner
+        self.win = tk.Toplevel(owner.root)
+        self.win.overrideredirect(True)
+        self.win.attributes("-topmost", True)
+        self.win.geometry(f"{self.PWT}x{H}+-4000+-4000")
+        self.win.update_idletasks()
+        self.hwnd = user32.GetAncestor(self.win.winfo_id(), 2)
+        ex = user32.GetWindowLongW(self.hwnd, -20)
+        user32.SetWindowLongW(self.hwnd, -20, ex | 0x80000 | 0x80 | 0x08000000)   # LAYERED | TOOLWINDOW | NOACTIVATE
+        self.dc, self.bmp, self.bits = make_dib(self.PWT, H)
+        self.visible, self.alpha, self.lado = False, 0.0, None
+        self.hover, self.pressed, self.btns = None, None, {}
+        self.optimista: tuple[str, float] | None = None   # estado que se muestra al tiro tras apretar ⏯
+        self.win.bind("<Motion>", self.motion)
+        self.win.bind("<Leave>", lambda _e: setattr(self, "hover", None))
+        self.win.bind("<ButtonPress-1>", self.click)
+        self.win.bind("<Button-3>", lambda _e: state.update(hide_until=time.time() + 600))
+        self.geom(False)
+        # 19-11-2026: sin ShowWindow(0) aquí. Ocultarla antes del primer UpdateLayeredWindow la dejaba en modo
+        # SetLayeredWindowAttributes y Windows rechazaba todo dibujo (la placa nunca se veía). Queda fuera de pantalla.
+
+    # --- forma
+    def geom(self, derecha: bool) -> None:
+        """Máscaras de la placa. derecha=True: el círculo queda a la izquierda de la placa."""
+        if self.lado == derecha:
+            return
+        self.lado = derecha
+        s, pw = SCALE, self.PWT
+        yy, xx = np.mgrid[0:H, 0:pw].astype(np.float32) + 0.5
+        self.yy, self.xx = yy, xx
+        cx = float(self.EXT) if derecha else float(self.PW)            # centro del círculo en la placa
+        self.cx = cx
+        top, bot, rad = CY - self.DISCO, CY + self.DISCO, 14 * s
+        x0, x1 = (cx, pw - 1.0) if derecha else (1.0, cx)
+        qx = np.maximum(np.maximum(x0 + rad - xx, xx - (x1 - rad)), 0)
+        qy = np.maximum(np.maximum(top + rad - yy, yy - (bot - rad)), 0)
+        rect_d = np.hypot(qx, qy) - rad                                  # < 0 adentro (rectángulo redondeado)
+        disco_d = np.hypot(xx - cx, yy - CY) - self.DISCO
+        d = np.minimum(rect_d, disco_d)                                  # distancia con signo de la forma
+        self.fill = np.clip(0.5 - d, 0, 1)
+        self.edge = np.clip(0.6 * s + 0.5 - np.abs(d + 0.6 * s), 0, 1)
+        borde = np.clip(np.minimum.reduce([xx, pw - xx, yy, H - yy]) / (4 * s), 0, 1)   # se apaga antes del borde
+        self.glow = np.exp(-np.maximum(d, 0) ** 2 / (2 * (3.5 * s) ** 2)) * (d > 0) * borde
+        self.x0 = round((cx + R + 12 * s) if derecha else 16 * s)    # donde empieza el contenido
+        self.x1 = round((pw - 16 * s) if derecha else (cx - R - 10 * s))
+        by = CY + 28 * s
+        bx = self.x0 + 10 * s
+        self.btns = {"prev": (bx, by, 10 * s), "toggle": (bx + 27 * s, by, 12 * s), "next": (bx + 54 * s, by, 10 * s)}
+
+    # --- dibujo
+    def _over(self, c, a, color, mask, x: int, y: int) -> None:
+        """Pinta mask (alto x ancho) con color en (x, y), solo en ese recuadro (más rápido que toda la placa)."""
+        h, w = min(mask.shape[0], H - y), min(mask.shape[1], self.PWT - x)
+        if h <= 0 or w <= 0 or x < 0 or y < 0:
+            return
+        al = mask[:h, :w] * self.fill[y:y + h, x:x + w]
+        cs, as_ = c[y:y + h, x:x + w], a[y:y + h, x:x + w]
+        cs[...] = np.asarray(color, np.float32) * al[..., None] + cs * (1 - al[..., None])
+        as_[...] = al + as_ * (1 - al)
+
+    def _base(self, v: dict, suena: bool):
+        """Lo que no cambia de un cuadro a otro (fondo, textos, botones). Se recuerda hasta que algo cambie."""
+        de_baco = cola_baco(v) is not None or bool(v.get("_baco"))
+        key = (self.lado, v.get("titulo"), v.get("artista"), v.get("album"), suena, de_baco, self.hover, self.pressed)
+        if getattr(self, "_bkey", None) == key:
+            return self._b
+        s, pw = SCALE, self.PWT
+        f = Frame.__new__(Frame)   # misma mezcla de capas que el círculo, con el ancho de la placa
+        f.c, f.a = np.zeros((H, pw, 3), np.float32), np.zeros((H, pw), np.float32)
+        cyan, dim, white = np.array(CYAN, np.float32), np.array((143, 195, 214), np.float32), np.array((234, 251, 255), np.float32)
+        f.over((2, 10, 18), self.glow * 0.35)
+        f.over((4, 18, 30), self.fill * 0.9)
+        f.over(cyan, self.edge * 0.38)
+        x0, cw = self.x0, max(10, self.x1 - self.x0)
+        ly = round(CY - 37 * s)
+        rot = "\u200a".join(("SONANDO" if suena else "EN PAUSA") + (" · BACO" if de_baco else " · ATLAS"))
+        self._over(f.c, f.a, cyan, texto_mask(rot, cw - round(12 * s), round(13 * s), "Consolas", 9.5, 400), x0 + round(12 * s), ly)
+        self._over(f.c, f.a, white, texto_mask(str(v.get("titulo") or ""), cw, round(22 * s), "Bahnschrift", 16.5, 400),
+                   x0, round(CY - 24 * s))
+        sub = " · ".join(x for x in (str(v.get("artista") or ""), str(v.get("album") or "")) if x)
+        self._over(f.c, f.a, dim, texto_mask(sub, cw, round(16 * s), "Bahnschrift", 12, 300), x0, round(CY - 3 * s))
+        for k, (bx, by, r) in self.btns.items():
+            d = np.hypot(self.xx - bx, self.yy - by)
+            ring = np.clip(0.55 * s + 0.5 - np.abs(d - r), 0, 1)
+            hov = self.hover == k
+            if k == "toggle":
+                f.over(cyan, np.exp(-((d - r) ** 2) / (2 * (2.5 * s) ** 2)) * 0.25 * self.fill)
+            f.over(cyan, np.clip(r + 0.5 - d, 0, 1) * (0.28 if self.pressed == k else 0.16 if hov else 0.06) * self.fill)
+            f.over(cyan if (k == "toggle" or hov) else np.array((79, 160, 190), np.float32),
+                   ring * (1 if k == "toggle" else .7) * self.fill)
+            g = self.GLYPH["pause" if suena else "play"] if k == "toggle" else self.GLYPH[k]
+            box = round(2 * r)
+            gm = texto_mask(g, box, box, "Segoe MDL2 Assets", 10.5 if k == "toggle" else 9, 400, 0x825)
+            self._over(f.c, f.a, cyan if k == "toggle" else (191, 243, 255), gm, round(bx - r), round(by - r))
+        self._bkey, self._b = key, (f.c, f.a)
+        return self._b
+
+    def render(self, v: dict, now: float) -> bytes | None:
+        """La placa completa (BGRA premultiplicado), o None si se ve igual que el cuadro anterior."""
+        s = SCALE
+        estado = v.get("estado")
+        if self.optimista and now - self.optimista[1] < 2.5:
+            estado = self.optimista[0]
+        suena = estado == "Playing"
+        pos, fin = musica_pos(v, now)
+        if self.optimista and self.optimista[0] == "Paused":
+            pos, fin = float(v.get("pos") or 0), float(v.get("fin") or 0)
+        t = f"{_mmss(pos)} / {_mmss(fin)}" if fin > 0 else _mmss(pos)
+        cb = cola_baco(v)
+        if cb:
+            t += f"  ·  COLA {int(cb.get('j') or 0) + 1}/{cb.get('n')}"
+        lat = .75 + .25 * math.sin(now * 3) if suena else .45
+        bc, ba = self._base(v, suena)
+        key = (id(bc), self.lado, t, round(lat * 24))
+        if getattr(self, "_fkey", None) == key:
+            return None
+        self._fkey = key
+        c, a = bc.copy(), ba.copy()
+        # punto que late junto a «SONANDO»
+        x0, ly, r0 = self.x0, round(CY - 37 * s), round(7 * s)
+        dx, dy = round(x0 + 3 * s), round(ly + 6 * s)
+        yy, xx = np.mgrid[0:2 * r0, 0:2 * r0].astype(np.float32) + 0.5
+        dot = np.hypot(xx - r0, yy - r0)
+        verde = (98, 240, 180) if suena else (143, 195, 214)
+        self._over(c, a, verde, np.clip(1 - dot / (6 * s), 0, 1) * 0.35 * lat, dx - r0, dy - r0)
+        self._over(c, a, verde, np.clip(2.6 * s + 0.5 - dot, 0, 1) * lat, dx - r0, dy - r0)
+        # tiempo
+        tx = round(self.btns["next"][0] + 20 * s)
+        self._over(c, a, (143, 195, 214), texto_mask(t, max(10, self.x1 - tx), round(14 * s), "Consolas", 10, 400),
+                   tx, round(self.btns["next"][1] - 7 * s))
+        out = np.empty((H, self.PWT, 4), np.uint8)
+        out[..., 0], out[..., 1], out[..., 2] = (np.clip(c[..., i], 0, 255) for i in (2, 1, 0))
+        out[..., 3] = np.clip(a * 255, 0, 255)
+        self._ult = out.tobytes()
+        return self._ult
+
+    def paint(self, data: bytes, x: int, y: int) -> None:
+        ctypes.memmove(self.bits, data, len(data))
+        size, src, dst = wintypes.SIZE(self.PWT, H), wintypes.POINT(0, 0), wintypes.POINT(x, y)
+        blend = BLENDFUNCTION(0, 0, max(0, min(255, round(255 * self.alpha))), 1)
+        args = (self.hwnd, self.owner.screen, ctypes.byref(dst), ctypes.byref(size), self.dc, ctypes.byref(src), 0,
+                ctypes.byref(blend), 2)
+        if not user32.UpdateLayeredWindow(*args):   # Windows la rechaza si quedó en modo SetLayeredWindowAttributes: se rearma
+            ex = user32.GetWindowLongW(self.hwnd, -20)
+            user32.SetWindowLongW(self.hwnd, -20, ex & ~0x80000)
+            user32.SetWindowLongW(self.hwnd, -20, ex | 0x80000)
+            if not user32.UpdateLayeredWindow(*args):
+                _diag("menú de música: Windows no deja dibujar la placa")
+
+    # --- cada cuadro (lo llama Mini.tick)
+    def tick(self, now: float, dt: float, mostrar: bool) -> float | None:
+        """Pinta la placa si corresponde. Devuelve el avance (0..1) para el arco del círculo, o None."""
+        v = musica["v"] if (mostrar and state.get("min")) else None   # solo con Atlas minimizado (usuario, 19-11-2026)
+        if v is None and musica.get("ultimo") is not None and self.alpha > 0:
+            v = musica["ultimo"]          # se desvanece con lo último que mostró
+            meta = 0.0
+        else:
+            meta = 1.0 if v is not None else 0.0
+        if v is not None:
+            musica["ultimo"] = v
+        self.alpha += (meta - self.alpha) * min(1.0, dt * 9)
+        if meta == 0 and self.alpha < 0.02:
+            self.alpha = 0.0
+            if self.visible:
+                user32.ShowWindow(self.hwnd, 0)
+                self.visible = False
+            return None
+        rx, ry = self.owner.root.winfo_x(), self.owner.root.winfo_y()
+        derecha = rx + CX - self.PW < 0       # el círculo pegado a la izquierda: la placa va a su derecha
+        self.geom(derecha)
+        x = round(rx + CX - self.cx)
+        data = self.render(v, now)
+        if data is not None or (x, ry) != getattr(self, "pos", None) or abs(self.alpha - getattr(self, "a_pint", -1)) > 0.004:
+            self.paint(data or self._ult, x, ry)
+            self.pos, self.a_pint = (x, ry), self.alpha
+        if not self.visible or now - getattr(self, "t_z", 0) > 1:
+            if not self.visible:
+                user32.ShowWindow(self.hwnd, 4)   # SW_SHOWNOACTIVATE
+                self.visible = True
+            # el círculo siempre encima de la placa (HWND_TOPMOST; sin mover, sin cambiar tamaño, sin activar)
+            user32.SetWindowPos(ctypes.c_void_p(self.owner.hwnd), ctypes.c_void_p(-1), 0, 0, 0, 0, 0x13)
+            self.t_z = now
+        pos, fin = musica_pos(v, now)
+        return (pos / fin if fin > 0 else 0.0) if meta else None
+
+    # --- mouse
+    def boton_en(self, e) -> str | None:
+        for k, (bx, by, r) in self.btns.items():
+            if math.hypot(e.x - bx, e.y - by) <= r + 3 * SCALE:
+                return k
+        return None
+
+    def motion(self, e):
+        self.hover = self.boton_en(e)
+        self.win.configure(cursor="hand2" if self.hover else "arrow")
+
+    def click(self, e):
+        k = self.boton_en(e)
+        if not k:
+            focus_atlas()   # clic en la placa: como en el círculo, trae Atlas
+            return
+        self.pressed = k
+        self.win.after(160, lambda: setattr(self, "pressed", None))
+        v = musica.get("v") or {}
+        if k == "toggle":
+            nuevo = "Paused" if v.get("estado") == "Playing" else "Playing"
+            if v:
+                v["pos"], _ = musica_pos(v, time.time())
+                musica["t"] = time.time()
+            self.optimista = (nuevo, time.time())
+        musica_accion(k)
+
+    def ocultar(self) -> None:
+        if self.visible:
+            user32.ShowWindow(self.hwnd, 0)
+            self.visible = False
+        self.alpha = 0.0
+
+
 class Mini:
     def __init__(self) -> None:
         self.root = tk.Tk()
@@ -496,6 +1028,7 @@ class Mini:
         self.root.bind("<Button-3>", lambda _e: state.update(hide_until=time.time() + 600))
         self.last = time.time()
         self.ov, self.ov_done = None, None  # tarjeta de confirmación sobre toda la pantalla (ver overlay_tick)
+        self.musica = PanelMusica(self)  # menú de música «Órbita» al lado del círculo
         self.tick()
         self.root.after(200, self.overlay_tick)
         self.icons = None
@@ -761,6 +1294,8 @@ class Mini:
             if not self.hidden:  # ShowWindow directo: withdraw/deiconify de tkinter dejaba la ventana sin dibujo
                 user32.ShowWindow(self.hwnd, 0)  # SW_HIDE
                 self.hidden = True
+            self.musica.ocultar()
+            ORBITA["p"] = None
             self.root.after(150, self.tick)
             return
         if self.hidden:
@@ -783,6 +1318,11 @@ class Mini:
             self.angle2 += self.vel * 0.6 * dt
             self.anchor, self.anchor2 = self.angle, self.angle2
         try:
+            ORBITA["p"] = self.musica.tick(now, dt, not self.ov)
+        except Exception as exc:  # noqa: BLE001
+            ORBITA["p"] = None
+            _diag(f"menú de música: {type(exc).__name__}: {exc}")
+        try:
             self.paint(render(self.angle, mode, now, self.labels.get(mode), self.angle2))
         except Exception:  # noqa: BLE001
             pass
@@ -802,9 +1342,14 @@ if __name__ == "__main__":
         threading.Thread(target=cycle, daemon=True).start()
         if "--confirmar" in os.environ.get("ATLAS_FLOTANTE", ""):  # para revisar la tarjeta de confirmación
             state["pendiente"] = "Enviar por WhatsApp a Benji: «Hola Benji»"
+        if "--musica" in os.environ.get("ATLAS_FLOTANTE", ""):  # para revisar el menú de música
+            state["min"] = True
+            musica.update(t=time.time(), v={"hay": True, "titulo": "Clocks", "artista": "Coldplay",
+                                            "album": "A Rush of Blood to the Head", "estado": "Playing", "pos": 106, "fin": 307})
         if "--elegir" in os.environ.get("ATLAS_FLOTANTE", ""):  # para revisar la tarjeta de elegir app
             state["eleccion"] = {"nombre": "Benji", "texto": "Hola", "apps": ["whatsapp", "telegram", "discord"]}
     else:
         threading.Thread(target=poll, daemon=True).start()
+        threading.Thread(target=poll_musica, daemon=True, name="musica").start()
     threading.Thread(target=watch_window, daemon=True).start()
     Mini().root.mainloop()

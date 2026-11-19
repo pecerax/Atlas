@@ -13,14 +13,30 @@ from __future__ import annotations
 import os as _os
 
 _os.environ["ATLAS_PRUEBAS"] = "1"  # nada abre ventanas, pestañas ni programas visibles durante las pruebas
-# diccionario y frases del lápiz ✎: nunca los del usuario (~\.atlas)
-_os.environ["ATLAS_DICCIONARIO"] = _os.path.join(_os.environ.get("TEMP", "."), "atlas_pruebas_diccionario.json")
-_os.environ["ATLAS_FRASES"] = _os.path.join(_os.environ.get("TEMP", "."), "atlas_pruebas_frases.json")
+# diccionario y frases del lápiz ✎: nunca los del usuario (~\.atlas). Uno por corrida (con el número del proceso):
+# dos corridas a la vez compartían el mismo archivo y una borraba lo de la otra (18-11-2026: «chego» dejó de ser
+# Shego en una corrida mientras otra pasaba 474/474 al mismo tiempo).
+_os.environ["ATLAS_DICCIONARIO"] = _os.path.join(_os.environ.get("TEMP", "."), f"atlas_pruebas_diccionario_{_os.getpid()}.json")
+_os.environ["ATLAS_FRASES"] = _os.path.join(_os.environ.get("TEMP", "."), f"atlas_pruebas_frases_{_os.getpid()}.json")
+_os.environ["ATLAS_REGLAS_BASE"] = ""  # sin las reglas base del instalador: las pruebas parten del mismo diccionario siempre
 for _f in (_os.environ["ATLAS_DICCIONARIO"], _os.environ["ATLAS_FRASES"]):  # cada corrida migra de cero
     try:
         _os.remove(_f)
     except OSError:
         pass
+
+def _borrar_temporales() -> None:
+    for _f in (_os.environ["ATLAS_DICCIONARIO"], _os.environ["ATLAS_FRASES"]):
+        for _x in (_f, _os.path.splitext(_f)[0] + ".tmp"):
+            try:
+                _os.remove(_x)
+            except OSError:
+                pass
+
+
+import atexit as _atexit
+
+_atexit.register(_borrar_temporales)
 
 import json
 import re
@@ -172,6 +188,7 @@ def preparar():
     TL.FILE = tmp / "tareas_listas.json"  # nunca el archivo real (ahí están las tareas que él ya terminó)
     H.MEMORY_FILE = tmp / "memoria.json"
     H.LAST_APP_FILE = None
+    H.ENLACES_FILE = tmp / "baco_enlaces.json"  # nunca los links reales de Baco (no existe: sin links)
     # las pruebas nunca leen Telegram ni WhatsApp de verdad (WhatsApp se mostraría fuera de la pantalla)
     H.Atlas.SIN_LEER_FN = staticmethod(lambda app: {"ok": True, "chats": []})
     H.Atlas.NAMED_FN = staticmethod(lambda app, words: {"ok": True, "found": False})  # nunca WhatsApp/Telegram reales
@@ -345,6 +362,8 @@ CASOS: list[tuple[str, list[tuple]]] = [
         ("¿Qué tengo esta semana?", "agenda",
          dict(reply=r"5 eventos: Control de Evalua.*Auxiliar de Introducción a la Programación el jueves 12.*Laboratorio el viernes 13 a las 10:15.*Control de Lenguajes.*Control de Introducción")),
         ("¿Qué clases tengo el martes?", "agenda", dict(reply=r"2 clases: Cátedra de Lenguajes a las 10:15 en G108; Cátedra de Redes a las 12:00 en B08")),
+        # «Horario de la semana» (✎ Corregir une una frase a «muéstrame mi horario»): se dice la semana, no «hoy y mañana»
+        ("muéstrame mi horario", "agenda", dict(reply=r"para esta semana veo")),
         ("mi horario del jueves", "agenda", dict(reply=r"Cátedra de EH a las 10:15.*Auxiliar de Introducción a la Programación a las 18:00 en S03, S05")),
         ("¿cuándo tengo e hache?", "agenda", dict(reply=r"Lo próximo es Cátedra de EH el jueves 12")),
         ("qué tengo de redes esta semana", "agenda", dict(reply=r"de Redes: Cátedra de Redes mañana.*Auxiliar de Redes el miércoles 11")),
@@ -1517,6 +1536,72 @@ def pruebas_directas(H, tmp) -> list[tuple[str, list[str]]]:
     errs = [f"{a!r} -> {H.apply_equivalencias(a)!r} (se esperaba {b!r})" for a, b in corrige if H.apply_equivalencias(a) != b]
     errs += [f"tocó {a!r} -> {H.apply_equivalencias(a)!r}" for a in no_toca if H.apply_equivalencias(a) != a]
     out.append(("equivalencias de la voz: corrige lo real y no toca frases normales", errs))
+    # Reglas base del instalador (19-11-2026): se suman una vez por versión, sin pisar lo propio ni revivir lo borrado
+    import atlas_nombres as NM
+    errs = []
+    with tempfile.TemporaryDirectory() as _td:
+        _d, _f = Path(_td) / "diccionario.json", Path(_td) / "frases.json"
+        _d.write_text(json.dumps({"migrado": {"fecha": "x"}, "vocabulario": ["Atlas"], "reglas": [],
+                                  "palabras": [{"escuchado": "ermes", "correcto": "Hermes Mío", "origen": "lápiz"}]},
+                                 ensure_ascii=False), encoding="utf-8")
+        _base = {"version": "v1", "palabras": [{"escuchado": "ermes", "correcto": "Hermes"}, {"escuchado": "garmes", "correcto": "Hermes"}],
+                 "reglas": [{"tipo": "cambiar", "escuchado": "a nota", "correcto": "Anota",
+                             "cerca": [{"w": "pendiente", "lado": "después", "justo": True}]}],
+                 "vocabulario": ["Atlas", "Fortuna"], "frases": [{"frase": "qué tengo para esta semana", "accion": "muéstrame mi horario"}]}
+        _doc = NM._doc(_d)
+        if not NM._sumar_base(_d, _doc, _base, _f):
+            errs.append("la primera vez las reglas base debían sumarse")
+        NM._escribir_doc(_d, _doc)
+        if NM.aplicar_diccionario("abre garmes", _d) != "abre Hermes" or NM.aplicar_diccionario("ermes", _d) != "Hermes Mío":
+            errs.append(f"suma lo nuevo y no pisa lo propio: {NM.aplicar_diccionario('abre garmes', _d)!r} {NM.aplicar_diccionario('ermes', _d)!r}")
+        if NM.aplicar_reglas("a nota pendiente leche", _d) != "Anota pendiente leche" or NM.vocabulario(_d) != ["Atlas", "Fortuna"] \
+                or [x["frase"] for x in NM.frases(_f)] != ["qué tengo para esta semana"]:
+            errs.append(f"regla, vocabulario y frase base: {NM.aplicar_reglas('a nota pendiente leche', _d)!r} {NM.vocabulario(_d)}")
+        if NM._sumar_base(_d, NM._doc(_d), _base, _f):
+            errs.append("la misma versión no se vuelve a sumar")
+        NM.borrar_palabra("garmes", _d)
+        _doc = NM._doc(_d)
+        NM._sumar_base(_d, _doc, {**_base, "version": "v2"}, _f)
+        if any(x["escuchado"] == "garmes" for x in _doc["palabras"]) or len(_doc["reglas"]) != 1:
+            errs.append("una versión nueva no revive lo que la persona borró ni duplica reglas")
+    out.append(("reglas base del instalador: se suman sin pisar ni revivir lo borrado", errs))
+    # Exportar / importar el diccionario entre amigos (19-11-2026, atlas_compartir.py)
+    import atlas_compartir as CP
+    errs = []
+    with tempfile.TemporaryDirectory() as _td:
+        _v = CP.exportar_vista()
+        _marc = [i["clave"] for i in _v.get("items", []) if i["marcada"]]
+        if not _v.get("ok") or any(i["marcada"] and i["tipo"] == "vocab" for i in _v["items"]):
+            errs.append("exportar: el vocabulario (suelen ser nombres propios) sale desmarcado")
+        if any(i["marcada"] for i in _v["items"] if i["motivo"]):
+            errs.append("exportar: lo que tiene motivo (contacto, ramo, ya viene con Atlas) sale desmarcado")
+        _todo = [i["clave"] for i in _v["items"]]
+        _r = CP.exportar(_todo, Path(_td))
+        _txt = Path(_r.get("ruta", _td)).read_text(encoding="utf-8") if _r.get("ok") else ""
+        if not _r.get("ok") or json.loads(_txt).get("formato") != CP.FORMATO:
+            errs.append(f"exportar: no guardó el archivo: {_r}")
+        _iv = CP.importar_vista(_txt) if _txt else {}
+        if not _iv.get("ok") or any(i["estado"] != "ya la tiene" for i in _iv["items"]):
+            errs.append("importar lo propio: todo debía salir «ya la tiene»")
+        _ext = json.dumps({"palabras": [{"escuchado": "zorbo", "correcto": "Zorba"}, {"escuchado": "chego", "correcto": "Otro"}],
+                           "reglas": [{"tipo": "expresion", "de": "(a+)+$", "a": ""},
+                                      {"tipo": "quitar", "escuchado": "este", "inicio": True}],
+                           "frases": [{"frase": "qué onda mi semana", "accion": "muéstrame mi horario"}]}, ensure_ascii=False)
+        _iv = CP.importar_vista(_ext)
+        _est = {i["texto"]: (i["estado"], i["marcada"]) for i in _iv.get("items", [])}
+        if len(_est) != 4 or _est.get("«zorbo» se entiende «Zorba»") != ("nueva", True) \
+                or _est.get("«chego» se entiende «Otro»") != ("distinta", False):
+            errs.append(f"importar: nueva marcada, distinta desmarcada y sin expresiones: {_est}")
+        _d2 = Path(_td) / "amigo.json"
+        _d2.write_text(json.dumps({"migrado": {"fecha": "x"}, "palabras": [], "reglas": [], "vocabulario": []}), encoding="utf-8")
+        _s = CP.importar(_ext, [i["clave"] for i in _iv["items"] if i["estado"] != "distinta"], _d2, Path(_td) / "amigo_frases.json")
+        if not _s.get("ok") or NM.aplicar_diccionario("zorbo", _d2) != "Zorba" or NM.aplicar_diccionario("chego", _d2) != "chego" \
+                or NM.aplicar_reglas("este abre spotify", _d2) != "abre spotify" or len(NM.frases(Path(_td) / "amigo_frases.json")) != 1:
+            errs.append(f"importar: suma lo elegido: {_s} · {[(i['clave'], i['estado']) for i in _iv['items']]} · "
+                        f"{NM._doc(_d2).get('reglas')} · {NM.aplicar_reglas('este abre spotify', _d2)!r}")
+        if CP.importar_vista("no es json").get("ok") or CP.importar_vista('{"x": 1}').get("ok"):
+            errs.append("importar: un archivo que no es diccionario se rechaza")
+    out.append(("diccionario: exportar e importar entre amigos", errs))
     # Unificación (18-11-2026): equivalencias.json y vocabulario.txt se migraron a diccionario.json, la única fuente.
     # Cada corrección antigua debe corregir igual que antes (también «chego»), sin duplicados, y borrar en el panel la quita.
     import atlas_nombres as NM
@@ -1592,6 +1677,44 @@ def pruebas_directas(H, tmp) -> list[tuple[str, list[str]]]:
         errs.append(f"corrector: «Marca como pendiente…» + Pendientes debe proponer «marca → anota» con «pendiente» después: {_p}")
     elif not any(e.get("tipo") == "done" for e in _p.get("ejemplos") or []):
         errs.append("corrector: la propuesta debe mostrar que «Marca … como hecho» sigue cerrando el pendiente")
+    # «A nota como pendiente…» (uso real 18-11-2026): la voz partió «Anota»; propone juntarla, no quedarse sin regla
+    _pa = jv.corrector_proponer({"frase": "A nota como pendiente darle comida al perro", "accion": "mis pendientes"})
+    if _pa.get("tipo") != "regla" or (_pa.get("regla") or {}).get("escuchado") != "a nota" \
+            or (_pa.get("regla") or {}).get("correcto") != "anota" or _pa.get("resultado") != "darle comida al perro":
+        errs.append(f"corrector: «A nota como pendiente…» debe proponer «a nota → anota»: {_pa}")
+    import atlas_basico as _AB
+    from datetime import date as _date
+    if [_AB.estacion(_date(2026, m, d)) for m, d in ((11, 18), (1, 10), (4, 15), (7, 15), (9, 22), (12, 21))] != \
+            ["primavera", "verano", "otoño", "invierno", "primavera", "verano"] or "hemisferio sur" not in _AB.clock_line():
+        errs.append("el reloj del modelo debe decir la estación de Chile (en noviembre es primavera, hemisferio sur)")
+    # «Un Ado» + «Pon música» (uso real 19-11-2026): pregunta qué poner, lleno con lo escuchado; vacío = música cualquiera
+    _pm = jv.corrector_proponer({"frase": "Un Ado", "accion": "pon música"})
+    if _pm.get("tipo") != "frase_arg" or _pm.get("arg") != "Ado" or _pm.get("prefijo") != "pon ":
+        errs.append(f"corrector: «Un Ado» + «Pon música» debe preguntar qué poner, lleno con «Ado»: {_pm}")
+    if not jv.diccionario_cambiar({"op": "frase", "frase": "Un Ado", "accion": "pon Ado", "base": "pon música"}).get("ok"):
+        errs.append("corrector: debe guardar «Un Ado» -> «pon Ado»")
+    else:
+        jv.pc_raw.calls.clear()
+        jv.pending = None
+        jv.route(H.canonicalize("Un Ado"))
+        if not any(c.get("action") == "play_music" and c.get("query") == "ado" for c in jv.pc_raw.calls):
+            errs.append(f"«Un Ado» guardado debe poner Ado: {jv.pc_raw.calls}")
+    if not jv.diccionario_cambiar({"op": "frase", "frase": "Un Ado", "accion": "pon música", "base": "pon música"}).get("ok") \
+            or jv.diccionario_cambiar({"op": "frase", "frase": "Un Ado", "accion": "borra todo", "base": "pon música"}).get("ok"):
+        errs.append("corrector: «qué poner» vacío guarda «pon música»; otra cosa que no empiece con «pon» no se guarda")
+    jv.diccionario_cambiar({"op": "borrar_frase", "frase": "Un Ado"})
+    # «pon Ado» deformado por la voz (uso real 19-11-2026): frase corta que termina en un artista del repertorio -> su música
+    for _f in ("U-Con Ado", "Personal Shaw Hone Ado", "Ponado.", "Pomeado.", "Ponme Ado."):
+        jv.pc_raw.calls.clear()
+        jv.pending = None
+        jv.route(H.canonicalize(_f))
+        if not any(c.get("action") == "play_music" and c.get("query") == "ado" for c in jv.pc_raw.calls):
+            errs.append(f"«{_f}» (voz deformada de «pon Ado») debe poner Ado: {jv.pc_raw.calls}")
+    for _f in ("¿Quién es Ado?", "me gusta mucho Ado", "no pongas Ado", "Estoy cansado", "Tornado", "quita a Ado de mis artistas"):
+        if jv.route_musica_respaldo(_f):
+            errs.append(f"«{_f}» no es pedir música de Ado")
+    if 'data-act="arg"' not in (HERE / "hud.html").read_text(encoding="utf-8"):
+        errs.append("el corrector debe tener el campo «¿Qué quería poner?»")
     if jv.corrector_proponer({"frase": "marca estudiar", "accion": "mis pendientes"}).get("tipo") != "sin_regla":
         errs.append("corrector: sin «pendiente» en la frase no debe unirla a «mis pendientes» (listaría en vez de anotar)")
     if jv.corrector_proponer({"frase": "cómo ando de plata", "accion": "cuánto he gastado"}).get("tipo") != "frase":
@@ -1871,15 +1994,64 @@ def pruebas_directas(H, tmp) -> list[tuple[str, list[str]]]:
     if H.acceso_datos("Fortuna") != {"fm-mine": [{"monto": 1000}]}:
         errs.append(f"datos de Fortuna: {H.acceso_datos('Fortuna')}")
     out.append(("Fortuna se abre dentro de Atlas y guarda sus datos en Atlas", errs))
+    # Links guardados en Baco por nombre (pedido 18-11-2026: «abre solo todo» abre el link «SoloTodo»)
+    errs = []
+    enl_antes = H.ENLACES_FILE
+    H.ENLACES_FILE = tmp / "baco_enlaces_prueba.json"
+    H.ENLACES_FILE.write_text(json.dumps({"enlaces": [
+        {"id": "1", "t": "SoloTodo", "u": "https://www.solotodo.cl/"},
+        {"id": "2", "t": "Spotify", "u": "https://open.spotify.com"},
+        {"id": "3", "t": "YouTube", "u": "https://www.youtube.com"},
+        {"id": "4", "t": "Mi Banco", "u": "https://banco.example/"},
+        {"id": "5", "t": "Steam juegos", "u": "steam://open/games"}]}), encoding="utf-8")
+    try:
+        jl = nuevo(H)
+        for frase in ("abre solo todo", "abre solotodo", "Abre el link solo todo", "abre el enlace de SoloTodo",
+                      "Atlas, abre Sólo Todo, por favor.", "abre la página solo todo", "abre solo todo punto cl",
+                      "abre solotodo.cl", "ábreme el link de solo-todo", "abre solo toto"):
+            jl.pc_raw.calls.clear()
+            rr, resr, _ = jl.route(H.canonicalize(frase))
+            if rr != "enlace" or [c.get("target") for c in jl.pc_raw.calls] != ["https://www.solotodo.cl/"] \
+                    or "SoloTodo" not in (resr or {}).get("reply", ""):
+                errs.append(f"{frase!r}: {rr} {resr} pc={jl.pc_raw.calls}")
+        jl.pc_raw.calls.clear()
+        rr, resr, _ = jl.route("abre mi banco")
+        if rr != "enlace" or [c.get("target") for c in jl.pc_raw.calls] != ["https://banco.example/"]:
+            errs.append(f"«abre mi banco»: {rr} {resr} pc={jl.pc_raw.calls}")
+        # no le quita «abre <programa>» a la ruta del PC: «abre spotify» sigue abriendo la app; con «link», el link
+        jl.pc_raw.calls.clear()
+        rr, _r, _ = jl.route("abre spotify")
+        if rr != "pc" or (jl.pc_raw.calls or [{}])[-1].get("action") != "open_app":
+            errs.append(f"«abre spotify» dejó de ser la app: {rr} {_r} pc={jl.pc_raw.calls}")
+        jl.pc_raw.calls.clear()
+        rr, _r, _ = jl.route("abre el link de spotify")
+        if rr != "enlace" or [c.get("target") for c in jl.pc_raw.calls] != ["https://open.spotify.com"]:
+            errs.append(f"«abre el link de spotify»: {rr} {_r} pc={jl.pc_raw.calls}")
+        jl.pc_raw.calls.clear()
+        rr, _r, _ = jl.route("abre youtube")
+        if rr != "pc":
+            errs.append(f"«abre youtube» dejó la ruta del PC: {rr} {_r}")
+        for frase in ("abre bloc de notas", "abre todo", "abre el correo", "abre discord"):  # nada que se parezca: otra ruta
+            jl.pc_raw.calls.clear()
+            rr, _r, _ = jl.route(frase)
+            if rr == "enlace":
+                errs.append(f"{frase!r} abrió un link: {_r}")
+        if H.enlace_buscar("solo", H.load_enlaces()) or H.enlace_buscar("steam", H.load_enlaces()) is not None:
+            errs.append("calza con nombres demasiado cortos o parciales")
+        if (H.enlace_buscar("steam juegos", H.load_enlaces()) or {}).get("u") != "steam://open/games":
+            errs.append("«steam juegos» no calza")
+    finally:
+        H.ENLACES_FILE = enl_antes
+    out.append(("«abre solo todo» abre el link guardado en Baco, sin quitarle «abre <programa>» al PC", errs))
     # Aportes de Fortuna en archivo propio (18-11-2026: un reinicio de Atlas dañó el localStorage y se perdió uno)
     import atlas_fortuna_aportes as FA
     errs = []
     fa = tmp / "fortuna_aportes.json"
     if FA.http("GET", path=fa)[1] != {"ok": True, "existe": False, "aportes": []}:
         errs.append(f"sin archivo: {FA.http('GET', path=fa)}")
-    uno = {"key": "10578-DIGITAL", "amount": 1000, "date": "2026-11-18", "target": None, "stop": None}
+    uno = {"key": "10580-DIGITAL", "amount": 1000, "date": "2026-11-18", "target": None, "stop": None}
     c1, r1 = FA.http("POST", json.dumps({"aportes": [uno]}).encode(), path=fa)
-    c2, r2 = FA.http("POST", json.dumps({"aportes": [uno, dict(uno, key="8116-WEB", date="2026-11-17")]}).encode(), path=fa)
+    c2, r2 = FA.http("POST", json.dumps({"aportes": [uno, dict(uno, key="8886-WEB", date="2026-11-17")]}).encode(), path=fa)
     if c1 != 200 or c2 != 200 or len(FA.leer(fa)["aportes"]) != 2 or len(FA.leer(fa.with_name(fa.name + ".bak"))["aportes"]) != 1:
         errs.append(f"guardar con .bak: {c1} {c2} {FA.leer(fa)}")
     for malo in ([dict(uno, key="x y")], [dict(uno, amount=-5)], [dict(uno, date="18-11-2026")], "no", [dict(uno, amount=True)]):
@@ -2673,8 +2845,8 @@ def pruebas_directas(H, tmp) -> list[tuple[str, list[str]]]:
     _IS.DATOS = tmp / "fondos_cmf.json"
     _ini = (datetime.now().date() - timedelta(days=400)).isoformat()
     _IS.DATOS.write_text(json.dumps({"funds": [
-        {"name": "MACH Moderado", "start": _ini, "values": [100 + i * 0.05 for i in range(400)]},
-        {"name": "Scotia Acciones USA", "start": _ini, "values": [200 - i * 0.1 for i in range(400)]},
+        {"name": "MACH Moderado", "rut": "10579", "serie": "DIGITAL", "start": _ini, "values": [100 + i * 0.05 for i in range(400)]},
+        {"name": "Scotia Acciones USA", "rut": "8480", "serie": "WEB", "start": _ini, "values": [200 - i * 0.1 for i in range(400)]},
         {"name": "Scotia Liquidez", "start": _ini, "values": [100.0] * 400},
         {"name": "Scotia Liquidez (historia desde 2011)", "start": _ini, "values": [1.0] * 400}]}), encoding="utf-8")
     H.run_update = _fake_update
@@ -2687,9 +2859,9 @@ def pruebas_directas(H, tmp) -> list[tuple[str, list[str]]]:
         r, res, _ = j7.route("Actualiza Fortuna")
         if r != "acceso" or j7.pending or len(corridas) != 1 or "le aviso" not in res["reply"]:
             errs.append(f"«actualiza Fortuna» debía correr al tiro, sin confirmación: {r} {res} {corridas} {j7.pending}")
-        r, res, _ = j7.route("¿Cómo van mis fondos?")
+        r, res, _ = j7.route("¿Cómo van los fondos?")
         if r != "fortuna" or "MACH Moderado" not in res["reply"] or "Bajó Scotia Acciones USA" not in res["reply"]:
-            errs.append(f"«cómo van mis fondos»: {r} {res}")
+            errs.append(f"«cómo van los fondos»: {r} {res}")
         r, res, _ = j7.route("cuánto ha rentado MACH Moderado este año")
         if r != "fortuna" or not re.search(r"MACH Moderado subió \d", res["reply"]):
             errs.append(f"rentabilidad de un fondo: {r} {res}")
@@ -2710,9 +2882,9 @@ def pruebas_directas(H, tmp) -> list[tuple[str, list[str]]]:
         {"name": n, "adm": a, "perfil": p, "otro": True, "start": _ini, "values": [1000 + i * d for i in range(400)]}
         for n, a, p, d in _otros]}), encoding="utf-8")
     j8 = nuevo(H)
-    r, res, _ = j8.route("¿Cómo van mis fondos?")
+    r, res, _ = j8.route("¿Cómo van los fondos?")
     if r != "fortuna" or any(n in res["reply"] for n, *_ in _otros) or "MACH Moderado" not in res["reply"]:
-        errs.append(f"«cómo van mis fondos» no debe sumar los otros fondos: {res}")
+        errs.append(f"«cómo van los fondos» no debe sumar los otros fondos: {res}")
     r, res, _ = j8.route("¿cómo van los otros fondos?")
     if r != "fortuna" or "Fintual Risky Norris" not in res["reply"] or "MACH" in res["reply"]:
         errs.append(f"«cómo van los otros fondos»: {res}")
@@ -2739,6 +2911,49 @@ def pruebas_directas(H, tmp) -> list[tuple[str, list[str]]]:
         if any(f.get("otro") and not (f.get("adm") and f.get("perfil")) for f in d):
             errs.append("cada otro fondo debe traer administradora y perfil")
     out.append(("«Otros fondos» seguidos: se reconocen por nombre o administradora y no suman a lo invertido", errs))
+    # «¿Cómo están mis inversiones?» (18-11-2026): lo SUYO (aportes anotados en Fortuna), no el mercado
+    import atlas_fortuna_aportes as _FA
+    errs = []
+    _fa_viejo = _FA.ARCHIVO
+    _FA.ARCHIVO = tmp / "aportes_inversiones.json"
+    try:
+        j9 = nuevo(H)
+        r, res, _ = j9.route("¿Cómo están mis inversiones?")
+        if r != "inversiones" or "no tiene inversiones anotadas" not in res["reply"] or "cómo van los fondos" not in res["reply"]:
+            errs.append(f"sin aportes debe decirlo y ofrecer el mercado: {r} {res}")
+        _hace = lambda d: (datetime.now().date() - timedelta(days=d)).isoformat()   # noqa: E731
+        _FA.guardar([{"key": "10579-DIGITAL", "amount": 700_000, "date": _hace(200)},
+                     {"key": "8480-WEB", "amount": 300_000, "date": _hace(100), "stop": 5},
+                     {"key": "9999-X", "amount": 1000, "date": _hace(10)}])
+        for frase in ("¿Cómo están mis inversiones?", "cómo van mis fondos", "cuánto he ganado con mis fondos",
+                      "cómo va mi plata invertida"):
+            r, res, _ = j9.route(frase)
+            rp = res.get("reply", "")
+            if (r != "inversiones" or "Sus inversiones valen" not in rp or "Aportó 1.000.000 pesos" not in rp
+                    or "En el último mes" not in rp or not re.search(r"MACH Moderado: aportó 700\.000 pesos, hoy vale [\d.]+ pesos y ganó", rp)
+                    or not re.search(r"Scotia Acciones USA: aportó 300\.000 pesos, hoy vale [\d.]+ pesos y perdió", rp)
+                    or rp.find("MACH Moderado:") > rp.find("Scotia Acciones USA:") or "pérdida máxima" not in rp
+                    or "1 aporte no se pudo valorizar" not in rp or any(n in rp for n, *_ in _otros)):
+                errs.append(f"«{frase}»: {r} {rp}")
+        r, res, _ = j9.route("cuánto he ganado esta semana con mis inversiones")
+        if r != "inversiones" or "En la última semana" not in res["reply"]:
+            errs.append(f"período pedido: {r} {res}")
+        r, res, _ = j9.route("cuánto he ganado este año con mis inversiones")   # invirtió después del 31-12: no inventa el año
+        if r != "inversiones" or "no hay más historia" not in res["reply"]:
+            errs.append(f"período antes del primer aporte: {r} {res}")
+        for frase, ruta in (("¿cómo van los fondos?", "fortuna"), ("cuánto ha rentado MACH Moderado este año", "fortuna"),
+                            ("¿cómo van mis fondos de Santander?", "fortuna"), ("abre mis fondos", "acceso")):
+            if j9.route(frase)[0] != ruta:
+                errs.append(f"«{frase}» debía ir a {ruta}: {j9.route(frase)[0]}")
+        import atlas_nombres as _NM
+        if ("Mis inversiones (Fortuna)", "cómo están mis inversiones") not in _NM.INTENCIONES:
+            errs.append("el corrector debe ofrecer «Mis inversiones (Fortuna)»")
+        _hh = (HERE / "hud.html").read_text(encoding="utf-8")
+        if 'inversiones: "cómo están mis inversiones"' not in _hh or '"cómo están mis inversiones": [' not in _hh:
+            errs.append("hud.html: el corrector debe conocer la ruta «inversiones»")
+    finally:
+        _FA.ARCHIVO = _fa_viejo
+    out.append(("«¿Cómo están mis inversiones?»: valor, ganancia y mejor/peor de SUS fondos; el mercado sigue en «cómo van los fondos»", errs))
     # Avisos del banco (18-11-2026): el hilo corre actualizar_apolo.py --solo-avisos, que reescribe el movimientos.json
     # real; con ATLAS_PRUEBAS=1 no se debe lanzar nunca
     errs = []
@@ -4080,9 +4295,86 @@ def pruebas_directas(H, tmp) -> list[tuple[str, list[str]]]:
         errs.append("falta el ✓ en la pestaña TAREAS")
     (tmp / "tareas_listas.json").unlink(missing_ok=True)
     out.append(("tareas listas: el ✓ de la pestaña TAREAS", errs))
+    out.append(("Baco por voz: «pon Baco Ado», aleatorio, siguiente/anterior y el corrector", pruebas_baco_voz(H, tmp)))
     out += pruebas_telegram()
     out += pruebas_tg_api()
     return out
+
+
+def pruebas_baco_voz(H, tmp) -> list[str]:
+    """19-11-2026: playlists de Baco por voz. Usa un baco.json temporal y no toca la ventana de música."""
+    import atlas_baco as BA
+
+    errs = []
+    antes = (BA.ARCHIVO, BA.tocar, BA._prebuscar)
+    tocados = []
+    BA.ARCHIVO = tmp / "baco_voz.json"
+    BA.tocar = lambda t="", a="", u="", sola=False: (tocados.append(t or u), {"ok": True})[1]
+    BA._prebuscar = lambda p: None   # sin buscar en internet
+    antes_bit = BA._bitacora
+    BA._bitacora = lambda *a, **k: None   # que la prueba no escriba en el registro real de la cola
+    try:
+        BA.guardar({"musica": [{"id": "pAdo", "t": "Ado", "pistas": [{"t": f"T{i}", "a": "Ado"} for i in range(5)]},
+                               {"id": "pEl", "t": "Electro", "pistas": [{"t": "Bubble", "a": "Gwen"}]}]})
+        j = H.Atlas()
+        j.refresh_inbox = lambda: None
+        j.pc_raw = Fake("pc")
+        ruta, r, _ = j._route("Atlas, pon Baco Ado")
+        if ruta != "baco" or tocados != ["T0"] or BA._COLA["id"] != "pAdo" or "«Ado»" not in r.get("reply", ""):
+            errs.append(f"«pon Baco Ado»: {ruta} {tocados} {r}")
+        if (BA._cola_estado() or {}).get("orden") != [0, 1, 2, 3, 4]:
+            errs.append(f"la página debe recibir el orden: {BA._cola_estado()}")
+        ruta, r, _ = j._route("siguiente canción")
+        import time as _t
+        _t.sleep(0.1)
+        if ruta != "baco" or BA._COLA["j"] != 1 or tocados[-1] != "T1" or j.pc_raw.calls:
+            errs.append(f"«siguiente canción» con cola de Baco mueve la cola: {ruta} {BA._COLA['j']} {tocados} {j.pc_raw.calls}")
+        ruta, r, _ = j._route("pon la anterior")
+        _t.sleep(0.1)
+        if ruta != "baco" or BA._COLA["j"] != 0 or tocados[-1] != "T0":
+            errs.append(f"«pon la anterior»: {ruta} {BA._COLA['j']} {tocados}")
+        ruta, r, _ = j._route("mezcla Baco ado")
+        if ruta != "baco" or not BA._COLA.get("mezcla") or sorted(BA._COLA.get("orden") or []) != [0, 1, 2, 3, 4] or "aleatorio" not in r["reply"]:
+            errs.append(f"«mezcla Baco ado»: {ruta} {r}")
+        ruta, r, _ = j._route("pon baco electro en aleatorio")
+        if ruta != "baco" or BA._COLA["id"] != "pEl":
+            errs.append(f"«pon baco electro en aleatorio»: {ruta} {r}")
+        ruta, r, _ = j._route("pon mi playlist Ado")
+        if ruta != "baco" or BA._COLA["id"] != "pAdo":
+            errs.append(f"«pon mi playlist Ado»: {ruta} {r}")
+        ruta, r, _ = j._route("pon Baco Metallica")
+        if ruta != "baco" or "No encontré" not in r.get("reply", "") or "«Ado» y «Electro»" not in r.get("reply", ""):
+            errs.append(f"playlist que no existe: {r}")
+        BA.cola({"accion": "parar"})
+        j.pc_raw.calls.clear()
+        ruta, r, _ = j._route("siguiente canción")
+        if ruta == "baco":
+            errs.append("sin cola de Baco, «siguiente canción» sigue siendo de la música de siempre")
+        ruta, r, _ = j._route("pon mi playlist de rock")
+        if ruta == "baco":
+            errs.append("«pon mi playlist de rock» sin esa playlist en Baco no es de Baco")
+        acc = j.diccionario_vista()["acciones"]
+        if not {"pon Baco", "pon Baco Ado", "pon Baco Ado en aleatorio"} <= {a["accion"] for a in acc if a.get("tipo") == "baco"}:
+            errs.append("el corrector debe mostrar Baco con sus playlists")
+        p = j.corrector_proponer({"frase": "un baco ado", "accion": "pon Baco"})
+        if p.get("tipo") != "frase_arg" or p.get("prefijo") != "pon Baco " or (p.get("arg") or "").lower() != "ado":
+            errs.append(f"corrector «pon Baco …» pregunta qué playlist: {p}")
+        html = (HERE / "hud.html").read_text(encoding="utf-8")
+        if 'a.tipo === "baco"' not in html or "Baco · playlists" not in html:
+            errs.append("el corrector debe tener el sector de Baco")
+        from openjarvis.tools import atlas_pc as PCM
+        canal = {"id": "UCv6P5nsS9rP4tDtFlqLU_QQ", "url": "https://www.youtube.com/channel/UCv6P5nsS9rP4tDtFlqLU_QQ"}
+        vivo = {"id": "xGs7efZUu1k", "duration": 5493, "live_status": "was_live"}
+        mv = {"id": "Atvsg_zogxo", "duration": 289}
+        if (PCM._primer_video([canal, vivo, mv]) or {}).get("id") != "Atvsg_zogxo" or PCM._primer_video([canal]) is not None:
+            errs.append("«pon zutomayo»: el canal del artista no es una canción; debe tomar el primer video")
+    except Exception as exc:  # noqa: BLE001
+        errs.append(f"error {type(exc).__name__}: {exc}")
+    finally:
+        BA.cola({"accion": "parar"})
+        BA.ARCHIVO, BA.tocar, BA._prebuscar = antes
+        BA._bitacora = antes_bit
+    return errs
 
 
 def pruebas_tg_api() -> list[tuple[str, list[str]]]:
@@ -4378,12 +4670,14 @@ def pruebas_http(H) -> list[tuple[str, list[str]]]:
                 e2.append(f"/api/version sin token: {e_.code}")
         with urllib.request.urlopen(base + "/", timeout=5) as r:
             html = r.read().decode("utf-8")
-        # versión bajo la palabra ATLAS (18-11-2026): en el logo del encabezado y en el de la carga, leída de /api/version
+        # versión bajo la palabra ATLAS (18-11-2026): en el logo de la carga, leída de /api/version;
+        # el encabezado de la pantalla principal ya no la muestra (pedido del usuario, 18-11-2026): solo carga y Ajustes
         _marca = html.split('<span class="marca"', 1)[-1].split("</span>", 1)[0]
-        if not _marca.endswith('</svg><span class="mver" hidden>') or 'aria-label="ATLAS"' not in _marca:
-            e2.append("el logo del encabezado debe llevar la versión bajo ATLAS (.mver)")
-        if """'<span class="mver" hidden></span>INICIANDO SISTEMAS<small>""" not in html or "atlasVerPinta();" not in html:
-            e2.append("la pantalla de carga debe llevar la versión bajo ATLAS (.mver)")
+        if 'class="mver"' in _marca or 'aria-label="ATLAS"' not in _marca:
+            e2.append("el logo del encabezado no debe llevar la versión (solo carga y Ajustes)")
+        # carga (18-11-2026): planeta con las Pléyades, ATLAS, la versión debajito y solo una barra (sin «INICIANDO SISTEMAS»)
+        if 'mk("text", { x: cx, y: cy + 58, "text-anchor": "middle", class: "mver" }, svg);' not in html or "atlasVerPinta();" not in html                 or 'id: "cAp", class: "bar"' not in html or "INICIANDO SISTEMAS<small>" in html or 'fo.appendChild(core)' not in html:
+            e2.append("la pantalla de carga debe llevar planeta, ATLAS, la versión debajo (.mver) y solo una barra")
         _fv = html.split("function atlasVer()", 1)[-1].split("atlasVerPinta();", 1)[0]
         if 'api("/api/version")' not in _fv or "if (!v) return;" not in _fv or 'e.textContent = "v" + v; e.hidden = false;' not in _fv:
             e2.append("la versión bajo ATLAS debe venir de /api/version y no mostrarse si falla")

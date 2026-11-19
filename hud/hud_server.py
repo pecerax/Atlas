@@ -318,7 +318,8 @@ REWRITE_PROMPT = """Traduces lo que dijo el usuario a su asistente Atlas (viene 
 - pon música de <artista o canción>   · abre <programa o sitio>
 - ¿cómo estará el clima <cuándo>?   · ¿tengo correos sin leer?
 - ¿cuánto he gastado <cuándo>?   (Hermes: gastos, compras, presupuesto)   · ¿cómo voy con el presupuesto?
-- ¿cómo van mis fondos?   (Fortuna: fondos mutuos)   · ¿qué hacía el <día>?   (Cronos: la historia de un día)
+- ¿cómo están mis inversiones?   (Fortuna: cuánto vale y cuánto ha ganado lo que el usuario tiene invertido)
+- ¿cómo van los fondos?   (Fortuna: cómo se movió el mercado de fondos mutuos según la CMF)   · ¿qué hacía el <día>?   (Cronos: la historia de un día)
 - ¿tengo notas nuevas?   · ¿qué tareas tengo?   · muéstrame mi horario
 
 Reglas:
@@ -335,7 +336,8 @@ acuérdame como en una hora de llamar al dentista -> recuérdame en una hora lla
 ponme algo de Queen -> pon música de Queen
 ¿hay algo nuevo en el mail de la pega? -> ¿tengo correos sin leer en la pega?
 quiero ver en qué se me fue la plata -> ¿cuánto he gastado este mes?
-cómo andan mis fondos mutuos -> ¿cómo van mis fondos?
+cómo andan mis fondos mutuos -> ¿cómo están mis inversiones?
+cuál fondo subió más este mes -> ¿cómo van los fondos este mes?
 qué estaba haciendo el sábado pasado -> ¿qué hacía el sábado pasado?
 ¿quién pintó la Mona Lisa? -> CHARLA
 gracias -> CHARLA"""
@@ -920,6 +922,24 @@ _STOP = {"de", "del", "la", "el", "los", "las", "un", "una", "pon", "ponme", "re
          "algo", "musica", "cancion", "tema", "por", "favor", "en", "y", "a", "mi", "me", "que", "con"}
 
 
+# ✎ Corregir › acciones que llevan contenido: al elegirlas se pregunta qué (lleno con lo que se escuchó) y se guarda la
+# frase con la orden completa («Un Ado» -> «pon Ado»). Uso real 19-11-2026: «Un Ado» + «Pon música» no tenía cómo decir Ado.
+def _lista_y(L: list) -> str:
+    """«Ado, Sheena y Electro»."""
+    L = [f"«{x}»" for x in L if x]
+    return L[0] if len(L) == 1 else ", ".join(L[:-1]) + " y " + L[-1] if L else ""
+
+
+CORRECTOR_CON_CONTENIDO = {
+    "pon baco": {"prefijo": "pon Baco ", "pregunta": "¿Qué playlist de Baco?", "pista": "el nombre de una de sus playlists de Baco",
+                 "relleno": {"atlas", "jarvis", "oye", "un", "una", "el", "pon", "ponme", "pone", "reproduce", "toca", "baco", "bako",
+                             "vaco", "mi", "la", "playlist", "de", "musica"}},
+    "pon musica": {"prefijo": "pon ", "pregunta": "¿Qué quería poner?", "pista": "un artista, una canción o una lista",
+                   "relleno": {"atlas", "jarvis", "oye", "un", "una", "pon", "ponme", "pone", "reproduce", "toca", "musica",
+                               "cancion", "de", "la", "el", "algo"}},
+}
+
+
 def apply_equivalencias(text: str) -> str:
     """Corrige errores típicos de la voz ('Conecta o cursos' -> 'Conecta U-Cursos') antes de rutear. Fuente única:
     ~/.atlas/diccionario.json (unificado 18-11-2026; antes hud/equivalencias.json): primero sus «reglas» (expresiones,
@@ -1475,6 +1495,31 @@ MEDIA_REPLY = {  # lo que dice Atlas tras un comando multimedia (nunca el nombre
     "volume_up": "Subí el volumen, señor.", "volume_down": "Bajé el volumen, señor.", "mute": "Listo, señor, silencié el audio.",
 }
 
+def musica_actual(ahora: float | None = None) -> dict | None:
+    """Lo que suena de Atlas o de Baco, según musica_actual.json (lo escribe atlas_flotante.py cada 1-3 s). Vencido
+    (más de 8 s sin escribir: el círculo flotante no anda) o sin música -> None. La posición va al momento actual."""
+    try:
+        d = json.loads((HERE / "musica_actual.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(d, dict):
+        return None
+    ahora = time.time() if ahora is None else ahora
+    v = d.get("v")
+    try:
+        t = float(d.get("t") or 0)
+        pos, fin = float((v or {}).get("pos") or 0), float((v or {}).get("fin") or 0)
+    except (TypeError, ValueError, AttributeError):
+        return None
+    if not isinstance(v, dict) or not v.get("titulo") or ahora - t > 8:
+        return None
+    m = {k: v.get(k) for k in ("titulo", "artista", "album", "estado", "baco", "cola")}
+    if v.get("estado") == "Playing":
+        pos += max(0.0, ahora - t)
+    m["pos"], m["fin"] = (min(pos, fin) if fin > 0 else pos), fin
+    return m
+
+
 class _AccesoUpdateTool:
     """Actualiza un acceso ya confirmado por el usuario («actualiza Fortuna») y avisa al terminar."""
 
@@ -1602,6 +1647,64 @@ def load_accesos() -> list[dict]:
     except Exception as exc:  # noqa: BLE001
         print(f"accesos.json inválido: {exc}", flush=True)
         return []
+
+
+ENLACES_FILE = None  # None = los enlaces que guardó en Baco (~/.atlas/baco.json); las pruebas lo cambian
+
+
+def load_enlaces() -> list[dict]:
+    """Links guardados por nombre (pestaña Enlaces de Baco): [{t: nombre, u: url}]. Solo se leen; los edita Baco."""
+    try:
+        f = ENLACES_FILE
+        if f is None:
+            import atlas_baco
+            f = atlas_baco.ARCHIVO
+        data = json.loads(Path(f).read_text(encoding="utf-8")) if Path(f).exists() else {}
+        return [e for e in data.get("enlaces", []) if isinstance(e, dict) and e.get("t") and e.get("u")]
+    except Exception as exc:  # noqa: BLE001
+        print(f"enlaces de Baco ilegibles: {exc}", flush=True)
+        return []
+
+
+def enlace_buscar(want: str, enlaces: list[dict]) -> dict | None:
+    """El link cuyo nombre suena a lo dicho (pedido 18-11-2026: «abre solo todo» / «solotodo» -> «SoloTodo»).
+    Sin espacios ni tildes ni signos; si no calza igual, por sonido (acceso_key) o por parecido (>= 0.85).
+    Si dos links calzan igual de bien, ninguno (mejor que abrir el equivocado)."""
+    import difflib
+
+    def flat(s: str) -> str:
+        return re.sub(r"[^a-z0-9]", "", _plain(s).replace("+", "plus"))  # «Disney+» se dice «disney plus»
+
+    w0 = re.sub(r"^(?:https?\s*:?\s*/*\s*)?(?:www\s*\.?\s*)?", "", _plain(want))
+    m = re.match(r"^(.+?)\s*(?:\.|\s+punto\s+)\s*(?:cl|com|org|net|io|tv)$", w0)  # «solotodo.cl», «solo todo punto cl»
+    bases = [w0] + ([m.group(1)] if m else [])
+    bases += [re.sub(r"^(?:el|la|mi|un|una)\s+", "", b) for b in bases]  # «mi banco» -> también «banco»
+    ws = {flat(b) for b in bases}
+    ws = {w for w in ws if len(w) >= 3}
+    if not ws:
+        return None
+
+    def score(w: str, n: str) -> float:
+        if n == w:
+            return 1.0
+        if len(w) >= 4 and acceso_key(w) == acceso_key(n):
+            return 0.95
+        return difflib.SequenceMatcher(None, w, n).ratio() if min(len(w), len(n)) >= 5 else 0.0
+
+    scored = []
+    for e in enlaces:
+        n = flat(e["t"])
+        if not n:
+            continue
+        s = max(score(w, n) for w in ws)
+        if s >= 0.85:
+            scored.append((s, e))
+    if not scored:
+        return None
+    scored.sort(key=lambda x: -x[0])
+    if len(scored) > 1 and scored[1][0] == scored[0][0] and scored[1][1]["u"] != scored[0][1]["u"]:
+        return None
+    return scored[0][1]
 
 
 class _ReminderTool:
@@ -2737,6 +2840,9 @@ class Atlas:
         r = self.route_apagar_alarma(text)  # algo está sonando y dice «apaga la alarma»: antes que todo
         if r:
             return "recordatorio", r, text
+        r = self.route_baco(text)  # «pon Baco Ado», «pon Baco Ado en aleatorio»; «siguiente»/«anterior» con una cola de Baco
+        if r:
+            return "baco", r, text
         r = self.route_app_choice(text)
         if r:
             return "mensaje", r, text
@@ -2797,12 +2903,18 @@ class Atlas:
         r = self.route_hermes(text)
         if r:
             return "hermes", r, text
+        r = self.route_inversiones(text)  # lo suyo en Fortuna, antes que el resumen del mercado (18-11-2026)
+        if r:
+            return "inversiones", r, text
         r = self.route_fortuna(text)
         if r:
             return "fortuna", r, text
         r = self.route_accesos(text)
         if r:
             return "acceso", r, text
+        r = self.route_enlaces(text)  # links guardados en Baco por nombre («abre solo todo»), antes que «abre <programa>»
+        if r:
+            return "enlace", r, text
         r = self.route_canvas(text)  # notas de Canvas (atlas_canvas_notas.py)
         if r:
             return "notas", r, text
@@ -2828,6 +2940,9 @@ class Atlas:
         if r:
             return "correo", r, expanded
         r = self.route_pc(expanded)
+        if r:
+            return "pc", r, expanded
+        r = self.route_musica_respaldo(expanded)  # «U-Con Ado», «Ponado»: la voz deformó «pon Ado»
         if r:
             return "pc", r, expanded
         return "modelo", None, expanded
@@ -3749,8 +3864,29 @@ class Atlas:
             r.setdefault("tools", ["hermes"])
         return r
 
+    def route_inversiones(self, text: str) -> dict | None:
+        """Lo que USTED tiene en Fortuna: «¿cómo están mis inversiones?», «¿cómo van mis fondos?», «¿cuánto he ganado con
+        mis fondos?» -> valor total, ganancia desde que invirtió y en el último mes, mejor y peor fondo. Solo lee los
+        aportes anotados (~/.atlas/fortuna_aportes.json) y los valores cuota de la CMF; ver atlas_fortuna.py."""
+        try:
+            import atlas_fortuna
+        except Exception as exc:  # noqa: BLE001
+            log(f"  inversiones: no se pudo cargar ({exc})")
+            return None
+        if not atlas_fortuna.es_mis_inversiones(text):
+            return None
+        try:
+            r = atlas_fortuna.responder_mis_inversiones(text)
+        except Exception as exc:  # noqa: BLE001
+            log(f"  inversiones: error {exc!r}")
+            return {"reply": f"No pude calcular sus inversiones, señor: {exc}", "tools": ["fortuna"]}
+        if r:
+            self.actions.append({"t": time.strftime("%H:%M"), "tool": "fortuna", "ok": True})
+            r.setdefault("tools", ["fortuna"])
+        return r
+
     def route_fortuna(self, text: str) -> dict | None:
-        """Fondos mutuos (Fortuna): «¿cómo van los fondos?», «¿cuánto rentó MACH Moderado este año?». Solo lee; ver atlas_fortuna.py."""
+        """Fondos mutuos (Fortuna), el MERCADO según la CMF: «¿cómo van los fondos?», «¿cuánto rentó MACH Moderado este año?». Solo lee; ver atlas_fortuna.py."""
         try:
             import atlas_fortuna
         except Exception as exc:  # noqa: BLE001
@@ -4541,6 +4677,51 @@ class Atlas:
             return {"reply": f"Listo, señor. Abrí {a.get('se_dice') or a['nombre']}." if res.success
                     else f"Lo siento, señor, no pude abrir {a['nombre']}: {res.content}", "tools": ["acceso"]}
         return None
+
+    def route_enlaces(self, text: str) -> dict | None:
+        """«abre solo todo», «abre el link solo todo», «abre la página de SoloTodo»: abre el link guardado con ese nombre
+        en Baco (pedido 18-11-2026). Si lo dicho es un programa o sitio que Atlas ya conoce («abre spotify», «abre
+        youtube») y no dijo «link/enlace/página», sigue siendo de la ruta del PC."""
+        t = _plain(text).strip(" .,!?¡¿")
+        t = re.sub(r"^(?:(?:atlas|jarvis),?\s+)?(?:por favor,?\s+)?", "", t)
+        t = re.sub(r",?\s*por favor$", "", t).strip(" .,")
+        m = re.match(r"^(?:me\s+)?(?:abre|abrir|abreme|abrime|ve a|ir a|entra a|entra en|llevame a|muestrame)\s+"
+                     r"(?:(?:el|la|mi|un|una)\s+)?(?:(link|links|enlace|enlaces|pagina|sitio|web)\s+(?:guardad[oa]\s+)?"
+                     r"(?:(?:de|del|a|que se llama|llamad[oa])\s+)?(?:(?:el|la)\s+)?)?(.+)$", t)
+        if not m:
+            return None
+        explicit, want = bool(m.group(1)), m.group(2).strip(" .,")
+        if not explicit:  # «abre mi banco»: el «mi» puede ser parte del nombre; enlace_buscar prueba con y sin él
+            want = re.sub(r"^(?:me\s+)?\S+(?:\s+(?:a|en))?\s+", "", t, count=1) if not t.startswith(("ve a", "ir a", "entra", "llevame")) \
+                else re.sub(r"^(?:ve a|ir a|entra a|entra en|llevame a)\s+", "", t)
+        enlaces = load_enlaces()
+        if not enlaces or len(want.split()) > 5:
+            return None
+        if not explicit:
+            try:
+                import openjarvis.tools.atlas_pc as P
+            except Exception:  # noqa: BLE001
+                P = None
+            norm = getattr(P, "_norm", None) or (lambda s: s.lower().strip())
+            if any(norm(x) in getattr(P, "SITES", {}) or norm(x) in getattr(P, "APPS", {}) for x in (want, m.group(2))):
+                return None
+        e = enlace_buscar(want, enlaces)
+        if not e:
+            return None
+        url = str(e["u"]).strip()
+        if re.match(r"^https?://", url):
+            if self.pc_raw is None:
+                return {"reply": "No tengo disponible la herramienta del PC para abrir enlaces, señor."}
+            res = self.pc_raw.execute(action="open_website", target=url)
+            ok, why = bool(res.success), res.content
+        else:  # steam://, spotify:… : como en Baco
+            import atlas_baco
+            r = atlas_baco.abrir(url)
+            ok, why = bool(r.get("ok")), r.get("error", "")
+        self.actions.append({"t": time.strftime("%H:%M"), "tool": f"enlace:{e['t']}", "ok": ok})
+        log(f"  enlace {e['t']}: {url} -> {'ok' if ok else why}")
+        return {"reply": f"Listo, señor. Abrí {e['t']}." if ok else f"Lo siento, señor, no pude abrir {e['t']}: {why}",
+                "tools": ["enlace"]}
 
     def route_calendar(self, text: str) -> dict | None:
         """"Agéndame … mañana a las 5": prepara un evento de Google Calendar y pide confirmación."""
@@ -5384,6 +5565,15 @@ class Atlas:
         except Exception as exc:  # noqa: BLE001
             log(f"  diccionario: acciones: {type(exc).__name__}: {exc}")
             acc = [{"nombre": n, "accion": a, "tipo": "atlas"} for n, a in NM.INTENCIONES]
+        try:  # Baco como herramienta (19-11-2026): «pon Baco …» y cada playlist, en orden y en aleatorio
+            import atlas_baco as BA
+
+            acc += [{"nombre": "Baco: poner una playlist", "accion": "pon Baco", "tipo": "baco"}]
+            for p in BA.playlists():
+                acc += [{"nombre": p["t"], "accion": f"pon Baco {p['t']}", "tipo": "baco"},
+                        {"nombre": f"{p['t']} · aleatorio", "accion": f"pon Baco {p['t']} en aleatorio", "tipo": "baco"}]
+        except Exception as exc:  # noqa: BLE001
+            log(f"  diccionario: playlists de Baco: {type(exc).__name__}: {exc}")
         try:  # apodos de contactos, ramos, accesos y artistas: se ven aquí y se editan en Ajustes › Diccionario
             import atlas_voz_apodos as VA
 
@@ -5404,6 +5594,10 @@ class Atlas:
         accion = str(data.get("accion", "") or "")[:200]
         if not frase or not accion:
             return {"ok": False, "error": "Falta la frase o la acción."}
+        arg = CORRECTOR_CON_CONTENIDO.get(_plain(accion))
+        if arg:   # la acción lleva contenido («pon música» -> qué poner): se pregunta, lleno con lo que se escuchó
+            return {"ok": True, "tipo": "frase_arg", "frase": frase, "accion": accion, "prefijo": arg["prefijo"],
+                    "pregunta": arg["pregunta"], "pista": arg["pista"], "arg": self._contenido_de(frase, arg)}
         try:
             if _plain(accion) == "mis pendientes":
                 p = self._proponer_pendiente(frase)
@@ -5416,6 +5610,21 @@ class Atlas:
         except Exception as exc:  # noqa: BLE001
             log(f"  corrector: proponer: {type(exc).__name__}: {exc}")
         return {"ok": True, "tipo": "frase", "frase": frase, "accion": accion}
+
+    def _contenido_de(self, frase: str, arg: dict) -> str:
+        """Lo que la frase dice además de la orden: «Un Ado» -> «Ado». Si nombra un artista conocido, ese nombre."""
+        t = re.sub(r"[¿?¡!.,;:«»\"]", " ", frase or "")
+        try:
+            for a in load_repertorio():
+                for al in sorted({a["nombre"], *a.get("alias", [])}, key=len, reverse=True):
+                    if len(al) >= 3 and re.search(rf"(?<!\w){re.escape(al)}(?!\w)", t, re.I):
+                        return a["nombre"]
+        except Exception:  # noqa: BLE001
+            pass
+        ws = t.split()
+        while ws and _plain(ws[0]) in arg["relleno"]:
+            ws.pop(0)
+        return " ".join(ws)[:80]
 
     def _proponer_pendiente(self, frase: str) -> dict | None:
         import atlas_nombres as NM
@@ -5431,11 +5640,18 @@ class Atlas:
         k = next((i for i, w in enumerate(claves) if w in ("pendiente", "pendientes")), None)
         if k is None:
             return None
+        # candidatos: el verbo partido en dos por la voz («A nota» -> «Anota», uso real 18-11-2026) primero, después
+        # una palabra sola de las tres primeras («Marca» -> «Anota»)
+        cands = []
+        for i in range(min(3, k) - 1):
+            junto = claves[i] + claves[i + 1]
+            if limpio[i] and limpio[i + 1] and junto in ("anota", "apunta", "agrega", "anotar", "apuntar", "agregar"):
+                cands.append((f"{limpio[i]} {limpio[i + 1]}", (junto.rstrip("r"),), True))
         for i in range(min(3, k)):
-            w = limpio[i]
-            if not w or claves[i] in ("atlas", "jarvis", "oye", "como", "un", "una", "el", "la"):
-                continue
-            for trig in ("anota", "apunta", "agrega"):
+            if limpio[i] and claves[i] not in ("atlas", "jarvis", "oye", "como", "un", "una", "el", "la", "a"):
+                cands.append((limpio[i], ("anota", "apunta", "agrega"), False))
+        for w, trigs, partido in cands:
+            for trig in trigs:
                 regla = {"tipo": "cambiar", "escuchado": w.lower(), "correcto": trig,
                          "cerca": [{"w": "pendiente", "lado": "después", "justo": False, "parecido": False, "tambien": ["pendientes"]}]}
                 out, _ = NM.aplicar_reglas_detalle(base, lista=[regla])
@@ -5450,14 +5666,16 @@ class Atlas:
                     res = (f"Pendiente: {q['x']}" if q and q.get("op") == "add" else
                            "Cierra un pendiente" if q and q.get("op") == "done" else "Sin cambio")
                     ejemplos.append({"frase": e, "resultado": res, "tipo": (q or {}).get("op") or "nada"})
-                return {"tipo": "regla", "regla": regla, "resultado": r["x"], "ejemplos": ejemplos,
-                        "por_que": f"Pendientes se activa con «anota», «apunta» o «agrega». Su frase empieza con «{w}», que no está en esa lista."}
+                por_que = (f"La voz escribió «{w}» separado: Pendientes se activa con «{trig}» junto." if partido else
+                           f"Pendientes se activa con «anota», «apunta» o «agrega». Su frase empieza con «{w}», que no está en esa lista.")
+                return {"tipo": "regla", "regla": regla, "resultado": r["x"], "ejemplos": ejemplos, "por_que": por_que}
         return None
 
     def diccionario_cambiar(self, data: dict) -> dict:
         """op: palabra {escuchado, correcto, antes} · regla {regla, antes, frase} · borrar_regla {id} ·
         frase {frase, accion, antes} · borrar_palabra {escuchado} ·
-        borrar_frase {frase} · vocab_agregar {palabra} · vocab_borrar {palabra}. Solo desde la ventana (con su token)."""
+        borrar_frase {frase} · vocab_agregar {palabra} · vocab_borrar {palabra} ·
+        exportar_vista · exportar {claves} · importar_vista {contenido} · importar {contenido, claves}. Solo desde la ventana (con su token)."""
         import atlas_nombres as NM
 
         op = str(data.get("op", ""))
@@ -5465,8 +5683,14 @@ class Atlas:
             if op == "palabra":
                 item = NM.guardar_palabra(str(data.get("escuchado", "")), str(data.get("correcto", "")), str(data.get("antes", "")))
             elif op == "frase":
-                accion = str(data.get("accion", ""))
-                if accion not in {a["accion"] for a in self.diccionario_vista()["acciones"]}:
+                accion = re.sub(r"\s+", " ", str(data.get("accion", ""))).strip()
+                base = str(data.get("base", "") or "")
+                conf = CORRECTOR_CON_CONTENIDO.get(_plain(base)) if base else None
+                lista = {a["accion"] for a in self.diccionario_vista()["acciones"]}
+                if conf and base in lista and accion != base:   # «pon Ado»: la acción más lo que la persona escribió (vacío = la acción sola)
+                    if not accion.lower().startswith(conf["prefijo"]) or not (1 <= len(accion) - len(conf["prefijo"]) <= 80):
+                        return {"ok": False, "error": f"Falta {conf['pista']}."}
+                elif accion not in lista:
                     return {"ok": False, "error": "Elija la acción de la lista."}
                 item = NM.guardar_frase(str(data.get("frase", "")), accion, str(data.get("antes", "")))
             elif op == "borrar_palabra":
@@ -5491,6 +5715,18 @@ class Atlas:
                 item = {"palabra": NM.vocab_agregar(str(data.get("palabra", "")))}
             elif op == "vocab_borrar":
                 item = {"borrado": NM.vocab_borrar(str(data.get("palabra", "")))}
+            elif op in ("exportar_vista", "exportar", "importar_vista", "importar"):
+                # compartir con amigos (19-11-2026, atlas_compartir.py): la persona elige qué va y qué se suma
+                import atlas_compartir as CP
+
+                claves = [str(k) for k in data.get("claves") or [] if isinstance(k, str)][:5000]
+                contenido = str(data.get("contenido", ""))
+                res = (CP.exportar_vista() if op == "exportar_vista" else CP.exportar(claves) if op == "exportar"
+                       else CP.importar_vista(contenido) if op == "importar_vista" else CP.importar(contenido, claves))
+                log(f"  diccionario: {op} {'ok' if res.get('ok') else res.get('error')}")
+                if op != "importar" or not res.get("ok"):
+                    return res
+                return {**res, **self.diccionario_vista()}
             else:
                 return {"ok": False, "error": "Operación desconocida."}
         except ValueError as exc:
@@ -6300,6 +6536,99 @@ class Atlas:
         self.mail_turn = time.time()
         return {"action": "read", "data": res.content, "hint": mail_hint(hint, res.content)}
 
+    def route_musica_respaldo(self, text: str) -> dict | None:
+        """Último recurso antes del modelo: una frase corta que termina en un artista del repertorio es pedir su música.
+
+        Uso real 19-11-2026: «pon Ado» dicho cuatro veces salió «U-Con Ado», «Personal Shaw Hone Ado», «Ban»… y el
+        modelo preguntaba por U-Cursos. Con la voz pasada por el mismo modelo de reconocimiento sale también pegado
+        («Ponado», «Pomeado»). Solo cuando ninguna otra regla tomó la frase, nunca en preguntas ni al quitar o agregar."""
+        if "?" in (text or "") or "¿" in (text or ""):
+            return None
+        words = re.findall(r"[a-zñ0-9]+", _plain(text))
+        if not words or len(words) > 6:
+            return None
+        if re.search(r"\b(que|quien|quienes|cual|cuales|como|cuando|donde|cuanto|sabes|dime|cuentame|habla\w*|"
+                     r"gust\w*|encant\w*|odi\w*|conoces|quita\w*|saca\w*|elimina\w*|borra\w*|agrega\w*|anade\w*|no)\b", " ".join(words)):
+            return None
+        pegado = "".join(words)
+        elegido = None
+        for a in load_repertorio():
+            formas = {_plain(a["nombre"])} | {_plain(x) for x in a.get("alias") or []}
+            for f in sorted(formas, key=len, reverse=True):
+                toks = re.findall(r"[a-zñ0-9]+", f)
+                if not toks or len("".join(toks)) < 3:
+                    continue
+                if all(len(t) >= 2 for t in toks) and words[-len(toks):] == toks:
+                    elegido = a["nombre"]  # «… Ado» al final
+                elif re.fullmatch(rf"(?:atlas|oye)*[pb]o[nm]{{1,2}}(?:e|me|ne)?(?:algode|de|un|una)?{re.escape(''.join(toks))}", pegado):
+                    elegido = a["nombre"]  # «Ponado», «Pomeado», «Ponme ado»
+                if elegido:
+                    break
+            if elegido:
+                break
+        if not elegido:
+            return None
+        r = self.route_pc(f"pon {elegido}")
+        if r:
+            log(f"  respaldo música: {text[:80]!r} termina en {elegido!r} -> pon {elegido}")
+        return r
+
+    _BACO_PON = re.compile(
+        r"^(?:(?:atlas|jarvis)\s+)?(?:pon|ponme|pone|reproduce|toca|coloca|mezcla|baraja)\s+(?:(?:la|mi|en)\s+)?(?:playlist\s+)?"
+        r"(?:de\s+)?(?:baco|bacco|bako|vaco|waco)\b\s*(?:(?:la|mi)\s+)?(?:playlist\s+)?(?:de\s+)?(.*)$")
+    _BACO_MI = re.compile(r"^(?:(?:atlas|jarvis)\s+)?(?:pon|ponme|reproduce|toca|mezcla|baraja)\s+(?:mi|la)\s+playlist\s+(?:de\s+)?(.+)$")
+    _BACO_MEZCLA = re.compile(r"\s*\b(?:en\s+)?(?:aleatori[oa]|modo\s+aleatorio|mezclad[oa]s?|revuelt[oa]s?|al\s+azar|shuffle|desordenad[oa]s?)\s*$")
+    _BACO_SIG = re.compile(r"\bsiguiente (?:canci[oó]n|tema)|\bnext song|\bsalta\w* (?:la |esta )?canci[oó]n|"
+                           r"^(?:(?:atlas|jarvis)\s+)?(?:s[aá]lta\w*|saltea\w*|skip\w*|esquip\w*|next|siguiente)(?:\s+(?:esta|este|la|el))?"
+                           r"(?:\s+(?:canci[oó]n|tema))?$|\bpasa\w* a la (?:siguiente|que sigue)\b|\bpon (?:la )?siguiente\b")
+    _BACO_ANT = re.compile(r"\b(?:canci[oó]n|tema) anterior|\bprevious song|\b(?:vuelve|volv[eé]|regresa)\w* a la (?:canci[oó]n |tema )?anterior\b|"
+                           r"\bpon (?:la )?anterior\b|^(?:(?:atlas|jarvis)\s+)?anterior$")
+
+    def route_baco(self, text: str) -> dict | None:
+        """Playlists de Baco por voz (pedido 19-11-2026): «pon Baco Ado», «pon Baco Ado en aleatorio», «mezcla Baco Ado»,
+        «pon mi playlist Ado» (solo si existe). Con una cola de Baco andando, «siguiente» y «anterior» mueven esa cola
+        (no la de YouTube Music). La cola la lleva atlas_baco, igual que el botón Reproducir de Baco."""
+        t = re.sub(r"\s+", " ", re.sub(r"[¿?¡!.,;:«»\"]", " ", (text or "").lower())).strip()
+        if not t:
+            return None
+        try:
+            import atlas_baco as BA
+        except Exception as exc:  # noqa: BLE001
+            log(f"  baco: {type(exc).__name__}: {exc}")
+            return None
+        m = self._BACO_PON.match(t)
+        de_baco = bool(m)
+        if not m:
+            m = self._BACO_MI.match(t)
+        if m:
+            nombre = m.group(1).strip()
+            verbo = re.match(r"^(?:(?:atlas|jarvis)\s+)?(\w+)", t).group(1)
+            mezclar = bool(self._BACO_MEZCLA.search(nombre)) or verbo in ("mezcla", "baraja")
+            nombre = self._BACO_MEZCLA.sub("", nombre).strip()
+            if not de_baco and not BA.buscar_playlist(nombre):
+                return None   # «pon mi playlist de rock» sin una playlist de Baco así: lo ve la música de siempre
+            if not nombre:
+                L = [p["t"] for p in BA.playlists()]
+                return {"reply": ("¿Cuál playlist de Baco, señor? Tiene " + _lista_y(L) + ".") if L else
+                                 "Señor, todavía no tiene playlists en Baco.", "tools": ["baco"]}
+            r = BA.tocar_playlist(nombre, mezclar)
+            log(f"  baco: playlist {nombre!r} aleatorio={mezclar}: {r}")
+            if not r.get("ok"):
+                L = r.get("playlists") or []
+                if r.get("error") == "no_existe":
+                    return {"reply": f"No encontré la playlist «{nombre}» en Baco, señor."
+                                     + (f" Tiene {_lista_y(L)}." if L else ""), "tools": ["baco"], "no_entendio": True}
+                return {"reply": f"Lo siento, señor. No pude poner «{r.get('t') or nombre}».", "tools": ["baco"]}
+            n = r["n"]
+            return {"reply": f"Listo, señor. Pongo su playlist «{r['t']}» de Baco{' en aleatorio' if mezclar else ''}: "
+                             f"{n} {'canción' if n == 1 else 'canciones'}.", "tools": ["baco"]}
+        if BA.cola_activa():
+            if self._BACO_SIG.search(t) and BA.saltar(1):
+                return {"reply": "Listo, señor. La siguiente de su playlist.", "tools": ["baco"]}
+            if self._BACO_ANT.search(t) and BA.saltar(-1):
+                return {"reply": "Listo, señor. La anterior de su playlist.", "tools": ["baco"]}
+        return None
+
     def route_pc(self, text: str) -> dict | None:
         """Atiende directo los comandos claros del PC; el resto lo decide el agente."""
         import re
@@ -6820,6 +7149,9 @@ class Atlas:
         ch = getattr(self, "app_choice", None)
         if ch and not self.pending:  # «¿Por WhatsApp, Telegram o Discord…?»: la tarjeta muestra un botón por app
             out["eleccion"] = {"nombre": ch.get("name", ""), "texto": ch.get("text", ""), "apps": list(ch.get("apps") or [])}
+        m = musica_actual()
+        if m:  # ficha de música del panel derecho (19-11-2026): lo que el círculo flotante decidió que es de Atlas o Baco
+            out["musica"] = m
         return out
 
     APP_LABEL = {"whatsapp": "WhatsApp", "telegram": "Telegram", "discord": "Discord"}
@@ -7217,6 +7549,14 @@ class Handler(BaseHTTPRequestHandler):
                     log(f"Cronos responde {_ruta} en {time.time() - _t0:.1f} s")
                 self._send(code, raw, ctype)
                 return
+            if slug.startswith("baco/"):  # Baco (entretenimiento): datos y acciones (atlas_baco.http), solo este PC
+                from urllib.parse import parse_qs, urlparse
+
+                import atlas_baco
+
+                self._send(*(atlas_baco.http("GET", slug.split("/", 1)[1], parse_qs(urlparse(self.path).query))
+                             if host in ("127.0.0.1", "localhost") else (404, b"{}", "application/json")))
+                return
             if slug == "fortuna/aportes":  # aportes anotados a mano en Fortuna: archivo propio (atlas_fortuna_aportes)
                 import atlas_fortuna_aportes
 
@@ -7364,6 +7704,29 @@ class Handler(BaseHTTPRequestHandler):
                         self._json({"error": str(exc)[:200]}, 500)
                     return
                 self._send(*atlas_historia.http("POST", sub, {}, body))
+            else:
+                self._json({"error": "forbidden"}, 403)
+            return
+        if p0.startswith("/acceso/baco/api/"):  # Baco guarda lo anotado, abre enlaces y controla la música: solo este PC
+            host = (self.headers.get("Host") or "").split(":")[0]
+            origin = self.headers.get("Origin") or ""
+            if host in ("127.0.0.1", "localhost") and (origin == "" or re.fullmatch(r"http://(127\.0\.0\.1|localhost):\d+", origin)):
+                import atlas_baco
+
+                length = int(self.headers.get("Content-Length") or 0)
+                try:
+                    body = json.loads(self.rfile.read(length) or b"{}") if 0 <= length <= 1_000_000 else {}
+                except ValueError:
+                    body = {}
+                ruta_baco = p0[len("/acceso/baco/"):]
+                if ruta_baco in ("api/abrir", "api/tocar"):   # menú de música del círculo (19-11-2026): anotar que esta música la puso Baco
+                    u_baco = str(body.get("u") or "")
+                    if ruta_baco == "api/tocar" or re.search(r"spotify|youtube\.com|youtu\.be", u_baco, re.I):
+                        try:
+                            (HERE / "musica_baco.json").write_text(json.dumps({"t": time.time(), "u": u_baco[:300]}), encoding="utf-8")
+                        except OSError:
+                            pass
+                self._send(*atlas_baco.http("POST", ruta_baco, {}, body))
             else:
                 self._json({"error": "forbidden"}, 403)
             return
@@ -7859,6 +8222,12 @@ def main() -> None:
     except OSError as exc:
         log(f"No pude abrir el puerto {PORT}: {exc}")
         return
+    try:  # Baco: mide el tiempo de los juegos del PC que no son de Steam (mira los procesos cada 30 s)
+        import atlas_baco
+
+        atlas_baco.vigilar_juegos()
+    except Exception as exc:  # noqa: BLE001
+        log(f"Baco: no pude vigilar los juegos ({type(exc).__name__})")
     _serve(server)
 
 

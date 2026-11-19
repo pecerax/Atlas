@@ -46,6 +46,27 @@ $whl = @(Get-ChildItem (Join-Path $PSScriptRoot "ruedas\*.whl") -ErrorAction Sil
 if (-not $whl) { throw "Falta la rueda openjarvis_rust (compílela con maturin en src\rust)." }
 Copy-Item $whl.FullName $ruedas
 
+# Python 3.13 dentro del instalador (unos 22 MB): asi no depende de que el PC pueda bajarlo (antivirus, red de
+# universidad, proxy). Es el mismo archivo que bajaria uv, ordenado como su espejo: python_local\<fecha>\<archivo>.
+# Se guarda en _publicar\cache_python para no bajarlo en cada armado.
+$lista = & $uv python list 3.13 --only-downloads --output-format json | ConvertFrom-Json
+$py = $lista | Where-Object { $_.key -like "cpython-3.13.*-windows-x86_64-none" } | Select-Object -First 1
+if (-not $py) { throw "uv no ofrece Python 3.13 para Windows." }
+$partes = $py.url -split "/"
+$tag = $partes[-2]; $archivo = [uri]::UnescapeDataString($partes[-1])
+$cache = Join-Path $Pub "cache_python\$tag"
+New-Item -ItemType Directory -Force $cache | Out-Null
+$tgz = Join-Path $cache $archivo
+if (-not (Test-Path $tgz)) {
+  Write-Host "     bajando $archivo"
+  Invoke-WebRequest $py.url -OutFile "$tgz.parcial" -UseBasicParsing
+  Move-Item "$tgz.parcial" $tgz
+}
+$pyLocal = Join-Path $Inst "python_local\$tag"
+New-Item -ItemType Directory -Force $pyLocal | Out-Null
+Copy-Item $tgz $pyLocal
+Write-Host "     Python $($py.version) incluido"
+
 $cliente = Join-Path $PSScriptRoot "google_cliente.json"
 if (Test-Path $cliente) { Copy-Item $cliente $Inst } else { Write-Host "     (sin google_cliente.json: Calendar se conectará después en Ajustes)" }
 
