@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- La esfera de Atlas con su constelación, simplificada para el ícono. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#121F48" android:pathData="M54,54m-27,0a27,27 0,1 1,54 0a27,27 0,1 1,-54 0" />
+    <path android:strokeColor="#4FE3FF" android:strokeWidth="2.2" android:fillColor="#00000000"
+        android:pathData="M54,54m-27,0a27,27 0,1 1,54 0a27,27 0,1 1,-54 0" />
+    <path android:strokeColor="#9FE8FF" android:strokeWidth="1.3" android:fillColor="#00000000"
+        android:pathData="M41,58 L52,57 L59,61 L68,57 L66,48 L60,50 L52,57 M66,48 L61,45" />
+    <path android:fillColor="#FFFFFF" android:pathData="M41,50 L43,56 L49,58 L43,60 L41,66 L39,60 L33,58 L39,56 Z" />
+    <path android:fillColor="#DFF7FF" android:pathData="M52,57m-2.6,0a2.6,2.6 0,1 1,5.2 0a2.6,2.6 0,1 1,-5.2 0" />
+    <path android:fillColor="#DFF7FF" android:pathData="M68,57m-2.2,0a2.2,2.2 0,1 1,4.4 0a2.2,2.2 0,1 1,-4.4 0" />
+    <path android:fillColor="#DFF7FF" android:pathData="M66,48m-2.2,0a2.2,2.2 0,1 1,4.4 0a2.2,2.2 0,1 1,-4.4 0" />
+    <path android:fillColor="#DFF7FF" android:pathData="M59,61m-1.6,0a1.6,1.6 0,1 1,3.2 0a1.6,1.6 0,1 1,-3.2 0" />
+    <path android:fillColor="#DFF7FF" android:pathData="M60,50m-1.6,0a1.6,1.6 0,1 1,3.2 0a1.6,1.6 0,1 1,-3.2 0" />
+    <path android:fillColor="#DFF7FF" android:pathData="M61,45m-1.1,0a1.1,1.1 0,1 1,2.2 0a1.1,1.1 0,1 1,-2.2 0" />
+</vector>

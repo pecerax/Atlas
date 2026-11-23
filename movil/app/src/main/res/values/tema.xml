@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="noche">#01040A</color>
+    <style name="Atlas" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/noche</item>
+        <item name="android:statusBarColor">@color/noche</item>
+        <item name="android:navigationBarColor">@color/noche</item>
+        <item name="colorPrimary">#4FE3FF</item>
+        <item name="colorAccent">#4FE3FF</item>
+    </style>
+</resources>

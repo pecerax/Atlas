@@ -7507,6 +7507,22 @@ class Handler(BaseHTTPRequestHandler):
             html = html.replace("__JARVIS_TOKEN__", TOKEN).replace("__JARVIS_VERSION__", HUD_VERSION)  # copias viejas de hud.html
             self._send(200, html.encode("utf-8"), "text/html; charset=utf-8")
             return
+        if self.path.split("?")[0] in ("/puente", "/puente/qrcode.js", "/api/puente"):   # «Vincular celular» (atlas_puente.py)
+            local = (self.headers.get("Host") or "").split(":")[0] in ("127.0.0.1", "localhost")
+            if not local:   # la página trae el token y el QR: solo hacia este PC
+                self._json({"error": "forbidden"}, 403)
+            elif self.path == "/puente":
+                html = (HERE / "puente.html").read_text(encoding="utf-8").replace("__ATLAS_TOKEN__", TOKEN)
+                self._send(200, html.encode("utf-8"), "text/html; charset=utf-8")
+            elif self.path == "/puente/qrcode.js":
+                self._send(200, (HERE.parent / "instalador" / "qrcode.js").read_bytes(), "text/javascript; charset=utf-8")
+            elif not self._authorized():
+                self._json({"error": "forbidden"}, 403)
+            else:
+                import atlas_puente
+
+                self._json(atlas_puente.vista())
+            return
         if self.path == "/api/credencial/hermes-pdf":   # solo si está guardada; nunca el valor
             if self._mismo_origen():
                 self._json({"guardada": clave_pdf_guardada()})
@@ -7942,6 +7958,26 @@ class Handler(BaseHTTPRequestHandler):
                     self._json(PI.terminar(str(data.get("como", "listo"))))
                 else:
                     self._json({"ok": False, "error": "Operación desconocida."})
+            elif self.path == "/api/puente":  # «Vincular celular»: prender/apagar, pedir el QR, desvincular (solo este PC)
+                import atlas_puente
+
+                op = str(data.get("op", ""))
+                if not self._mismo_origen():
+                    self._json({"error": "forbidden"}, 403)
+                elif op in ("activar", "apagar"):
+                    atlas_puente.activar(op == "activar")
+                    log(f"  puente {'activado' if op == 'activar' else 'apagado'} desde Vincular celular")
+                    self._json(atlas_puente.vista())
+                elif op == "codigo":
+                    if not atlas_puente.corriendo():
+                        self._json({"error": "El puente está apagado."})
+                    else:
+                        self._json(atlas_puente.nuevo_codigo())
+                elif op == "desvincular":
+                    atlas_puente.desvincular(str(data.get("id", "")))
+                    self._json(atlas_puente.vista())
+                else:
+                    self._json({"error": "Operación desconocida."})
             elif self.path == "/api/speak":
                 audio, ctype = ATLAS.speak(str(data.get("text", ""))[:4000])
                 self._json({"audio": base64.b64encode(audio).decode("ascii"), "type": ctype})
@@ -8222,6 +8258,12 @@ def main() -> None:
     except OSError as exc:
         log(f"No pude abrir el puerto {PORT}: {exc}")
         return
+    try:  # Puente Atlas: la puerta de la app del celular. Solo se abre si el usuario lo activó en «Vincular celular»
+        import atlas_puente
+
+        atlas_puente.iniciar(sys.modules[__name__], log=log)
+    except Exception as exc:  # noqa: BLE001
+        log(f"Puente: no pude iniciarlo ({type(exc).__name__}: {exc})")
     try:  # Baco: mide el tiempo de los juegos del PC que no son de Steam (mira los procesos cada 30 s)
         import atlas_baco
 
