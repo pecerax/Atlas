@@ -218,6 +218,8 @@ ok("hermes: total del ciclo sin pagos de tarjeta ni ingresos", st == 200 and r.g
 ok("hermes: categorías con presupuesto y últimos gastos", r["categorias"][0] == {"nombre": "Comida", "monto": 17000, "presupuesto": 100000}
    and [u["comercio"] for u in r["ultimos"]][:2] == ["Supermercado Uno …", "Uber"] and r["ultimos"][0]["monto"] == 12000
    and all(set(u) == {"fecha", "comercio", "monto", "categoria"} for u in r["ultimos"]) and r["al"] == "2026-11-18")
+ok("hermes: los 8 últimos ciclos, el actual al final", len(r["ciclos"]) == 8 and r["ciclos"][-1] == {"mes": "nov", "actual": True, "total": 25000}
+   and r["ciclos"][-2]["mes"] == "oct" and r["ciclos"][-2]["total"] == 30000)
 _H.HERMES_DIR = _tmp / "vacia"
 ok("hermes: sin datos lo dice sin reventar", cel.pedir("POST", "/p/hermes", {})[1] == {"vacio": True})
 _F.DATOS = _tmp / "fondos.json"
@@ -229,7 +231,8 @@ _FA.ARCHIVO.write_text(_json.dumps({"aportes": [{"key": "1-A", "amount": 100000,
 st, r = cel.pedir("POST", "/p/fortuna", {})
 ok("fortuna: lo suyo valorizado y los fondos con rentabilidad", st == 200 and r["mio"]["puesto"] == 100000 and r["mio"]["ahora"] == 129900
    and r["mio"]["pct"] == 29.9 and r["fondos"][0]["nombre"] == "Fondo Uno" and r["fondos"][0]["mio"] is True
-   and r["fondos"][1]["mes"] < 0 and r["al"] == "2026-10-27")
+   and r["fondos"][1]["mes"] < 0 and r["al"] == "2026-10-27" and 2 <= len(r["fondos"][0]["curva"]) <= 25 and r["fondos"][0]["curva"][0] == 100.0
+   and r["fondos"][0]["curva"][-1] > 100)
 _FA.ARCHIVO = _tmp / "no_hay.json"
 ok("fortuna: sin aportes muestra solo los fondos", cel.pedir("POST", "/p/fortuna", {})[1]["mio"] is None)
 _F.DATOS = _tmp / "no.json"
@@ -240,7 +243,7 @@ sys.modules["atlas_historia"] = types.SimpleNamespace(
                           {"ini": "10:15", "fin": "11:45", "fila": "lugar", "titulo": "En la U " + "x" * 200, "conf": "media"}, {"ini": "12:00", "titulo": ""}])
 st, r = cel.pedir("POST", "/p/cronos", {"fecha": "2026-11-20"})
 ok("cronos: bloques del día, recortados y sin campos internos", st == 200 and r["fecha"] == "2026-11-20" and r["parcial"] is False and len(r["bloques"]) == 2
-   and set(r["bloques"][0]) == {"ini", "fin", "fila", "titulo", "conf"} and len(r["bloques"][1]["titulo"]) <= 90)
+   and set(r["bloques"][0]) == {"ini", "fin", "fila", "titulo", "conf", "lugar"} and len(r["bloques"][1]["titulo"]) <= 90)
 import threading as _th
 _suelta = _th.Event()
 def _dia_lento(f, correos=True):

@@ -351,6 +351,10 @@ def _app_hermes() -> dict:
         "ultimos": [{"fecha": x["_f"].isoformat(), "comercio": _comercio(x.get("comercio")), "monto": round(-x["monto"]),
                      "categoria": _corto(x.get("categoria"), 40)} for x in ult],
         "al": max(x["_f"] for x in movs).isoformat(),
+        # los últimos 8 ciclos de la tarjeta, como las barras de Hermes en el PC (el actual va hasta hoy)
+        "ciclos": [{"mes": H.MESES[(m - i - 1) % 12][:3], "actual": i == 0,
+                    "total": round(-sum(x["monto"] for x in H.en(movs, r0, min(r1, hoy), ciclo) if H.es_gasto(x)))}
+                   for i in range(7, -1, -1) for r0, r1 in [H.rango(a, m - i, cfg)]],
         "semana": round(-sum(x["monto"] for x in H.en(movs, hoy - timedelta(days=hoy.weekday()), hoy) if H.es_gasto(x))),
     }
 
@@ -367,8 +371,16 @@ def _app_fortuna() -> dict:
     pos, _sueltos = F.posiciones(fondos, atlas_fortuna_aportes.leer().get("aportes") or [])
     mias = {p["f"]["key"] for p in pos}
     r = lambda f, d: (lambda v: None if v is None else round(v, 2))(F.rent(f, d))  # noqa: E731
+
+    def curva(f):   # los últimos 90 días en 24 puntos, relativos al primero: solo para dibujar la línea
+        vals = [v for d, v in f["valores"] if d >= f["ultimo"][0] - timedelta(days=90)]
+        if len(vals) < 2 or not vals[0]:
+            return []
+        n = min(24, len(vals))
+        return [round(vals[round(i * (len(vals) - 1) / (n - 1))] / vals[0] * 100, 2) for i in range(n)]
+
     lista = [{"nombre": _corto(f["nombre"], 60), "adm": _corto(f["adm"], 20), "mes": r(f, f["ultimo"][0] - timedelta(days=30)),
-              "anio": r(f, date(f["ultimo"][0].year, 1, 1) - timedelta(days=1)), "mio": f["key"] in mias}
+              "anio": r(f, date(f["ultimo"][0].year, 1, 1) - timedelta(days=1)), "mio": f["key"] in mias, "curva": curva(f)}
              for f in sorted(fondos, key=lambda f: (f["key"] not in mias, f["otro"], f["nombre"]))[:16]]
     mio = None
     if pos:
@@ -427,7 +439,7 @@ def _app_cronos(data: dict) -> dict:
     B = C.bloques(d, f)
     return {"fecha": f.isoformat(), "parcial": parcial,
             "bloques": [{"ini": _corto(b.get("ini"), 5), "fin": _corto(b.get("fin"), 5), "fila": _corto(b.get("fila"), 12),
-                         "titulo": _corto(b.get("titulo"), 90), "conf": _corto(b.get("conf"), 12)} for b in B[:60] if b.get("titulo")]}
+                         "titulo": _corto(b.get("titulo"), 90), "conf": _corto(b.get("conf"), 12), "lugar": _corto(b.get("lugar"), 12)} for b in B[:60] if b.get("titulo")]}
 
 
 def _app(nombre: str, data: dict) -> tuple[int, dict]:

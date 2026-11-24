@@ -19,13 +19,14 @@ if (!window.Nativo) {
       "/p/chat": { reply: "Esta semana tiene cuatro cosas, señor.", vista: /horario|evento/i.test(cuerpo) || location.hash === "#vista" ? { tipo: "calendario", titulo: "Mi horario · esta semana", desde: "2026-11-23", dias: 7, pestana: "ambos", items: [
         { titulo: "Redes de computadores", dia: "2026-11-24", hora: "10:15", fin: "11:45", lugar: "B101", tipo: "clase" }, { titulo: "Auxiliar de Intro", dia: "2026-11-24", hora: "16:00", fin: "17:30", tipo: "auxiliar" },
         { titulo: "Control 2 de Lenguajes", dia: "2026-11-25", hora: "18:00", fin: "20:00", lugar: "F10", tipo: "evaluacion" }, { titulo: "Entrega T5", dia: "2026-11-26", tipo: "entrega" }, { titulo: "Cumpleaños de Ana", dia: "2026-11-28", hora: "20:00", tipo: "google" }] } : null, pendiente: /recu/i.test(cuerpo) ? "Crear recordatorio «Repasar Redes», mañana 08:00" : null },
-      "/p/hermes": { desde: "2026-10-24", hasta: "2026-11-23", total: 384200, anterior: 431000, dias_quedan: 0, presupuesto: 500000, semana: 41300, al: "2026-11-22",
+      "/p/hermes": { ciclos: [["abr", 352000], ["may", 418000], ["jun", 301500], ["jul", 466200], ["ago", 389000], ["sep", 342700], ["oct", 431000], ["nov", 384200]].map(([mes, total], i) => ({ mes, total, actual: i === 7 })), desde: "2026-10-24", hasta: "2026-11-23", total: 384200, anterior: 431000, dias_quedan: 0, presupuesto: 500000, semana: 41300, al: "2026-11-22",
         categorias: [{ nombre: "Comida", monto: 152300, presupuesto: 180000 }, { nombre: "Transporte", monto: 88400, presupuesto: 60000 }, { nombre: "Salidas", monto: 74500, presupuesto: null }, { nombre: "Suscripciones", monto: 69000, presupuesto: null }],
         ultimos: [{ fecha: "2026-11-22", comercio: "Supermercado Uno", monto: 23490, categoria: "Comida" }, { fecha: "2026-11-21", comercio: "Uber", monto: 6200, categoria: "Transporte" }, { fecha: "2026-11-20", comercio: "Cafetería del campus", monto: 3100, categoria: "Comida" }] },
       "/p/fortuna": { al: "2026-11-20", mio: { puesto: 1500000, ahora: 1583400, gano: 83400, pct: 5.56, mes: 12300, mes_pct: 0.78, posiciones: [{ nombre: "Fondo Moderado", adm: "BCI", puesto: 1000000, ahora: 1061200, pct: 6.12 }, { nombre: "Fondo Acciones USA", adm: "Scotia", puesto: 500000, ahora: 522200, pct: 4.44 }] },
-        fondos: [{ nombre: "Fondo Moderado", adm: "BCI", mes: 0.8, anio: 6.4, mio: true }, { nombre: "Fondo Acciones USA", adm: "Scotia", mes: -1.2, anio: 11.9, mio: true }, { nombre: "Fondo Liquidez", adm: "Scotia", mes: 0.4, anio: 4.1, mio: false }] },
-      "/p/cronos": { fecha: (() => { try { return JSON.parse(cuerpo).fecha; } catch (e) { return null; } })() || new Date().toISOString().slice(0, 10), parcial: false, bloques: [{ ini: "00:40", fin: "08:05", fila: "sueno", titulo: "Durmiendo", conf: "media" }, { ini: "08:50", fin: "09:25", fila: "viaje", titulo: "Metro a la universidad", conf: "alta" },
-        { ini: "10:15", fin: "11:45", fila: "lugar", titulo: "En la universidad · Redes", conf: "alta" }, { ini: "13:10", fin: "", fila: "actividad", titulo: "Almuerzo · Cafetería del campus", conf: "alta" }, { ini: "21:00", fin: "23:30", fila: "actividad", titulo: "Música y videos en casa", conf: "media" }] },
+        fondos: [{ nombre: "Fondo Moderado", adm: "BCI", mes: 0.8, anio: 6.4, mio: true, curva: [100, 100.2, 100.1, 100.5, 100.9, 100.7, 101.2, 101.6, 101.4, 102.1] }, { nombre: "Fondo Acciones USA", adm: "Scotia", mes: -1.2, anio: 11.9, mio: true, curva: [100, 101.5, 102.8, 102.1, 103.6, 102.2, 101.1, 101.9, 100.4, 99.8] }, { nombre: "Fondo Liquidez", adm: "Scotia", mes: 0.4, anio: 4.1, mio: false, curva: [100, 100.1, 100.2, 100.3, 100.4, 100.5, 100.6, 100.7, 100.8, 100.9] }] },
+      "/p/cronos": { fecha: (() => { try { return JSON.parse(cuerpo).fecha; } catch (e) { return null; } })() || new Date().toISOString().slice(0, 10), parcial: false, bloques: [{ ini: "00:40", fin: "08:05", fila: "sueno", titulo: "Durmiendo", conf: "media" }, { ini: "08:05", fin: "08:50", fila: "lugar", titulo: "En su casa", conf: "alta", lugar: "casa" }, { ini: "08:50", fin: "09:25", fila: "viaje", titulo: "Metro a la universidad", conf: "alta" },
+        { ini: "09:25", fin: "17:40", fila: "lugar", titulo: "En la U", conf: "alta", lugar: "U" }, { ini: "10:15", fin: "11:45", fila: "actividad", titulo: "Clase de Redes", conf: "alta" }, { ini: "13:10", fin: "13:50", fila: "actividad", titulo: "Almuerzo · Cafetería del campus", conf: "alta" },
+        { ini: "17:40", fin: "18:20", fila: "viaje", titulo: "Vuelta a casa", conf: "media" }, { ini: "18:20", fin: "23:59", fila: "lugar", titulo: "En su casa", conf: "media", lugar: "casa" }, { ini: "21:00", fin: "23:30", fila: "actividad", titulo: "Música y videos", conf: "baja" }] },
       "/p/confirmar": { reply: "Hecho, señor." } }[ruta] || { ok: true };
       setTimeout(() => Atlas._cb(id, 200, JSON.stringify(r)), ruta === "/p/chat" ? 1200 : 150); },
     grabar: () => ev("grabando"), pararGrabacion: () => { ev("oyendo"); setTimeout(() => ev("oido", { text: "¿Qué tengo mañana?" }), 900); }, cancelarGrabacion: () => {},
@@ -206,12 +207,11 @@ const pct = (n) => (n > 0 ? "+" : n < 0 ? "−" : "") + Math.abs(n || 0).toFixed
 const fechaC = (iso) => { const p = String(iso || "").split("-").map(Number); return p.length === 3 ? p[2] + " " + MESES_V[p[1] - 1] : ""; };
 const isoDe = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 let diaCronos = null, turnoApp = 0;
-function cifra(box, n, nota) { const c = el("div", "cifra"); c.append(el("small", "", "$"), plata(n).slice(1)); box.appendChild(c); if (nota) box.appendChild(nota); }
-function fila(box, izq, der, sub, clsDer) { const f = el("div", "fl"), r = el("div", "r"); r.append(el("span", "", izq), el("span", clsDer || "", der)); f.appendChild(r);
-  if (sub) f.appendChild(el("small", "", sub)); box.appendChild(f); return f; }
-function medida(f, v, tope) { const m = el("div", "medida" + (tope && v > tope ? " pas" : "")), i = el("i"); i.style.width = Math.min(100, tope ? v / tope * 100 : 0) + "%"; m.appendChild(i); f.appendChild(m); }
+function panel(box, titulo, sub) { const p = el("div", "panel"), h = el("h3", "", titulo); if (sub) h.appendChild(el("span", "", sub)); p.appendChild(h); box.appendChild(p); return p; }
+function seg(v, tope, pasable) { const m = el("div", "seg" + (pasable && tope && v > tope ? " pas" : "")), i = el("i"); i.style.width = Math.min(100, tope ? v / tope * 100 : 0) + "%"; m.appendChild(i); return m; }
+function pie(box, texto, cielo) { const p = el("div", "pie", texto); if (cielo) p.appendChild(el("em", "", cielo)); box.appendChild(p); }
 async function abrirApp(k, extra) {
-  const box = $("appCaja"), turno = ++turnoApp; box.style.setProperty("--k", (LOGOS[k] || {}).c || "#4FE3FF");
+  const box = $("appCaja"), turno = ++turnoApp; $("p-app").dataset.app = k;
   if (!["cronos", "hermes", "fortuna"].includes(k)) { box.textContent = ""; box.appendChild(el("div", "vacio", (QUE[k] || "") + " Todavía no tiene pantalla en el celular.")); return; }
   if (!extra) { box.textContent = ""; box.appendChild(el("div", "vacio", "Pidiéndoselo al PC…")); }
   const r = await pedir("POST", "/p/" + k, extra || {});
@@ -223,43 +223,107 @@ async function abrirApp(k, extra) {
   ({ hermes: pintaHermes, fortuna: pintaFortuna, cronos: pintaCronos })[k](box, d);
 }
 function pintaHermes(box, d) {
-  const n = el("div", "nota"); n.append("GASTADO · CICLO " + fechaC(d.desde) + " – " + fechaC(d.hasta) + " · QUEDAN " + d.dias_quedan + " DÍAS");
-  if (d.anterior > 0) { const dif = (d.total / d.anterior - 1) * 100, b = el("b", dif > 0 ? "mal" : "", Math.abs(dif).toFixed(0) + " % " + (dif > 0 ? "MÁS" : "MENOS")); n.append(el("br"), b, " QUE EL CICLO ANTERIOR A ESTA ALTURA"); }
-  cifra(box, d.total, n);
-  if (d.presupuesto) { const f = el("div"); medida(f, d.total, d.presupuesto); box.appendChild(f); box.appendChild(el("div", "nota", "PRESUPUESTO " + plata(d.presupuesto) + " · ESTA SEMANA " + plata(d.semana))); }
-  else box.appendChild(el("div", "nota", "ESTA SEMANA " + plata(d.semana)));
-  if (d.categorias.length) box.appendChild(el("div", "dia", "EN QUÉ"));
-  const tope = Math.max(1, ...d.categorias.map((c) => c.monto));
-  for (const c of d.categorias) { const f = fila(box, c.nombre, plata(c.monto), c.presupuesto ? "DE " + plata(c.presupuesto) : ""); medida(f, c.monto, c.presupuesto || tope); if (!c.presupuesto) f.lastChild.classList.remove("pas"); }
-  if (d.ultimos.length) box.appendChild(el("div", "dia", "ÚLTIMOS GASTOS"));
-  for (const u of d.ultimos) fila(box, u.comercio || "Sin nombre", plata(u.monto), (fechaC(u.fecha) + (u.categoria ? " · " + u.categoria : "")).toUpperCase());
-  box.appendChild(el("div", "nota", "DATOS HASTA EL " + fechaC(d.al))).style.margin = "18px 0";
+  const r = panel(box, "Resumen", "CICLO " + fechaC(d.desde) + " – " + fechaC(d.hasta));
+  r.appendChild(el("div", "rot", "Salió"));
+  r.appendChild(el("div", "cifra", plata(d.total)));
+  const tope = d.presupuesto || Math.max(d.anterior, d.total, 1), t = el("div", "tramo");
+  t.append(el("span", "rot", d.presupuesto ? "Presupuesto" : "Ciclo anterior"), seg(d.total, tope, !!d.presupuesto), el("span", "num rot", plata(tope))); r.appendChild(t);
+  const n = el("div", "rot"); n.style.cssText = "margin-top:12px;line-height:1.8";
+  if (d.anterior > 0) { const dif = (d.total / d.anterior - 1) * 100; n.append(el("b", dif > 0 ? "mal" : "", Math.abs(dif).toFixed(0) + " % " + (dif > 0 ? "más" : "menos")), " que el ciclo anterior a esta altura", el("br")); }
+  n.append("Esta semana " + plata(d.semana) + " · quedan " + d.dias_quedan + " días"); r.appendChild(n);
+  if (d.ciclos && d.ciclos.some((c) => c.total > 0)) { const p = panel(box, "Últimos ciclos de la tarjeta"), bs = el("div", "barras"), ms = el("div", "meses"), mx = Math.max(1, ...d.ciclos.map((c) => c.total));
+    for (const c of d.ciclos) { const col = el("div", c.actual ? "act" : ""), i = el("i"); i.style.height = Math.max(c.total ? 4 : 0, c.total / mx * 92) + "%"; col.appendChild(i); bs.appendChild(col); ms.appendChild(el("span", c.actual ? "act" : "", c.mes)); }
+    p.append(bs, ms); }
+  if (d.categorias.length) { const p = panel(box, "Por categoría"), mx = Math.max(1, ...d.categorias.map((c) => c.monto));
+    for (const c of d.categorias) { const f = el("div", "cat"); f.append(el("span", "", c.nombre), el("span", "num", plata(c.monto)));
+      if (c.presupuesto) f.appendChild(el("small", "", "DE " + plata(c.presupuesto))); f.appendChild(seg(c.monto, c.presupuesto || mx, !!c.presupuesto)); p.appendChild(f); } }
+  if (d.ultimos.length) { const p = panel(box, "Movimientos", "SALIDAS");
+    for (const u of d.ultimos) { const f = el("div", "mov"); f.append(el("time", "", fechaC(u.fecha)), el("span", "", u.comercio || "Sin nombre"), el("span", "num sale", "−" + plata(u.monto)));
+      if (u.categoria) f.appendChild(el("small", "", u.categoria.toUpperCase())); p.appendChild(f); } }
+  pie(box, "DATOS HASTA EL " + fechaC(d.al), "ARIES · EL CARNERO DE ORO");
 }
+let pestFortuna = "mios";
+function chispa(pts, cls) { const ns = "http://www.w3.org/2000/svg", s = document.createElementNS(ns, "svg"); s.setAttribute("viewBox", "0 0 64 22"); if (!pts || pts.length < 2) return s;
+  const mn = Math.min(...pts), mx = Math.max(...pts), al = mx - mn || 1, p = document.createElementNS(ns, "polyline");
+  p.setAttribute("points", pts.map((v, i) => (i / (pts.length - 1) * 64).toFixed(1) + "," + (20 - (v - mn) / al * 18).toFixed(1)).join(" "));
+  p.setAttribute("fill", "none"); p.setAttribute("stroke-width", "1.6"); p.setAttribute("stroke", cls === "baja" ? "var(--amal)" : cls === "sube" ? "var(--abien)" : "var(--ap)"); s.appendChild(p); return s; }
 function pintaFortuna(box, d) {
-  if (d.mio) { const m = d.mio, n = el("div", "nota"); n.append("LO SUYO HOY · ", el("b", m.gano < 0 ? "mal" : "", (m.gano < 0 ? "PERDIÓ " : "GANÓ ") + plata(m.gano) + " (" + pct(m.pct) + ")"), el("br"), "PUESTO " + plata(m.puesto) + " · ÚLTIMOS 30 DÍAS ", el("b", m.mes < 0 ? "mal" : "", pct(m.mes_pct)));
-    cifra(box, m.ahora, n); box.appendChild(el("div", "dia", "MIS FONDOS"));
-    for (const p of m.posiciones) fila(box, p.nombre, plata(p.ahora), (p.adm + " · PUESTO " + plata(p.puesto) + " · " + pct(p.pct)).toUpperCase()); }
-  else box.appendChild(el("div", "nota", "SIN APORTES ANOTADOS. SE ANOTAN EN FORTUNA, EN EL PC.")).style.marginTop = "18px";
-  box.appendChild(el("div", "dia", "FONDOS · 30 DÍAS"));
-  for (const f of d.fondos) fila(box, f.nombre, f.mes === null ? "—" : pct(f.mes), (f.adm + (f.anio === null ? "" : " · EN EL AÑO " + pct(f.anio)) + (f.mio ? " · SUYO" : "")).toUpperCase(), f.mes > 0 ? "sube" : f.mes < 0 ? "baja" : "");
-  box.appendChild(el("div", "nota", "VALORES CUOTA DE LA CMF AL " + fechaC(d.al))).style.margin = "18px 0";
+  const m = d.mio, r = panel(box, "Mis inversiones", m ? "HOY" : "");
+  if (m) { r.appendChild(el("div", "cifra", plata(m.ahora)));
+    const n = el("div", "rot"); n.style.cssText = "margin-top:10px;line-height:1.8";
+    n.append(el("b", m.gano < 0 ? "mal" : "", (m.gano < 0 ? "Perdió " : "Ganó ") + plata(m.gano) + " (" + pct(m.pct) + ")"), el("br"), "Puso " + plata(m.puesto) + " · 30 días ", el("b", m.mes < 0 ? "mal" : "", pct(m.mes_pct))); r.appendChild(n); }
+  else r.appendChild(el("div", "rot", "Sin aportes anotados. Se anotan en Fortuna, en el PC."));
+  if (!m && pestFortuna === "mios") pestFortuna = "todos";
+  const ps = el("div", "pest"); for (const [k, t] of [["mios", "Míos"], ["todos", "Todos"]]) { const b = el("button", pestFortuna === k ? "on" : "", t); b.onclick = () => { pestFortuna = k; box.textContent = ""; pintaFortuna(box, d); }; ps.appendChild(b); } box.appendChild(ps);
+  const p = panel(box, pestFortuna === "mios" ? "Lo suyo" : "Fondos", pestFortuna === "mios" ? "VALOR HOY" : "ÚLTIMOS 30 DÍAS");
+  if (pestFortuna === "mios") for (const x of (m ? m.posiciones : [])) { const f = el("div", "fondo"), cu = (d.fondos.find((y) => y.nombre === x.nombre) || {}).curva;
+    f.append(el("span", "", x.nombre), el("span", "num", plata(x.ahora)), el("small", "", (x.adm + " · PUSO " + plata(x.puesto) + " · " + pct(x.pct)).toUpperCase()), chispa(cu, x.pct < 0 ? "baja" : "sube")); p.appendChild(f); }
+  else for (const x of d.fondos) { const c = x.mes > 0 ? "sube" : x.mes < 0 ? "baja" : "", f = el("div", "fondo");
+    f.append(el("span", "", x.nombre), el("span", "num " + c, x.mes === null ? "—" : pct(x.mes)), el("small", "", (x.adm + (x.anio === null ? "" : " · EN EL AÑO " + pct(x.anio)) + (x.mio ? " · SUYO" : "")).toUpperCase()), chispa(x.curva, c)); p.appendChild(f); }
+  pie(box, "VALORES CUOTA DE LA CMF AL " + fechaC(d.al) + " · SOLO INFORMATIVO", "AURIGA · CAPELLA, LA CORNUCOPIA");
 }
-const FILA_C = { sueno: ["#8E86C9", "SUEÑO"], lugar: ["#B7A6FF", "LUGAR"], viaje: ["#FFB86B", "VIAJE"], actividad: ["#7CF0C8", "ACTIVIDAD"], quieto: ["#6B7F8C", "SIN ACTIVIDAD"], dicho: ["#4FE3FF", "LO DIJO"] };
+// Cronos: el día como la esfera de 24 horas del PC (medianoche arriba). Anillo de afuera = dónde estuvo, anillo de adentro = qué hacía.
+const COLOR_RELOJ = (b) => b.fila === "sueno" ? "#6F5FD0" : b.fila === "viaje" ? "#FFB86B" : b.fila === "actividad" ? "#E9A6FF"
+  : b.lugar === "casa" || /su casa/i.test(b.titulo) ? "#8FD3C4" : b.lugar === "U" || /la U\b/.test(b.titulo) ? "#B7A6FF" : "#F7D488";
+const TIPOS_RELOJ = [["#6F5FD0", "SUEÑO"], ["#8FD3C4", "SU CASA"], ["#B7A6FF", "LA U"], ["#F7D488", "OTRO LUGAR"], ["#FFB86B", "VIAJE"], ["#E9A6FF", "QUÉ HACÍA"]];
+const minsDe = (h) => { const p = String(h || "").split(":").map(Number); return p.length === 2 && !isNaN(p[0]) ? p[0] * 60 + p[1] : NaN; };
+function esferaSVG(bl) {
+  const C = 256, f1 = (n) => n.toFixed(1), P = (r, m) => { const t = Math.min(m, 1439.9) / 1440 * 2 * Math.PI; return [C + r * Math.sin(t), C - r * Math.cos(t)]; };
+  const arco = (r, a, b, rev) => { b = Math.max(b, a + 6); const [x0, y0] = P(r, a), [x1, y1] = P(r, b);
+    return rev ? `M${f1(x1)} ${f1(y1)} A${r} ${r} 0 ${b - a > 720 ? 1 : 0} 0 ${f1(x0)} ${f1(y0)}` : `M${f1(x0)} ${f1(y0)} A${r} ${r} 0 ${b - a > 720 ? 1 : 0} 1 ${f1(x1)} ${f1(y1)}`; };
+  const linea = (r0, r1, m, w, op, col = "#B7A6FF") => { const [x0, y0] = P(r0, m), [x1, y1] = P(r1, m);
+    return `<line x1="${f1(x0)}" y1="${f1(y0)}" x2="${f1(x1)}" y2="${f1(y1)}" stroke="${col}" stroke-width="${w}" stroke-linecap="round" opacity="${op}"/>`; };
+  let g = '<defs><filter id="esfBrillo" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="7"/></filter>'
+    + '<radialGradient id="esfFondo"><stop offset="0" stop-color="#33266A" stop-opacity=".95"/><stop offset=".7" stop-color="#170F33" stop-opacity=".7"/><stop offset="1" stop-color="#0B0818" stop-opacity="0"/></radialGradient></defs>'
+    + '<circle cx="256" cy="256" r="262" fill="url(#esfFondo)"/>';
+  [[25, 110], [145, 215], [250, 290]].forEach(([a, b]) => { g += `<path d="${arco(250, a * 4, b * 4)}" fill="none" stroke="#B7A6FF" stroke-width="10" stroke-linecap="round" opacity=".6"/>`; });
+  g += '<circle cx="256" cy="256" r="236" fill="none" stroke="#B7A6FF" stroke-opacity=".25"/>';
+  let fondo = '<circle cx="256" cy="256" r="200" fill="none" stroke="#B7A6FF" stroke-opacity=".1" stroke-width="40"/><circle cx="256" cy="256" r="128" fill="none" stroke="#B7A6FF" stroke-opacity=".08" stroke-width="18"/>';
+  for (let q = 0; q < 96; q++) if (q % 4) fondo += linea(163, 169, q * 15, 2, .28);
+  for (let h = 0; h < 24; h++) fondo += linea(h % 2 ? 158 : 150, 171, h * 60, h % 2 ? 4 : 8, h % 2 ? .4 : .9);
+  for (let h = 0; h < 24; h++) { const [x, y] = P(h % 6 ? 266 : 272, h * 60), fuerte = h % 6 === 0;
+    fondo += `<text x="${f1(x)}" y="${f1(y + (fuerte ? 7 : 4))}" fill="#B7A6FF" fill-opacity="${fuerte ? 1 : .6}" font-size="${fuerte ? 21 : 12}" text-anchor="middle" font-family="monospace" font-weight="${fuerte ? 700 : 400}">${String(h).padStart(2, "0")}</text>`; }
+  let brillo = "", arcos = "", textos = "", bordes = "", ult = -999; const tot = {};
+  bl.forEach((b, i) => {
+    const a = Math.max(0, minsDe(b.ini)), z = Math.min(1440, minsDe(b.fin || b.ini)); if (isNaN(a) || isNaN(z) || (z <= a && b.fila !== "viaje")) return;
+    const dentro = b.fila === "actividad", r = dentro ? 128 : 200, w = dentro ? 18 : b.fila === "viaje" ? 26 : 40, col = COLOR_RELOJ(b), baja = b.conf === "baja";
+    if (!dentro && z > a) tot[col] = (tot[col] || 0) + z - a;
+    const d = dentro ? arco(r, a, z) : arco(r, a + 3, z - 3);
+    brillo += `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" opacity="${baja ? .2 : .5}" filter="url(#esfBrillo)"/>`;
+    arcos += `<path class="arco" d="${d}" stroke="${col}" stroke-width="${w}" stroke-linecap="${dentro ? "round" : "butt"}" opacity="${baja ? .45 : b.conf === "media" ? .85 : 1}"${baja ? ' stroke-dasharray="5 4"' : ""}/>`;
+    if (!dentro && b.fila !== "viaje" && a - ult >= 50) { ult = a; const [x, y] = P(214, a); bordes += linea(176, 224, a, 2, .9, col) + `<circle cx="${f1(x)}" cy="${f1(y)}" r="3.5" fill="${col}"/>`; }
+    if (!dentro && z - a >= 100) { const medio = (a + z) / 2, abajo = medio > 360 && medio < 1080, id = "esfT" + i;
+      const nom = b.fila === "sueno" ? "SUEÑO" : col === "#8FD3C4" ? "SU CASA" : col === "#B7A6FF" ? "LA U" : b.fila === "viaje" ? "VIAJE" : String(b.titulo).replace(/^En /, "").toUpperCase().slice(0, 16).replace(/[<>&"]/g, "");
+      textos += `<path id="${id}" d="${arco(abajo ? 194 : 206, a, z, abajo)}" fill="none"/><text font-size="15" font-weight="700" letter-spacing="3" fill="#120C26"><textPath href="#${id}" startOffset="50%" text-anchor="middle">${nom}</textPath></text>`; } });
+  const mayor = Object.entries(tot).filter((x) => x[0] !== "#6F5FD0" && x[0] !== "#FFB86B").sort((x, y) => y[1] - x[1])[0];
+  const nomMayor = mayor ? (TIPOS_RELOJ.find((t) => t[0] === mayor[0]) || [])[1] : "";
+  g += brillo + fondo + arcos + textos + bordes + '<circle cx="256" cy="256" r="98" fill="#0B0818" fill-opacity=".92" stroke="#B7A6FF" stroke-opacity=".35" stroke-width="1.5"/>';
+  if (mayor) g += `<text x="256" y="244" text-anchor="middle" font-family="monospace" font-size="13" letter-spacing="3" fill="#A99BD8">MÁS TIEMPO EN</text><text x="256" y="276" text-anchor="middle" font-size="26" font-weight="700" letter-spacing="2" fill="${mayor[0]}">${nomMayor}</text><text x="256" y="302" text-anchor="middle" font-family="monospace" font-size="15" fill="#EEEAFF">${Math.floor(mayor[1] / 60)} h ${String(mayor[1] % 60).padStart(2, "0")}</text>`;
+  else g += '<text x="256" y="262" text-anchor="middle" font-family="monospace" font-size="14" letter-spacing="3" fill="#A99BD8">SIN DATOS</text>';
+  return `<svg class="esfera" viewBox="-34 -34 580 580" role="img" aria-label="Esfera de 24 horas del día">${g}</svg>`;
+}
 function pintaCronos(box, d) {
   diaCronos = d.fecha; const p = d.fecha.split("-").map(Number), f = new Date(p[0], p[1] - 1, p[2]), hoy = isoDe(new Date());
-  const nav = el("div", "nav"), a = el("button", "", "‹"), s = el("button", "", "›"); a.setAttribute("aria-label", "Día anterior"); s.setAttribute("aria-label", "Día siguiente");
+  const nav = el("div", "nav"), a = el("button", "", "◂"), s = el("button", "", "▸"); a.setAttribute("aria-label", "Día anterior"); s.setAttribute("aria-label", "Día siguiente");
   const mover = (n) => { const x = new Date(p[0], p[1] - 1, p[2] + n); abrirApp("cronos", { fecha: isoDe(x) }); };
   a.onclick = () => mover(-1); s.onclick = () => mover(1); s.disabled = d.fecha >= hoy;
   nav.append(a, el("span", "", (d.fecha === hoy ? "HOY · " : "") + DIAS_V[f.getDay()] + " " + p[2] + " " + MESES_V[p[1] - 1]), s); box.appendChild(nav);
-  for (const b of d.bloques) { const c = FILA_C[b.fila] || ["#4FE3FF", String(b.fila || "").toUpperCase()], it = el("div", "it ev"); it.style.setProperty("--k", c[0]);
-    const tm = el("time", "", b.ini || "—"); if (b.fin) tm.appendChild(el("i", "", b.fin));
-    const tx = el("div", "", b.titulo); tx.appendChild(el("small", "", c[1] + (b.conf && b.conf !== "alta" ? " · NO ES SEGURO" : ""))); it.append(tm, tx); box.appendChild(it); }
-  if (!d.bloques.length) box.appendChild(el("div", "vacio", "No hay nada registrado ese día."));
-  if (d.parcial) { box.appendChild(el("div", "nota", "BUSCANDO LOS VIAJES DEL CORREO EN EL PC…")).style.margin = "18px 0";
+  const bl = d.bloques.filter((b) => b.ini && ["sueno", "lugar", "viaje", "actividad"].includes(b.fila));
+  const caja = el("div"); caja.style.cssText = "display:flex;flex:none"; caja.innerHTML = esferaSVG(bl); box.appendChild(caja);   // solo números y nombres ya limpiados: nada del PC entra como HTML
+  const usados = new Set(bl.map(COLOR_RELOJ)), ley = el("div", "ley");
+  for (const [c, n] of TIPOS_RELOJ) if (usados.has(c)) { const s2 = el("span", ""), i = el("i"); i.style.background = c; s2.append(i, n); ley.appendChild(s2); }
+  if (ley.children.length) box.appendChild(ley);
+  if (d.bloques.length) { const pn = panel(box, "Mi día", d.bloques.length + " TRAMOS");
+    for (const b of d.bloques) { const r = el("div", "blo"), i = el("i"); i.style.background = COLOR_RELOJ(b); const tx = el("span", "", b.titulo);
+      if (b.conf && b.conf !== "alta") tx.appendChild(el("small", "", b.conf === "baja" ? "NO ES SEGURO" : "PROBABLE"));
+      r.append(i, el("time", "", (b.ini || "—") + (b.fin ? "–" + b.fin : "")), tx); pn.appendChild(r); } }
+  else box.appendChild(el("div", "vacio", "No hay nada registrado ese día."));
+  if (d.parcial) { box.appendChild(el("div", "pie", "BUSCANDO LOS VIAJES DEL CORREO EN EL PC…"));
     // el PC sigue armando el día completo: se le vuelve a preguntar un par de veces sin borrar lo que ya se ve
     pintaCronos.n = pintaCronos.dia === d.fecha ? pintaCronos.n + 1 : 1; pintaCronos.dia = d.fecha;
     if (pintaCronos.n <= 5) setTimeout(() => { if (pantalla === "app" && appAbierta === "cronos" && diaCronos === d.fecha) abrirApp("cronos", { fecha: d.fecha }); }, 4000); }
   else pintaCronos.dia = null;
+  pie(box, "TODO QUEDA EN SU PC", "CAPRICORNIO");
 }
 
 // ---- VISTA: el horario de la semana (o una lista) que Atlas manda junto con su respuesta, igual que en el PC
