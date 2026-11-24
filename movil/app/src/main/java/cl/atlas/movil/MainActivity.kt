@@ -15,7 +15,6 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -44,6 +43,13 @@ class MainActivity : AppCompatActivity() {
     private val red = Executors.newFixedThreadPool(3)
     private val turnoVoz = AtomicInteger(0)
     private val INICIO = "file:///android_asset/ui/index.html"
+
+    /** La página que se muestra: la interfaz bajada y verificada si hay una más nueva, o la que trae el APK.
+     *  (Android no deja reemplazar por dentro los archivos de android_asset, así que la bajada se abre desde su carpeta.) */
+    private fun inicio(): String {
+        val dir = actualiza.activa ?: return INICIO
+        return android.net.Uri.fromFile(java.io.File(dir, "index.html")).toString()
+    }
 
     // Candado: si la app estuvo más de 5 minutos fuera de pantalla, pide huella o el PIN del celular antes de mostrar
     // nada ni hablar con el PC. Solo aplica con un PC vinculado y si el celular tiene bloqueo de pantalla configurado.
@@ -84,6 +90,7 @@ class MainActivity : AppCompatActivity() {
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = false
         web.settings.allowContentAccess = false
+        web.settings.allowFileAccess = true   // solo para la interfaz bajada, en la carpeta privada de la app
         web.settings.mediaPlaybackRequiresUserGesture = true
         web.settings.blockNetworkLoads = true   // la página no sale a la red: solo la parte nativa habla con el PC
         web.overScrollMode = WebView.OVER_SCROLL_NEVER
@@ -91,30 +98,7 @@ class MainActivity : AppCompatActivity() {
         web.webViewClient = object : WebViewClient() {
             // Nativo solo existe para la página que viene dentro de la app: nunca se navega a otra parte
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean =
-                request?.url?.toString() != INICIO
-
-            // Si hay una interfaz más nueva ya bajada y verificada, sus archivos reemplazan a los que trae el APK.
-            // La dirección sigue siendo la misma: la página nunca sale de android_asset/ui.
-            override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
-                val u = request?.url ?: return null
-                val ruta = u.path ?: return null
-                if (u.scheme != "file" || !ruta.startsWith("/android_asset/ui/")) return null
-                val nombre = ruta.removePrefix("/android_asset/ui/")
-                val datos = actualiza.abrir(nombre) ?: return null
-                val tipo = when (nombre.substringAfterLast('.', "")) {
-                    "html" -> "text/html"
-                    "js" -> "text/javascript"
-                    "css" -> "text/css"
-                    "json" -> "application/json"
-                    "jpg", "jpeg" -> "image/jpeg"
-                    "png" -> "image/png"
-                    "svg" -> "image/svg+xml"
-                    "woff2" -> "font/woff2"
-                    else -> "application/octet-stream"
-                }
-                val texto = tipo.startsWith("text/") || tipo == "application/json" || tipo == "image/svg+xml"
-                return WebResourceResponse(tipo, if (texto) "utf-8" else null, datos)
-            }
+                request?.url?.toString() != inicio()
         }
         web.addJavascriptInterface(Nativo(), "Nativo")
         candado = TextView(this).apply {
@@ -132,7 +116,7 @@ class MainActivity : AppCompatActivity() {
             addView(web, FrameLayout.LayoutParams(-1, -1))
             addView(candado, FrameLayout.LayoutParams(-1, -1))
         })
-        web.loadUrl(INICIO)
+        web.loadUrl(inicio())
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -158,8 +142,18 @@ class MainActivity : AppCompatActivity() {
         if (bloqueada) pedirLlave()
         red.execute {
             val n = actualiza.revisar()
-            if (n.interfaz) evento("uinueva", JSONObject())
+            if (n.interfaz) recargarSiQuieta()
             if (n.apk != null) evento("appnueva", JSONObject())
+        }
+    }
+
+    /** Hay interfaz nueva: se abre al tiro si Atlas está en reposo; si no, la página avisa cuando quede libre. */
+    private fun recargarSiQuieta() {
+        runOnUiThread {
+            if (isDestroyed) return@runOnUiThread
+            web.evaluateJavascript("window.Atlas && Atlas._libre ? Atlas._libre() : true") { r ->
+                if (r != "false") web.loadUrl(inicio()) else evento("uinueva", JSONObject())
+            }
         }
     }
 
@@ -278,6 +272,12 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface
         fun version(): String = JSONObject().put("app", actualiza.nombreApp).put("ui", actualiza.nInterfaz)
             .put("appNueva", actualiza.apkLista != null).toString()
+
+        /** La página quedó libre y hay interfaz nueva esperando: se abre. */
+        @JavascriptInterface
+        fun recargar() {
+            runOnUiThread { if (!isDestroyed && web.url != inicio()) web.loadUrl(inicio()) }
+        }
 
         @JavascriptInterface
         fun actualizar() {

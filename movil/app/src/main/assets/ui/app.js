@@ -184,7 +184,9 @@ function hayApp(si) { $("btnApp").hidden = !si; $("btnMenu").classList.toggle("n
 function versiones() { let v = {}; try { v = JSON.parse(Nativo.version ? Nativo.version() : "{}"); } catch (e) { /* app antigua */ }
   $("verN").textContent = v.app ? "APP " + v.app + " · PANTALLA " + (v.ui || 0) : ""; hayApp(!!v.appNueva); }
 $("btnApp").onclick = () => { menu(false); dice("", "Instalando la versión nueva. Atlas se cerrará un momento; ábralo de nuevo al terminar."); Nativo.actualizar(); };
-function siToca() { if (recargar && !ocupado && (modo === "espera" || modo === "sinpc")) location.reload(); }
+const libre = () => !ocupado && (modo === "espera" || modo === "sinpc") && !document.body.classList.contains("menu");
+function siToca() { if (recargar && libre()) { recargar = false; if (Nativo.recargar) Nativo.recargar(); else location.reload(); } }
+Atlas._libre = libre;
 const EVENTOS = {
   uinueva() { recargar = true; siToca(); },
   appnueva() { hayApp(true); },

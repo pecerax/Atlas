@@ -32,7 +32,7 @@ class Actualiza(private val ctx: Context) {
     companion object {
         const val BASE = "https://raw.githubusercontent.com/pecerax/Atlas/apk-atlas-movil/"
         const val ACCION_INSTALAR = "cl.atlas.movil.INSTALAR"
-        private const val CADA_MS = 20 * 60 * 1000L
+        private const val CADA_MS = 3 * 60 * 1000L
         private val NOMBRE = Regex("^[A-Za-z0-9][A-Za-z0-9._-]{0,60}$")
     }
 
@@ -178,7 +178,7 @@ class Actualiza(private val ctx: Context) {
         }
     }
 
-    /** Mira si hay algo nuevo (a lo más cada 20 minutos). Corre fuera del hilo principal. */
+    /** Mira si hay algo nuevo (a lo más cada 3 minutos). Corre fuera del hilo principal. */
     @Synchronized
     fun revisar(): Novedad {
         val nada = Novedad(false, apkLista, prefs.getInt("apk_v", 0))
