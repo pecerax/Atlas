@@ -74,14 +74,34 @@ function ponModo(m, detalle) {
   $("estadoTx").textContent = detalle || ROTULO[m];
   $("pista").textContent = m === "espera" ? "TOCA LA ESFERA PARA HABLAR" : m === "escuchando" ? "TOCA PARA TERMINAR" : m === "sinpc" ? "" : "TOCA PARA DETENER";
   $("nucleo").disabled = m === "sinpc";
-  $("nucleo").classList.toggle("ch", m !== "espera" && m !== "sinpc" || !!$("fraseYo").textContent);
 }
 function dice(yo, atlas) {
   if (yo !== null) $("fraseYo").textContent = yo;
   if (atlas !== null) { const f = $("fraseAtlas"); f.textContent = atlas; f.classList.toggle("larga", atlas.length > 110); }
-  $("nucleo").classList.toggle("ch", !!$("fraseYo").textContent || modo !== "espera");
+  hoja(atlas ? true : undefined);
 }
-function pendiente(p) { $("sino").classList.toggle("on", !!p); if (p && !$("fraseAtlas").textContent.includes(p)) dice(null, p); }
+function pendiente(p) { $("sino").classList.toggle("on", !!p); if (p && !$("fraseAtlas").textContent.includes(p)) dice(null, p); hoja(p ? true : undefined); }
+// ---- la hoja del texto: aparece cuando hay algo que leer; arriba = abierta, abajo = solo el asa (la esfera queda libre)
+function hoja(arriba) {
+  const h = $("hoja"), hay = !!($("fraseYo").textContent || $("fraseAtlas").textContent) || $("sino").classList.contains("on") || $("escribir").classList.contains("on");
+  h.classList.toggle("hay", hay);
+  if (arriba !== undefined) h.classList.toggle("baja", !arriba);
+  $("asa").setAttribute("aria-expanded", !h.classList.contains("baja"));
+}
+(() => {
+  const h = $("hoja"); let y0 = null, dy = 0, movio = false;
+  h.addEventListener("touchstart", (e) => { const enTexto = e.target.closest("#frases"), f = $("frases");
+    // dentro del texto solo se arrastra la hoja si no hay nada que desplazar hacia arriba
+    y0 = enTexto && f.scrollTop > 0 ? null : e.touches[0].clientY; dy = 0; movio = false; }, { passive: true });
+  h.addEventListener("touchmove", (e) => { if (y0 === null) return; dy = e.touches[0].clientY - y0;
+    const baja = h.classList.contains("baja"), f = $("frases");
+    if (!baja && dy < 0) { if (f.scrollHeight > f.clientHeight) y0 = null; return; }   // hacia arriba y abierta: es leer, no arrastrar
+    if (Math.abs(dy) < 8) return; movio = true; h.classList.add("arrastra");
+    const base = baja ? h.offsetHeight - 40 : 0; h.style.transform = "translateY(" + Math.max(0, Math.min(h.offsetHeight - 40, base + dy)) + "px)"; }, { passive: true });
+  const suelta = () => { h.classList.remove("arrastra"); h.style.transform = ""; if (y0 !== null && movio) { if (dy > 40) hoja(false); else if (dy < -30) hoja(true); deslizo = Date.now(); } y0 = null; };
+  h.addEventListener("touchend", suelta, { passive: true }); h.addEventListener("touchcancel", suelta, { passive: true });
+  $("asa").onclick = () => { if (Date.now() - deslizo < 400) return; hoja(h.classList.contains("baja")); };
+})();
 
 async function sondear() {
   if (!Nativo.vinculo() || document.hidden) return;
@@ -99,11 +119,12 @@ const saludo = () => { const h = new Date().getHours(); return (h < 12 ? "Buenos
 
 // ---- hablar
 async function enviar(texto) {
-  ocupado = true; dice(texto, ""); pendiente(null); vista = null; $("verVista").hidden = true; ponModo("pensando");
+  ocupado = true; $("avisoPc").hidden = true; dice(texto, ""); pendiente(null); vista = null; $("verVista").hidden = true; ponModo("pensando");
   const r = await pedir("POST", "/p/chat", { text: texto });
   if (modo !== "pensando") { ocupado = false; return; }   // lo detuvieron mientras pensaba
   if (r.st !== 200 || !r.j) { ocupado = false; dice(null, r.st ? "Atlas tuvo un problema con ese pedido." : "No pude llegar al PC."); ponModo(r.st ? "espera" : "sinpc"); return; }
   if (r.j.detenido) { ocupado = false; ponModo("espera"); return; }
+  $("avisoPc").hidden = "vista" in r.j || !/horario|evento|clase|agenda|semana|calendario/i.test(texto);
   responder(r.j.reply, r.j.pendiente, r.j.vista);
 }
 function responder(texto, pend, v) {
@@ -131,7 +152,7 @@ function menu(abrir) { document.body.classList.toggle("menu", abrir); $("btnMenu
 $("btnMenu").onclick = () => menu(true);
 $("velo").onclick = () => menu(false);
 document.querySelectorAll("[data-menu]").forEach((b) => { b.onclick = () => { menu(false); const d = b.dataset.menu;
-  if (d === "escribir") { ir("principal"); $("escribir").classList.add("on"); setTimeout(() => $("msg").focus(), 250); } else ir(d); }; });
+  if (d === "escribir") { ir("principal"); $("escribir").classList.add("on"); hoja(true); setTimeout(() => $("msg").focus(), 250); } else ir(d); }; });
 // Deslizar hacia la derecha en cualquier parte de la pantalla principal abre el menú; hacia la izquierda lo cierra.
 // Se decide mientras el dedo se mueve, para que el menú salga sin esperar a soltar.
 let x0 = null, y0 = 0, deslizo = 0;
@@ -144,7 +165,7 @@ document.addEventListener("touchmove", (e) => { if (x0 === null) return;
   x0 = null; deslizo = Date.now(); }, { passive: true });
 document.addEventListener("touchend", () => { x0 = null; }, { passive: true });
 document.addEventListener("touchcancel", () => { x0 = null; }, { passive: true });
-$("escribir").onsubmit = (e) => { e.preventDefault(); const t = $("msg").value.trim(); if (!t || modo === "sinpc") return; $("msg").value = ""; $("msg").blur(); $("escribir").classList.remove("on"); Nativo.callar(); enviar(t); };
+$("escribir").onsubmit = (e) => { e.preventDefault(); const t = $("msg").value.trim(); if (!t || modo === "sinpc") return; $("msg").value = ""; $("msg").blur(); $("escribir").classList.remove("on"); hoja(); Nativo.callar(); enviar(t); };
 
 const EVENTOS = {
   grabando() { ocupado = true; dice("", ""); pendiente(null); ponModo("escuchando"); },
