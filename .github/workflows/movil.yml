@@ -65,7 +65,7 @@ jobs:
       - name: Numerar la interfaz
         run: |
           UI=movil/app/src/main/assets/ui
-          N=$(git rev-list --count HEAD -- "$UI")
+          N=$(git rev-list --count HEAD -- movil)   # cualquier cambio del celular, también el de versión
           MIN=$(python3 -c "import json;print(int(json.load(open('$UI/version.json'))['min_app']))")
           echo "{\"n\": $N, \"min_app\": $MIN}" > "$UI/version.json"
           V=$(tr -d '[:space:]' < movil/VERSION)
