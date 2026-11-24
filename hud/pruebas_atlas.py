@@ -352,7 +352,7 @@ CASOS: list[tuple[str, list[tuple]]] = [
     ]),
     ("Agenda: evaluaciones, clases y eventos", [
         ("¿Qué evaluaciones tengo, próximamente?", "agenda",
-         dict(reply=r"3 evaluaciones: Control de Evalua mañana a las 16:15; Control de Lenguajes el viernes 13 a las 14:00; Control de Introducción a la Programación el sábado 14 a las 8:30\.$")),
+         dict(reply=r"3 evaluaciones\. Mañana a las 16:15 tiene el Control de Evalua, y el viernes a las 14:00 tiene el Control de Lenguajes\. Y el sábado a las 8:30 tiene el Control de Introducción a la Programación\.$")),
         ("¿Cuándo es mi siguiente evaluación?", "agenda", dict(reply=r"Lo próximo es Control de Evalua mañana a las 16:15 en B01, B04")),
         ("¿cuándo es el control de Evalua?", "agenda", dict(reply=r"Control de Evalua mañana")),
         ("qué tengo mañana", "agenda", dict(reply=r"para mañana veo 1 evento: Control de Evalua a las 16:15")),
@@ -360,13 +360,24 @@ CASOS: list[tuple[str, list[tuple]]] = [
         ("¿Cómo se viene mi semana?", "agenda", dict(reply=r"esta semana|próxima semana")),
         ("¿Qué tal la próxima semana?", "agenda", dict(reply=r"próxima semana")),
         ("¿Qué tengo esta semana?", "agenda",
-         dict(reply=r"5 eventos: Control de Evalua.*Auxiliar de Introducción a la Programación el jueves 12.*Laboratorio el viernes 13 a las 10:15.*Control de Lenguajes.*Control de Introducción")),
+         dict(reply=r"^Señor, esta semana tiene 5 eventos\. Mañana a las 16:15 tiene el Control de Evalua, y el jueves a las 18:00 tiene la Auxiliar de Introducción a la Programación\. El viernes a las 10:15 tiene Laboratorio, y a las 14:00 el Control de Lenguajes\. .*Control de Introducción")),
         ("¿Qué clases tengo el martes?", "agenda", dict(reply=r"2 clases: Cátedra de Lenguajes a las 10:15 en G108; Cátedra de Redes a las 12:00 en B08")),
-        # «Horario de la semana» (✎ Corregir une una frase a «muéstrame mi horario»): se dice la semana, no «hoy y mañana»
-        ("muéstrame mi horario", "agenda", dict(reply=r"para esta semana veo")),
-        ("mi horario del jueves", "agenda", dict(reply=r"Cátedra de EH a las 10:15.*Auxiliar de Introducción a la Programación a las 18:00 en S03, S05")),
+        # «Horario de la semana» (✎ Corregir une una frase a «muéstrame mi horario»): se dice la semana, no «hoy y mañana».
+        # «Horario» sin decir qué (23-11-2026, pedido del usuario): primero pregunta clases y trabajo, o eventos
+        ("muéstrame mi horario", "agenda", dict(reply=r"^¿Quiere su horario de clases y trabajo, o sus eventos, señor\?$")),
+        ("ambos", "agenda", dict(reply=r"^Señor, esta semana tiene 10 eventos\. Le nombro los próximos 8\. Hoy a las 12:45 tiene la Cátedra de Introducción a la Programación\. Mañana a las 10:15 tiene ")),
+        ("mi horario del jueves", "agenda", dict(reply=r"^¿Quiere su horario de clases y trabajo, o sus eventos, señor\?$")),
+        ("el de clases", "agenda", dict(reply=r"Cátedra de EH a las 10:15.*Auxiliar de Introducción a la Programación a las 18:00 en S03, S05")),
+        ("muéstrame mi horario", "agenda", dict(reply=r"^¿Quiere su horario de clases y trabajo, o sus eventos, señor\?$")),
+        ("clases", "agenda", dict(reply=r"^Señor, esta semana tiene 6 clases\. Hoy a las 12:45 tiene la Cátedra de Introducción a la Programación\. Mañana a las 10:15 tiene la Cátedra de Lenguajes, y a las 12:00 la Cátedra de Redes\.")),
+        ("muéstrame mi horario", "agenda", dict(reply=r"^¿Quiere su horario de clases y trabajo, o sus eventos, señor\?$")),
+        ("mis eventos", "agenda", dict(reply=r"^Señor, esta semana tiene 4 eventos\. Mañana a las 16:15 tiene el Control de Evalua\. El viernes a las 10:15 tiene Laboratorio, y a las 14:00 el Control de Lenguajes\. Y el sábado a las 8:30 tiene el Control de Introducción a la Programación\.$")),
+        ("muéstrame mi horario", "agenda", dict(reply=r"^¿Quiere su horario de clases y trabajo, o sus eventos, señor\?$")),
+        ("qué hora es", "basico", dict(reply=r"^Son las 9:00, señor\.$")),   # no calza: se olvida la pregunta
+        ("mi horario de clases", "agenda", dict(reply=r"esta semana tiene 6 clases\. Hoy a las 12:45 tiene ")),
+        ("mi horario de trabajo", "agenda", dict(reply=r"esta semana tiene 6 clases\. Hoy a las 12:45 tiene ")),
         ("¿cuándo tengo e hache?", "agenda", dict(reply=r"Lo próximo es Cátedra de EH el jueves 12")),
-        ("qué tengo de redes esta semana", "agenda", dict(reply=r"de Redes: Cátedra de Redes mañana.*Auxiliar de Redes el miércoles 11")),
+        ("qué tengo de redes esta semana", "agenda", dict(reply=r"2 eventos de Redes\. Mañana a las 12:00 tiene la Cátedra de Redes, y el miércoles a las 14:30 tiene la Auxiliar de Redes\.$")),
         ("qué entregas tengo", "agenda",
          dict(reply=r"No veo entregas para los próximos 7 días.*La siguiente es Tarea 3 de Lenguajes el viernes 20 a las 23:59")),
         ("¿quién es el auxiliar de redes?", "modelo", dict()),
@@ -377,7 +388,7 @@ CASOS: list[tuple[str, list[tuple]]] = [
         ("¿Cuál es la próxima tarea que tengo que entregar?", "agenda", dict(reply=r"Lo próximo es Tarea 3 de Lenguajes el viernes 20")),
         ("Y para redes.", "agenda", dict(reply=r"No veo entregas de Redes")),
         ("¿Qué tengo esta semana?", "agenda", dict(reply=r"5 eventos")),
-        ("Y para la próxima semana.", "agenda", dict(reply=r"para la próxima semana veo 3 eventos: Reunión con Felipe el martes 17 a las 17:00; Auxiliar de Introducción a la Programación el jueves 19 a las 18:00; Tarea 3 de Lenguajes")),
+        ("Y para la próxima semana.", "agenda", dict(reply=r"para la próxima semana veo 3 eventos\. El martes 17 a las 17:00 tiene Reunión con Felipe, y el jueves 19 a las 18:00 tiene la Auxiliar de Introducción a la Programación\. Y el viernes 20 antes de medianoche vence la Tarea 3 de Lenguajes")),
         ("¿y mañana?", "agenda", dict(reply=r"para mañana veo 1 evento: Control de Evalua")),
         ("¿cuándo es el próximo control?", "agenda", dict(reply=r"Control de Evalua")),
         ("¿y de Lenguajes?", "agenda", dict(reply=r"Lo próximo es Control de Lenguajes el viernes 13")),
@@ -511,15 +522,15 @@ CASOS: list[tuple[str, list[tuple]]] = [
     ("Agenda: tareas de U-Cursos (Otros eventos > Tareas), sin repetir, la semana que viene", [
         # Introducción a la Programación la dicta él (auxiliar, ramos.json "dicto"): esas tareas son de sus alumnos
         ("¿Qué tareas tengo?", "agenda",
-         # misma hora: se agrupan ("el miércoles 11 a las 23:59 tiene A y B")
-         dict(reply=r"^(?!.*Introducci).*para los próximos 7 días veo 2 entregas: "
-                    r"el miércoles 11 a las 23:59 tiene (Tarea 2 de Redes y Actividad 7 - BGP de Redes|Actividad 7 - BGP de Redes y Tarea 2 de Redes)\.$")),
+         # misma hora: se agrupan («el miércoles antes de medianoche vencen A y B»)
+         dict(reply=r"^(?!.*Introducci).*para los próximos 7 días veo 2 entregas\. "
+                    r"El miércoles antes de medianoche vencen (la Tarea 2 de Redes y la Actividad 7 de Redes|la Actividad 7 de Redes y la Tarea 2 de Redes)\.$")),
         ("¿qué tareas tengo de introducción a la programación?", "agenda", dict(reply=r"^(?!.*Tarea 3a)(?!.*Tarea 4)")),
         ("¿qué tareas tengo de redes?", "agenda", dict(reply=r"veo 2 entregas de Redes")),
         ("¿Cuál es la próxima tarea?", "agenda", dict(reply=r"Lo próximo es Tarea 2 de Redes el miércoles 11")),
         ("¿qué tareas tengo de Lenguajes?", "agenda",
          dict(reply=r"No veo entregas de Lenguajes para los próximos 7 días.*La siguiente es Tarea 3 de Lenguajes el viernes 20")),
-        ("¿Qué tengo esta semana?", "agenda", dict(reply=r"el miércoles 11 a las 23:59 tiene .*Tarea 2 de Redes")),
+        ("¿Qué tengo esta semana?", "agenda", dict(reply=r"el miércoles antes de medianoche vencen .*Tarea 2 de Redes")),
         # uso real: la voz entendió "tareo"; "esta semana" en tareas = los próximos 7 días
         ("¿Qué tareo para esta semana?", "agenda", dict(reply=r"para los próximos 7 días veo 2 entregas")),
         ("qué tareas tengo para esta semana", "agenda", dict(reply=r"para los próximos 7 días veo 2 entregas")),
@@ -535,7 +546,7 @@ CASOS: list[tuple[str, list[tuple]]] = [
         ("ya terminé la tarea 2 de redes", "tareas", dict(pending=False, reply=r"^Ya estaba marcada como lista, señor: Tarea 2 de Redes\.$")),
         ("desmarca la actividad 7", "tareas",
          dict(pending=True, confirm=True, reply=r"^Preparado, señor: desmarcar Actividad 7 - BGP de Redes, para que vuelva")),
-        ("¿qué tareas tengo de redes?", "agenda", dict(reply=r"Actividad 7 - BGP de Redes(?!.*Tarea 2 de Redes)")),
+        ("¿qué tareas tengo de redes?", "agenda", dict(reply=r"Actividad 7 de Redes(?!.*Tarea 2 de Redes)")),
         ("marca la actividad siete de redes como lista", "tareas", dict(pending=True, reply=r"marcar como lista Actividad 7 - BGP de Redes\. Dejará de")),
         ("la tarea 3 de lenguajes ya está lista", "tareas", dict(pending=True, reply=r"marcar como lista Tarea 3 de Lenguajes")),
         # sin decir cuál: no adivina, dice cuáles le quedan
@@ -711,7 +722,289 @@ CASOS: list[tuple[str, list[tuple]]] = [
         ("abre discord", "pc", dict(pc={"action": "open_app", "name": "discord"})),
         ("cierra discord", "pc", dict(pending=True, no_pc=True)),
     ]),
+    ("Mantenimiento por voz: reconectar Google Calendar y reiniciar Atlas (23-11-2026)", [
+        ("Atlas, reconecta Google Calendar", "mantenimiento", dict(reply=r"^Abrí la conexión con Google Calendar, señor\.", no_pc=True)),
+        ("reconecta el calendario de google", "mantenimiento", dict(reply=r"Configuración avanzada y luego Ir a Atlas")),
+        ("vuelve a conectar mi google", "mantenimiento", dict(reply=r"Abrí la conexión con Google Calendar")),
+        ("conecta google calendar", "mantenimiento", dict(reply=r"Abrí la conexión con Google Calendar")),
+        ("Atlas, reiníciate", "mantenimiento", dict(reply=r"^Me reinicio, señor; vuelvo en unos segundos\.$", no_pc=True, pending=False)),
+        ("reinicia Atlas", "mantenimiento", dict(reply=r"^Me reinicio, señor", no_pc=True)),
+        ("reinícate", "mantenimiento", dict(reply=r"^Me reinicio, señor", no_pc=True)),
+        # el PC sigue siendo el PC: reiniciar el computador pide confirmación en la ruta pc
+        ("reinicia el computador", "pc", dict(pending=True, no_pc=True, reply=r"reiniciar el pc")),
+        ("reinicia el pc", "pc", dict(pending=True, no_pc=True)),
+        ("qué tengo mañana", "agenda", dict(reply=r"para mañana veo 1 evento")),
+    ]),
 ]
+
+
+def pruebas_mantenimiento(H) -> list[tuple[str, list[str]]]:
+    """Las órdenes de mantenimiento llaman a LANZAR con el tipo correcto (y nada de verdad en las pruebas)."""
+    import contextlib
+    import io
+    import threading as _th
+
+    out = []
+    orig_lanzar, orig_espera = H.LANZAR, H.REINICIO_ESPERA
+    lanzados: list[str] = []
+    listo = _th.Event()
+
+    def falso(tipo):
+        lanzados.append(tipo)
+        listo.set()
+
+    H.LANZAR, H.REINICIO_ESPERA = falso, 0
+    try:
+        casos = [("Atlas, reconecta Google Calendar", "google"), ("reconecta el calendario de google", "google"),
+                 ("vuelve a conectar mi google", "google"), ("conecta google calendar", "google"),
+                 ("Atlas, reiníciate", "reinicio"), ("reinicia Atlas", "reinicio"), ("reinícate", "reinicio"),
+                 ("reinicia el computador", None), ("qué tengo mañana", None), ("conecta el wifi", None)]
+        for frase, tipo in casos:
+            errs = []
+            j = nuevo(H)
+            lanzados.clear()
+            listo.clear()
+            with contextlib.redirect_stdout(io.StringIO()):
+                j.route(H.canonicalize_people(H.canonicalize(frase)))
+            if tipo == "reinicio":
+                listo.wait(3)   # el reinicio se lanza en un hilo, después de responder
+            if lanzados != ([tipo] if tipo else []):
+                errs.append(f"se lanzó {lanzados}, se esperaba {[tipo] if tipo else 'nada'}")
+            out.append((f"mantenimiento: «{frase}» lanza {tipo or 'nada'}", errs))
+        # sin reemplazar LANZAR, con ATLAS_PRUEBAS=1 la función real no abre nada
+        lanzados.clear()
+        H.LANZAR = orig_lanzar
+        errs = []
+        try:
+            orig_lanzar("google")
+            orig_lanzar("reinicio")
+        except Exception as exc:  # noqa: BLE001
+            errs.append(f"error {type(exc).__name__}: {exc}")
+        out.append(("mantenimiento: en las pruebas LANZAR no abre nada", errs))
+    finally:
+        H.LANZAR, H.REINICIO_ESPERA = orig_lanzar, orig_espera
+    return out
+
+
+def pruebas_fondo(H) -> list[tuple[str, list[str]]]:
+    """Atlas de fondo (24-11-2026): cerrar la ventana no apaga Atlas si hay celular vinculado o si se pidió."""
+    out = []
+    casos = [  # (modo, puente_listo, argv, sigue)
+        ("auto", True, [], True), ("auto", False, [], False), ("siempre", False, [], True),
+        ("nunca", True, [], False), ("nunca", False, ["--fondo"], True), ("auto", False, ["--fondo"], True)]
+    for modo, listo, argv, sigue in casos:
+        r = H.seguir_de_fondo(modo=modo, puente_listo=listo, argv=argv)
+        out.append((f"fondo: modo {modo}, celular {'sí' if listo else 'no'}{' --fondo' if argv else ''} -> "
+                    f"{'sigue' if sigue else 'se cierra'}", [] if r == sigue else [f"dio {r}"]))
+    errs = []
+    t = H.HEARTBEAT_TIMEOUT
+    for edad, fondo, esp in ((1, False, "seguir"), (1, True, "seguir"), (t + 5, False, "apagar"), (t + 5, True, "fondo")):
+        if H.decision_watchdog(edad, fondo) != esp:
+            errs.append(f"{edad}s, fondo={fondo}: {H.decision_watchdog(edad, fondo)} (esperaba {esp})")
+    out.append(("fondo: el vigilante solo apaga si no hay que seguir de fondo", errs))
+    import atlas_ajustes
+    it = next((x for x in atlas_ajustes.CATALOGO if x.get("clave") == "fondo"), None)
+    out.append(("fondo: está en la rueda de ajustes con auto/siempre/nunca",
+                [] if it and it.get("opciones") == list(H.FONDO_MODOS) and atlas_ajustes.DEFAULTS.get("fondo") == "auto"
+                else ["falta o no calza"]))
+    return out
+
+
+def pruebas_celular(H) -> list[tuple[str, list[str]]]:
+    """Eventos del celular (24-11-2026): llamadas y avisos reales; sin falsa alarma por el sonido de WhatsApp."""
+    out = []
+    now = 1_800_000_000.0
+    casos = [(now - 3600, [now - 120], True, "evento reciente y celular conectado"),
+             (now - 3600, [now - 3600], False, "celular desconectado hace 1 hora"),
+             (now - 8 * 86400, [now - 60], False, "sin eventos en 8 días"),
+             (None, [now - 60], False, "nunca mandó eventos"), (now - 60, [], False, "sin celulares vinculados")]
+    for ult, vis, esp, nombre in casos:
+        r = H.celular_avisa_llamadas(ultimo=ult or 0.0, vistos=vis, ahora=now)
+        out.append((f"celular: {nombre} -> {'avisa' if esp else 'no avisa'} llamadas", [] if r == esp else [f"dio {r}"]))
+    errs = []
+    e = H.limpiar_evento({"tipo": "llamada", "app": "com.whatsapp", "de": "  Mamá  ", "t": 0, "estado": "entrante"})
+    if not e or e["app"] != "whatsapp" or e["de"] != "Mamá" or e["estado"] != "entrante":
+        errs.append(f"llamada de WhatsApp: {e}")
+    for malo in (None, [], {"tipo": "otro"}, {"tipo": "llamada", "estado": "contestada"}):
+        if H.limpiar_evento(malo) is not None:
+            errs.append(f"aceptó {malo}")
+    if H.limpiar_evento({"tipo": "notificacion", "app": "cl.banco", "texto": "x" * 999})["texto"] != "x" * 240:
+        errs.append("no recortó el texto")
+    out.append(("celular: limpiar_evento acepta lo válido, recorta y rechaza lo raro", errs))
+    errs = []
+    for app, de, esp in (("whatsapp", "Benji", "Señor, le está llamando Benji por WhatsApp."),
+                         ("telefono", "", "Señor, tiene una llamada en el celular.")):
+        if H.texto_llamada_celular(app, de) != esp:
+            errs.append(H.texto_llamada_celular(app, de))
+    out.append(("celular: texto del aviso de llamada", errs))
+    return out
+
+
+def pruebas_borrar_evento(H) -> list[tuple[str, list[str]]]:
+    """Uso real 23-11-2026: «¿Qué tengo mañana?» … «Elimine a ese evento» fue al modelo, que dijo «He borrado la
+    reunión…» sin haber borrado nada. Ahora va al borrado del calendario (con su «sí») y la red de seguridad no deja
+    pasar un «he borrado» sin herramienta."""
+    import contextlib
+    import io
+    import types as _types
+
+    import atlas_agenda as A
+
+    out = []
+    for frase in ("Elimine a ese evento", "elimina ese evento", "Bórrelo", "elimínalo", "quita ese evento"):
+        errs = []
+        j = nuevo(H)
+        A._LAST = A._PREGUNTA_HORARIO = None
+        with contextlib.redirect_stdout(io.StringIO()):
+            j.route(H.canonicalize_people(H.canonicalize("¿qué tengo el viernes 27?")))   # un solo evento: Entrevista (g3)
+            texto, _ref = j.resolve_refs(H.canonicalize_people(H.canonicalize(frase)))
+            ruta, res, _ = j.route(texto)
+        params = (j.pending or {}).get("params") or {}
+        if ruta != "calendario" or params.get("op") != "delete" or params.get("id") != "g3":
+            errs.append(f"ruta «{ruta}», pendiente {params or None}: {(res or {}).get('reply', '')[:140]!r}")
+        out.append((f"borrar: «qué tengo el viernes 27» y «{frase}» prepara el borrado de ese evento", errs))
+
+    # Red de seguridad: el modelo dice que borró y no usó ninguna herramienta
+    class _Res:
+        def __init__(self, content):
+            self.content, self.tool_results = content, []
+
+    for foco, espera_pendiente in (("Revisar Controles", False), ("Entrevista Natalia Ibáñez", True)):
+        errs = []
+        jm = H.Atlas()
+        jm.ready, jm.pending = True, None
+        jm.route = lambda t: ("modelo", None, t)
+        jm.remember_event({"summary": foco, "dia": "2026-11-27"}, "mencionado")
+        jm.agent = _types.SimpleNamespace(run=lambda prompt, context=None, _f=foco:
+                                          _Res(f"He borrado la reunión de mañana llamada «{_f}», señor. "
+                                               "¿Le gustaría que actualice sus pendientes?"))
+        old = _os.environ.get("ATLAS_REESCRIBIR")
+        _os.environ["ATLAS_REESCRIBIR"] = "0"
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                r = jm._chat("hazlo desaparecer de una vez")
+        finally:
+            if old is None:
+                _os.environ.pop("ATLAS_REESCRIBIR", None)
+            else:
+                _os.environ["ATLAS_REESCRIBIR"] = old
+        rep = r.get("reply", "")
+        if "He borrado" in rep:
+            errs.append(f"dejó pasar «he borrado» sin herramienta: {rep!r}")
+        params = (jm.pending or {}).get("params") or {}
+        if espera_pendiente and (params.get("op") != "delete" or params.get("id") != "g3"):
+            errs.append(f"debía preparar el borrado de verdad: {rep!r}")
+        if not espera_pendiente and not rep.startswith("No alcancé a hacerlo, señor: no ejecuté ninguna acción. ¿Quiere que borre «Revisar Controles»?"):
+            errs.append(f"sin el evento en Google debía decir que no hizo nada: {rep!r}")
+        out.append((f"borrar: «he borrado» del modelo sin herramienta no pasa ({foco})", errs))
+    errs = [f"claims_action({c!r}) debía ser {v}" for c, v in
+            (("He borrado la reunión de mañana.", True), ("Eliminé el evento, señor.", True), ("Ya lo he agendado.", True),
+             ("¿Cree que debo borrarlo?", False), ("Usted tiene 3 eventos mañana.", False))
+            if H.claims_action(c) != v]
+    out.append(("borrar: claims_action reconoce «he borrado», «eliminé», «lo he agendado»", errs))
+    return out
+
+
+def pruebas_semana_desde_ahora() -> list[tuple[str, list[str]]]:
+    """Vista semanal hablada (23-11-2026): no nombra lo que ya terminó, pero la vista de la HUD sigue de lunes a
+    domingo; y la pestaña con que se abre la vista calza con lo dicho (ambos / clases / eventos)."""
+    import atlas_agenda as A
+
+    out = []
+    errs = []
+
+    def horario(now, modo="ambos", frase="muéstrame mi horario"):
+        A._LAST = A._PREGUNTA_HORARIO = None
+        r0 = A.answer(frase, now=now) or ""
+        if r0 != A.PREGUNTA_HORARIO_TXT or A.LAST_VIEW is not None:
+            errs.append(f"«{frase}» debía preguntar sin mostrar nada: {r0[:100]!r}")
+        return A.answer(modo, now=now) or ""
+
+    # lunes 9, 15:00: la Cátedra de Introducción (12:45-14:15) ya terminó
+    r = horario(datetime(2026, 11, 9, 15, 0))
+    v = A.LAST_VIEW or {}
+    if "Introducción a la Programación hoy" in r:
+        errs.append(f"nombró una cátedra que ya terminó: {r[:200]!r}")
+    if not r.startswith("Señor, esta semana le quedan 9 eventos. Le nombro los próximos 8. Mañana a las 10:15 tiene la Cátedra de Lenguajes"):
+        errs.append(f"encabezado: {r[:200]!r}")
+    if not any(i.get("dia") == "2026-11-09" and i.get("hora") == "12:45" for i in v.get("items", [])):
+        errs.append("la vista de la semana perdió la cátedra del lunes (debe seguir de lunes a domingo)")
+    # a las 9:00 no ha pasado nada: el encabezado de siempre
+    r = horario(AHORA)
+    if not r.startswith("Señor, esta semana tiene 10 eventos. Le nombro los próximos 8. Hoy a las "):
+        errs.append(f"sin nada pasado cambió el encabezado: {r[:120]!r}")
+    # viernes 13 a las 23:00: casi todo pasó; dice lo que queda (o que no queda nada)
+    r = horario(datetime(2026, 11, 13, 23, 0))
+    if "ya no le queda ninguno" not in r and "le queda" not in r:
+        errs.append(f"viernes en la noche: {r[:160]!r}")
+    out.append(("semana: no nombra lo que ya terminó, la vista sigue completa", errs))
+
+    errs = []
+    for modo, pestana in (("ambos", "ambos"), ("las dos", "ambos"), ("clases", "clases"), ("clases y trabajo", "clases"),
+                          ("el de clases", "clases"), ("eventos", "eventos"), ("mis eventos", "eventos"),
+                          ("compromisos", "eventos")):
+        horario(AHORA, modo)
+        got = (A.LAST_VIEW or {}).get("pestana")
+        if got != pestana:
+            errs.append(f"«muéstrame mi horario» + «{modo}» abre en {got!r}, se esperaba {pestana!r}")
+    for frase, pestana in (("¿Qué tengo esta semana?", "eventos"), ("qué clases tengo esta semana", "clases"),
+                           ("mi horario de clases", "clases"), ("mi horario de eventos", "eventos")):
+        A._LAST = A._PREGUNTA_HORARIO = None
+        r = A.answer(frase, now=AHORA) or ""
+        got = (A.LAST_VIEW or {}).get("pestana")
+        if got != pestana or r == A.PREGUNTA_HORARIO_TXT:
+            errs.append(f"«{frase}» abre en {got!r} (se esperaba {pestana!r}) o preguntó: {r[:80]!r}")
+    # la respuesta que no calza se olvida: la frase se atiende normal y la pregunta ya no está
+    A._LAST = A._PREGUNTA_HORARIO = None
+    A.answer("muéstrame mi horario", now=AHORA)
+    A.answer("qué hora es", now=AHORA)
+    if A._PREGUNTA_HORARIO is not None or (A.answer("ambos", now=AHORA) or "").startswith("Señor, para esta semana"):
+        errs.append("una respuesta que no calza debía olvidar la pregunta")
+    A._LAST = A._PREGUNTA_HORARIO = None
+    A._LAST = None
+    r = A.answer("muéstrame mi horario de esta semana", AHORA, semana_completa=True) or ""
+    if (A.LAST_VIEW or {}).get("pestana") or r == A.PREGUNTA_HORARIO_TXT:
+        errs.append("el botón SEMANA › no pregunta y sigue abriendo en EVENTOS (sin pestaña)")
+    out.append(("semana: la pestaña de la vista calza con lo dicho", errs))
+
+    # Lista de varios días dicha POR DÍA (23-11-2026): texto exacto con eventos en tres días distintos
+    # Semana dicha como habla una persona (23-11-2026): oraciones por día, sin «Día:», sin «todo el día»
+    errs = []
+    hoy = datetime(2026, 11, 23, 9, 0)
+
+    def ev(summary, when, allday=False, kind=None, course=None):
+        e = {"summary": summary, "when": when, "start": when, "allday": allday,
+             "end": when + (timedelta(days=1) if allday else timedelta(minutes=0 if when.hour == 23 else 90))}
+        if kind:
+            e.update(kind=kind, course=course)
+        return e
+
+    evs = [ev("Contactar a Invest Chile", datetime(2026, 11, 23), True),
+           ev("revisar controles", datetime(2026, 11, 24), True),
+           ev("Ejercicio 6 - BGP de Redes", datetime(2026, 11, 25, 14, 30), kind="Ejercicio 6 - BGP", course="Redes"),
+           ev("Cumpleaños pepe tamia", datetime(2026, 11, 27), True),
+           ev("HITO 3: INFORME FINAL", datetime(2026, 11, 27, 23, 59), kind="HITO 3: INFORME FINAL", course="Minor"),
+           ev("HITO 3: PRESENTACIÓN", datetime(2026, 11, 27, 23, 59), kind="HITO 3: PRESENTACIÓN", course="Minor")]
+    txt = A.say_natural(evs, hoy)
+    esperado = ("Hoy tiene que contactar a Invest Chile y mañana, revisar controles. El miércoles a las 14:30 tiene el "
+                "Ejercicio 6 de Redes. Y el viernes es el cumpleaños de Pepe Tamia, y antes de medianoche vence el "
+                "Hito 3 de Minor: el informe final y la presentación")
+    if txt != esperado:
+        errs.append(f"semana natural: {txt!r}")
+    # otra semana: el día con su número
+    txt = A.say_natural([ev("Reunión con Felipe", datetime(2026, 12, 1, 17, 0))], hoy)
+    if txt != "El martes 1 de diciembre a las 17:00 tiene Reunión con Felipe":
+        errs.append(f"otra semana: {txt!r}")
+    # «eventos» deja fuera las clases que él dicta (Auxiliar de Introducción: trabajo), no sus controles
+    r = horario(AHORA, "eventos")
+    if "Auxiliar de Introducción" in r or "Control de Introducción a la Programación" not in r:
+        errs.append(f"«eventos» con las clases que dicta o sin sus evaluaciones: {r[:200]!r}")
+    r = horario(AHORA, "clases y trabajo")
+    if "Cátedra de Introducción a la Programación" not in r:
+        errs.append(f"«clases y trabajo» debía traer las clases que dicta: {r[:160]!r}")
+    A._LAST = A._PREGUNTA_HORARIO = None
+    out.append(("semana: dicha como habla una persona; «eventos» sin las clases que dicta", errs))
+    return out
 
 
 def pruebas_directas(H, tmp) -> list[tuple[str, list[str]]]:
@@ -1787,6 +2080,25 @@ def pruebas_directas(H, tmp) -> list[tuple[str, list[str]]]:
     A._TODAY = None
     errs = [f"dijo {g!r}" for g, e in ((got, esp), (got1, esp1)) if g != e]
     out.append(("la agenda agrupa los de todo el día y los de la misma hora", errs))
+    # Uso real 23-11-2026: nombró los eventos (leídos bien del enlace iCal) y cerró con «No pude leer el calendario»,
+    # como si nada fuera cierto. Debe decir qué calendario falló, de dónde salió lo nombrado y cómo arreglarlo.
+    errs = []
+    _le = G.list_events
+
+    def _vencida(a, b):
+        raise G.GCalError("la autorización de Google venció o fue revocada; ejecute Conectar-Google-Calendar otra vez")
+
+    G.list_events = _vencida
+    try:
+        r = A.answer("¿Qué tengo esta semana?") or ""
+    finally:
+        G.list_events = _le
+    if "No pude leer el calendario:" in r:
+        errs.append(f"sigue diciendo que no leyó el calendario: {r[-260:]!r}")
+    if not re.search(r"sale de .+, leído recién\. No pude leer Google Calendar \(la autorización de Google venció\), "
+                     r"así que podría faltar algo\. Para arreglarlo, abra Conectar-Google-Calendar\.$", r):
+        errs.append(f"aviso: {r[-260:]!r}")
+    out.append(("si Google Calendar falla, dice que lo nombrado sale de los otros calendarios", errs))
     # «Espera un correo de Platanus Hack» respondía con los no leídos (uso real 17-11-2026): es una vigilancia de correo.
     # Solo se revisa cómo se entiende la frase (V.parse no guarda nada)
     import atlas_vigilancias as V
@@ -1826,7 +2138,7 @@ def pruebas_directas(H, tmp) -> list[tuple[str, list[str]]]:
     errs = []
     for ahora in (_dt(2026, 11, 14, 23, 0), _dt(2026, 11, 15, 10, 0)):  # sábado y domingo
         r = A.answer("¿Qué tareo para esta semana?", now=ahora) or ""
-        if not ("para el fin de semana y la próxima semana" in r and "Tarea 3 de Lenguajes el viernes 20" in r):
+        if not ("para el fin de semana y la próxima semana" in r and "El viernes 20 antes de medianoche vence la Tarea 3 de Lenguajes" in r):
             errs.append(f"tareas {ahora:%a}: {r!r}")
         r = A.answer("¿Qué tengo esta semana?", now=ahora) or ""
         v = A.LAST_VIEW or {}
@@ -2149,8 +2461,10 @@ def pruebas_directas(H, tmp) -> list[tuple[str, list[str]]]:
         # por voz o chat (sin semana_completa) la vista que se abre también es lunes a domingo, con el lunes ya pasado
         # (uso real 17-11-2026: el horario abierto por voz un martes no mostraba lo del lunes 16)
         for frase in ("muéstrame mi horario de esta semana", "mi horario", "¿qué tengo esta semana?"):
-            A7._LAST, A7.LAST_VIEW = None, None
-            A7.answer(frase, datetime(2026, 11, 17, 15))
+            A7._LAST, A7.LAST_VIEW, A7._PREGUNTA_HORARIO = None, None, None
+            r7 = A7.answer(frase, datetime(2026, 11, 17, 15))
+            if r7 == A7.PREGUNTA_HORARIO_TXT:   # «horario» sin decir qué: pregunta primero (23-11-2026)
+                A7.answer("ambos", datetime(2026, 11, 17, 15))
             v = A7.LAST_VIEW or {}
             if (v.get("desde"), v.get("dias")) != ("2026-11-16", 7) or "2026-11-16" not in {i.get("dia") for i in v.get("items") or []}:
                 errs.append(f"«{frase}» por voz: vista {v.get('desde')} x {v.get('dias')} días, {len(v.get('items') or [])} eventos")
@@ -4785,6 +5099,7 @@ def pruebas_variantes(H) -> list[tuple[str, list[str]]]:
             for v in [frase] + variantes(frase):
                 j.pending = None
                 atlas_agenda._LAST = None
+                atlas_agenda._PREGUNTA_HORARIO = None
                 try:
                     with contextlib.redirect_stdout(io.StringIO()):
                         ruta = j.route(H.canonicalize_people(H.canonicalize(v)))[0]
@@ -4858,6 +5173,7 @@ def main() -> int:
             import atlas_agenda
 
             atlas_agenda._LAST = None
+            atlas_agenda._PREGUNTA_HORARIO = None
             (tmp / "recordatorios.json").unlink(missing_ok=True)
             (tmp / "tareas_listas.json").unlink(missing_ok=True)
             atlas_agenda._cache["https://calendario.invalid/a.ics"] = (1e18, _ics(tareas="tareas de U-Cursos" in titulo))
@@ -4886,7 +5202,8 @@ def main() -> int:
                     print(f"  ok     {frase}")
         print("\nRecordatorios: guardar y avisar")
         for nombre, errores in pruebas_directas(H, tmp) + pruebas_variantes(H) + pruebas_http(H) + pruebas_detener(H) \
-                + pruebas_primer_inicio(H, tmp):
+                + pruebas_primer_inicio(H, tmp) + pruebas_mantenimiento(H) + pruebas_semana_desde_ahora() \
+                + pruebas_fondo(H) + pruebas_celular(H) + pruebas_borrar_evento(H):
             total += 1
             if errores:
                 fallas += 1

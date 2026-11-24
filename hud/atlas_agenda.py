@@ -20,6 +20,9 @@ HERE = Path(__file__).resolve().parent
 CONFIG = HERE / "calendarios.json"
 CACHE_SECONDS = 15 * 60
 _cache: dict[str, tuple[float, str]] = {}
+# Qué pasó en la última lectura (upcoming): calendarios leídos bien y copias guardadas usadas (nombre -> fecha).
+# Sirve para que la respuesta diga de dónde salió lo que nombra y si puede estar desactualizado.
+_LECTURA: dict = {"ok": [], "copias": {}}
 
 DIAS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
@@ -175,6 +178,10 @@ def _fetch(cal: dict) -> tuple[str, bool]:
         return text, False
     except Exception:
         if backup.exists():
+            try:
+                _LECTURA["copias"][cal.get("nombre", name)] = backup.stat().st_mtime
+            except OSError:
+                pass
             return backup.read_text(encoding="utf-8"), True
         raise
 
@@ -414,10 +421,13 @@ def upcoming(a: datetime, b: datetime, incluir_listas: bool = False) -> tuple[li
     """-> (eventos ordenados en [a, b), errores por calendario, usando_copia_antigua).
     Las tareas que el usuario marcó como listas (atlas_tareas_listas.py) no salen, salvo con incluir_listas."""
     out, errors, stale = [], [], False
+    _LECTURA["ok"], _LECTURA["copias"] = [], {}
     for cal in load_calendars():
         try:
             text, old = _fetch(cal)
             stale = stale or old
+            if not old:
+                _LECTURA["ok"].append(cal.get("nombre", "calendario"))
             for ev in parse_ics(text, cal.get("nombre", "")):
                 for when in _occurrences(ev, a, b):
                     out.append({**ev, "when": when, "recurring": bool(ev.get("rrule"))})
@@ -429,6 +439,7 @@ def upcoming(a: datetime, b: datetime, incluir_listas: bool = False) -> tuple[li
         if atlas_gcal.is_connected():
             for ev in atlas_gcal.list_events(a, b):
                 out.append({**ev, "when": ev["start"], "recurring": False, "exdates": set()})
+            _LECTURA["ok"].append("Google Calendar")
     except Exception as exc:  # noqa: BLE001
         errors.append(f"Google Calendar: {exc}")
     out = [seg for e in out for seg in _split_days(e, a, b)]  # lo de varios días: un trozo por cada día
@@ -470,6 +481,25 @@ def is_evaluation(ev: dict) -> bool:
 
 NOW = None  # las pruebas lo reemplazan por una función que devuelve una fecha fija
 _LAST: dict | None = None  # última consulta de agenda, para entender repreguntas ("¿y para redes?")
+# «mi horario» sin decir qué (23-11-2026, pedido del usuario): Atlas pregunta «¿clases y trabajo, o eventos?» y
+# guarda aquí la frase original (con su rango) unos 3 minutos para atender la respuesta.
+_PREGUNTA_HORARIO: dict | None = None
+PREGUNTA_HORARIO_TXT = "¿Quiere su horario de clases y trabajo, o sus eventos, señor?"
+
+
+def _modo_horario(p: str) -> str | None:
+    """Respuesta a la pregunta del horario -> «clases», «eventos», «ambos» o None si no calza."""
+    if len(p.split()) > 7:
+        return None
+    cl = re.search(r"\b(clases?|catedras?|auxiliares?|trabajo|ramos?|u ?-?cursos)\b", p)
+    ev = re.search(r"\b(eventos?|compromisos?|reuniones?|citas?)\b", p)
+    if re.search(r"\b(ambos|ambas|todo|todos|todas|las dos|los dos|las 2|los 2)\b", p) or (cl and ev):
+        return "ambos"
+    if cl:
+        return "clases"
+    if ev:
+        return "eventos"
+    return None
 _TODAY: date | None = None  # "hoy" para armar las frases (lo fija answer)
 
 
@@ -610,6 +640,207 @@ def say_grouped(events: list[dict], one_day: bool = False) -> str:
             at = f"a las {hm[0]}:{hm[1]:02d}"
             out.append(f"{day} {at} tiene {names}".strip())
     return "; ".join(out)
+
+
+def say_by_day(events: list[dict]) -> str:
+    """Lista de varios días dicha POR DÍA (pedido del usuario 23-11-2026: mezclar «hoy tiene X, todo el día» con
+    «Y el miércoles 25 a las 14:30» no se entendía). Formato fijo:
+    «Hoy: A, todo el día. Mañana: a las 14:30, B. Viernes 27: C, todo el día; a las 12:45, D; a las 23:59, E y F».
+    Cada día con su nombre y dos puntos; primero lo de todo el día, luego por hora (los de la misma hora juntos)."""
+    days: dict[date, list[dict]] = {}
+    for e in events:
+        days.setdefault(e["when"].date(), []).append(e)
+    out = []
+    for d, evs in days.items():
+        label = say_day(d)
+        label = label[3:] if label.startswith("el ") else label
+        label = label[:1].upper() + label[1:]
+        allday = [e for e in evs if e.get("allday") and e.get("tramo") not in ("fin", "inicio")]
+        rest = sorted((e for e in evs if e not in allday),
+                      key=lambda e: (0, e["end"]) if e.get("tramo") == "fin" else (1, e["when"]))
+        parts = []
+        if allday:
+            parts.append(f"{_say_names([_event_name(e) for e in allday])}, todo el día")
+        groups: list[tuple[tuple, list[dict]]] = []
+        for e in rest:
+            key = ("fin", id(e)) if e.get("tramo") in ("fin", "inicio") else (e["when"].hour, e["when"].minute)
+            if groups and groups[-1][0] == key:
+                groups[-1][1].append(e)
+            else:
+                groups.append((key, [e]))
+        for key, g in groups:
+            e = g[0]
+            if e.get("tramo") == "fin":
+                parts.append(f"{_event_name(e)}, hasta las {e['end'].hour}:{e['end'].minute:02d}")
+            elif e.get("tramo") == "inicio":
+                fin = e["span"][1] - (timedelta(minutes=1) if e["span"][1].time() == datetime.min.time() else timedelta(0))
+                parts.append(f"desde las {e['when'].hour}:{e['when'].minute:02d}, {_event_name(e)}, hasta {say_day(fin.date())}")
+            else:
+                parts.append(f"a las {key[0]}:{key[1]:02d}, {_say_names([_event_name(x) for x in g])}")
+        out.append(f"{label}: " + "; ".join(parts))
+    return ". ".join(out)
+
+
+_FEM = {"tarea", "prueba", "catedra", "auxiliar", "clase", "actividad", "entrega", "presentacion", "evaluacion",
+        "interrogacion", "sesion", "reunion", "minuta", "lectura", "practica", "charla"}
+_MASC = {"control", "ejercicio", "examen", "laboratorio", "certamen", "hito", "informe", "proyecto", "taller", "quiz",
+         "trabajo", "avance", "seminario", "dia", "mapa", "problema", "tema", "programa", "sistema"}
+_MINUS = {"de", "del", "la", "el", "los", "las", "y", "en", "a", "al", "con", "por", "para", "o", "e", "un", "una"}
+
+
+def _articulo(frase: str) -> str:
+    w = _plain((frase or "").split()[0] if (frase or "").split() else "")
+    if w in _FEM:
+        return "la"
+    if w in _MASC:
+        return "el"
+    return "la" if re.search(r"(a|cion|sion|dad|tad|tud)$", w) else "el"
+
+
+def _limpia(s: str) -> str:
+    """Títulos TODO EN MAYÚSCULAS -> mayúscula inicial (las siglas cortas como BGP o EH se quedan)."""
+    letras = [c for c in s or "" if c.isalpha()]
+    if not letras or any(c.islower() for c in letras):
+        return s or ""
+    out = []
+    for i, w in enumerate(s.split(" ")):
+        lw = w.lower()
+        if _plain(lw) in _MINUS:
+            out.append(lw)
+        elif w.isalpha() and len(w) <= 3:
+            out.append(w)   # sigla
+        else:
+            out.append(lw)
+    r = " ".join(out)
+    return r[:1].upper() + r[1:]
+
+
+def _tipo_limpio(kind: str) -> str:
+    k = _limpia(kind or "")
+    m = re.match(r"^(.*?\d+)\s+-\s+\S.*$", k)   # «Ejercicio 6 - BGP» -> «Ejercicio 6» (el número basta)
+    return m.group(1) if m else k
+
+
+def _nombre_con_articulo(e: dict) -> str:
+    if e.get("kind"):
+        k = _tipo_limpio(e["kind"])
+        return f"{_articulo(k)} {k} de {nick_of(e['course'])}"
+    return spoken_name(_limpia(e["summary"]))
+
+
+def _nombres_con_articulo(g: list[dict]) -> str:
+    tipos = {_plain(_tipo_limpio(x["kind"])) for x in g if x.get("kind")}
+    if len(g) > 1 and len(tipos) == 1 and all(x.get("kind") for x in g):
+        k = _tipo_limpio(g[0]["kind"])
+        art = _articulo(k)
+        return _say_names([f"{art} {k} de {nick_of(g[0]['course'])}"] + [f"{art} de {nick_of(x['course'])}" for x in g[1:]])
+    return _say_names([_nombre_con_articulo(x) for x in g])
+
+
+def _clausulas_dia(evs: list[dict]) -> list[tuple[str, str, str]]:
+    """Lo de un día como cláusulas (antes, verbo, resto): («a las 14:30», «tiene», «el Ejercicio 6 de Redes»)."""
+    allday = [e for e in evs if e.get("allday") and e.get("tramo") not in ("fin", "inicio")]
+    rest = sorted((e for e in evs if e not in allday),
+                  key=lambda e: (0, e["end"]) if e.get("tramo") == "fin" else (1, e["when"]))
+    out: list[tuple[str, str, str]] = []
+    hacer, tener = [], []
+    for e in allday:
+        name = spoken_name(_limpia(e["summary"])) if not e.get("kind") else _nombre_con_articulo(e)
+        m = re.match(r"^cumplea(?:ñ|n)os\s+(?:de\s+)?(.+)$", name, re.I)
+        if m:
+            quien = m.group(1).strip()
+            if quien == quien.lower():
+                quien = " ".join(w if _plain(w) in _MINUS else w[:1].upper() + w[1:] for w in quien.split())
+            out.append(("", "es", f"el cumpleaños de {quien}"))
+        elif not e.get("kind") and re.match(r"^[a-záéíóú]{3,}(ar|er|ir)$", _plain(name.split()[0]) if name.split() else ""):
+            hacer.append(name[:1].lower() + name[1:])   # «Contactar a Invest Chile» -> tiene que contactar a Invest Chile
+        else:
+            tener.append(name)
+    if hacer:
+        out.insert(0, ("", "tiene que", _say_names(hacer)))
+    if tener:
+        out.append(("", "tiene", _say_names(tener)))
+    groups: list[tuple[tuple, list[dict]]] = []
+    for e in rest:
+        key = ("tramo", id(e)) if e.get("tramo") in ("fin", "inicio") else (e["when"].hour, e["when"].minute)
+        if groups and groups[-1][0] == key:
+            groups[-1][1].append(e)
+        else:
+            groups.append((key, [e]))
+    for key, g in groups:
+        e = g[0]
+        if e.get("tramo") == "fin":
+            out.append(("", "sigue", f"{_nombre_con_articulo(e)} hasta las {e['end'].hour}:{e['end'].minute:02d}"))
+        elif e.get("tramo") == "inicio":
+            fin = e["span"][1] - (timedelta(minutes=1) if e["span"][1].time() == datetime.min.time() else timedelta(0))
+            out.append((f"desde las {e['when'].hour}:{e['when'].minute:02d}", "tiene",
+                        f"{_nombre_con_articulo(e)}, que sigue hasta {say_day(fin.date())}"))
+        elif key == (23, 59):
+            # entregas: «antes de medianoche vence el Hito 3 de Minor: el informe final y la presentación»
+            partes = [(_tipo_limpio(x["kind"]).split(":", 1), nick_of(x["course"])) if x.get("kind") else (None, None) for x in g]
+            if len(g) > 1 and all(pp and len(pp) == 2 for pp, _ in partes) \
+                    and len({(_plain(pp[0].strip()), c) for pp, c in partes}) == 1:
+                pre, curso = partes[0][0][0].strip(), partes[0][1]
+                cosas = [pp[1].strip() for pp, _ in partes]
+                cosas = [f"{_articulo(c)} {c[:1].lower() + c[1:]}" for c in cosas]
+                out.append(("antes de medianoche", "vence", f"{_articulo(pre)} {pre} de {curso}: {_say_names(cosas)}"))
+            else:
+                out.append(("antes de medianoche", "vence" if len(g) == 1 else "vencen", _nombres_con_articulo(g)))
+        else:
+            out.append((f"a las {key[0]}:{key[1]:02d}", "tiene", _nombres_con_articulo(g)))
+    return out
+
+
+def say_natural(events: list[dict], now: datetime | None = None) -> str:
+    """Lista de varios días dicha como la diría una persona (pedido del usuario 23-11-2026): «Hoy tiene que contactar
+    a X y mañana, revisar Y. El miércoles a las 14:30 tiene el Ejercicio 6 de Redes. Y el viernes es el cumpleaños
+    de Z, y antes de medianoche vence …». Oraciones de uno o dos días; el último bloque empieza con «Y»."""
+    hoy = (now.date() if now else None) or _TODAY or date.today()
+    fin_semana = hoy + timedelta(days=7 - hoy.weekday())
+    days: dict[date, list[dict]] = {}
+    for e in events:
+        days.setdefault(e["when"].date(), []).append(e)
+
+    def dia(d: date) -> str:
+        s = say_day(d, hoy)
+        if s.startswith("el ") and d < fin_semana:
+            s = f"el {DIAS[d.weekday()]}"   # esta semana: «el miércoles», sin número
+        return s
+
+    def render(d: date, cl: list[tuple[str, str, str]]) -> str:
+        txt = []
+        for i, (antes, verbo, resto) in enumerate(cl):
+            if i and antes and verbo == cl[0][1] == "tiene":
+                verbo = ""
+            frase = " ".join(x for x in (antes, verbo, resto) if x)
+            if i == 0:
+                txt.append(f"{dia(d)} {frase}")
+            elif i == len(cl) - 1:
+                txt.append(f", y {frase}")
+            else:
+                txt.append(f", {frase}")
+        return "".join(txt)
+
+    bloques = [(d, _clausulas_dia(evs)) for d, evs in days.items()]
+    frases = []
+    i = 0
+    while i < len(bloques):
+        d1, c1 = bloques[i]
+        if i + 1 < len(bloques) and len(c1) == 1 and len(bloques[i + 1][1]) == 1:
+            d2, c2 = bloques[i + 1]
+            a1, v1, r1 = c1[0]
+            a2, v2, r2 = c2[0]
+            if not a1 and not a2 and v1 == v2:   # «Hoy tiene que contactar a X y mañana, revisar Y»
+                frases.append(f"{render(d1, c1)} y {dia(d2)}, {r2}")
+            else:
+                frases.append(f"{render(d1, c1)}, y {render(d2, c2)}")
+            i += 2
+        else:
+            frases.append(render(d1, c1))
+            i += 1
+    if len(frases) > 1:
+        frases[-1] = "Y " + frases[-1]
+    return ". ".join(f[:1].upper() + f[1:] for f in frases)
 
 
 def parse_range(t: str, now: datetime | None = None) -> tuple[datetime, datetime, str] | None:
@@ -888,11 +1119,18 @@ def until(text: str, now: datetime | None = None) -> str | None:
         f"No encuentro {what}{de} en su calendario de los próximos dos meses, señor."
 
 
-def answer(text: str, now: datetime | None = None, semana_completa: bool = False) -> str | None:
+def answer(text: str, now: datetime | None = None, semana_completa: bool = False, _modo: str | None = None) -> str | None:
     """Respuesta hablada a una pregunta de agenda/evaluaciones, o None si la frase no es de este tema.
     semana_completa: «esta semana» va de lunes a domingo, con los días ya pasados (calendario semanal de la HUD,
     pedido del usuario 17-11-2026: un martes mostraba 6 días). La respuesta hablada sigue yendo de hoy al domingo."""
-    global _TODAY, _LAST, LAST_VIEW
+    global _TODAY, _LAST, LAST_VIEW, _PREGUNTA_HORARIO
+    if _PREGUNTA_HORARIO and not semana_completa and not _modo:
+        q, _PREGUNTA_HORARIO = _PREGUNTA_HORARIO, None
+        if time.time() - q["t"] < 180:
+            modo = _modo_horario(" " + _plain(re.sub(r"[¿?¡!.,;:]", " ", text)) + " ")
+            if modo:
+                return answer(q["text"], now, _modo=modo)
+        # no calza: se olvida la pregunta y la frase se atiende normal
     if not re.search(r"correo|mail|mensaje|cancion|musica", _plain(text)):
         t_until = until(text, now)
         if t_until:
@@ -965,6 +1203,17 @@ def answer(text: str, now: datetime | None = None, semana_completa: bool = False
     asked_words = [] if asked_nicks else list(dict.fromkeys(w for w in words if w in names))
 
     personal = bool(re.search(r"\breunion(es)?\b|\bcitas?\b|\bcompromisos?\b", p))  # lo que no viene de U-Cursos
+    if horario and not _modo and re.search(r"\btrabajo\b", p) and not personal:
+        clases = True   # «horario de trabajo» = las clases que dicta (y las que toma)
+    if horario and not _modo and re.search(r"\beventos?\b", p) and not (clases or kinds or want_eval):
+        _modo = "eventos"
+    if (horario and not _modo and not semana_completa and not followup
+            and not (clases or kinds or want_eval or personal or asked_nicks or asked_words)):
+        _PREGUNTA_HORARIO = {"t": time.time(), "text": text}
+        LAST_VIEW = None
+        return PREGUNTA_HORARIO_TXT
+    if _modo == "clases":
+        clases = True
     range_src: str | None = text
     inherit_single = False
     if followup:
@@ -987,7 +1236,8 @@ def answer(text: str, now: datetime | None = None, semana_completa: bool = False
         and not re.search(r"evaluaciones|controles|ejercicios|examenes|tareas|auxiliares|catedras|clases|proximos|proximas|reuniones|eventos|citas|compromisos", p)
     single = single or (inherit_single and not re.search(r"evaluaciones|controles|ejercicios|examenes|tareas|auxiliares|catedras|clases|reuniones|eventos", p))
     rng = parse_range(range_src, now) if range_src else None
-    if rng is None and horario and not single and not followup and not specific:
+    if rng is None and horario and not single and not followup and (not specific or (clases and not kinds and not want_eval
+                                                                                       and not asked_nicks and not asked_words)):
         # «muéstrame mi horario» (acción «Horario de la semana») es la semana: lo hablado decía «hoy y mañana»
         # mientras la vista abría la semana (uso real 18-11-2026, frase guardada con ✎ Corregir)
         rng = parse_range("esta semana", now)
@@ -1036,6 +1286,8 @@ def answer(text: str, now: datetime | None = None, semana_completa: bool = False
             evs = [e for e in evs if is_class(e)]
         elif personal:
             evs = [e for e in evs if not e.get("kind")]
+        elif _modo == "eventos":
+            evs = [e for e in evs if not is_class(e)]   # las que dicta van con «clases y trabajo» (23-11-2026)
         elif not asked_nicks and not asked_words and not horario:
             # Pregunta general ("¿qué tengo mañana?", "mis eventos"): compromisos, evaluaciones y entregas.
             # Las clases de siempre no se nombran, salvo las que dicta el propio usuario.
@@ -1062,6 +1314,14 @@ def answer(text: str, now: datetime | None = None, semana_completa: bool = False
         vistos = found if (a, b) == (va, vb) else pick(upcoming(va, vb)[0])
         if vistos:
             LAST_VIEW = _make_view(vistos, va, vb, f"{what[:1].upper() + what[1:]}{de} · esta semana")
+            if not semana_completa:
+                # la pestaña con que se abre calza con lo dicho (23-11-2026: «mi horario» dijo 27 eventos con las
+                # cátedras y la ventana abrió en EVENTOS, que las oculta). El botón SEMANA › sigue abriendo en EVENTOS.
+                con_clases = [is_class(e) and not i_teach(e) for e in vistos]
+                LAST_VIEW["pestana"] = _modo or (("clases" if clases or all(con_clases) else "ambos")
+                                                 if any(con_clases) else "eventos")
+    if not found and errors and not _LECTURA["ok"] and not _LECTURA["copias"]:
+        return "No pude leer su calendario, señor, así que no sé qué tiene para " + label + "." + tail
     if not found:
         msg = (f"No tiene nada{de} en su calendario para {label}, señor." if what == "eventos"
                else f"No veo {what}{de} para {label} en su calendario, señor.")
@@ -1082,15 +1342,46 @@ def answer(text: str, now: datetime | None = None, semana_completa: bool = False
         falta = "es hoy" if days == 0 else ("es mañana" if days == 1 else f"faltan {days} días")
         return f"Lo próximo es {say_event(e, with_place=True)}; {falta}, señor.{tail}"
     one_day = (b - a) <= timedelta(days=1)
+    singular = {"controles": "control", "ejercicios": "ejercicio", "exámenes": "examen", "tareas": "tarea",
+                "auxiliares": "auxiliar", "cátedras": "cátedra", "evaluaciones": "evaluación", "clases": "clase",
+                "entregas": "entrega", "eventos": "evento"}
+    if vista_semana:
+        # Lo que se DICE de la semana es lo que no ha terminado (uso real 23-11-2026, lunes 21:04: nombró como «hoy»
+        # Médico 11:00 y tres cátedras ya pasadas). La vista de la HUD sigue de lunes a domingo completa (17-11-2026).
+        def _termino(e: dict) -> bool:
+            if e.get("allday"):
+                return e["when"].date() < now.date()
+            return (e.get("end") or e["when"]) <= now
+
+        semana = vistos or found
+        quedan = [e for e in semana if not _termino(e)]
+        pasados = len(semana) - len(quedan)
+        n = len(semana)
+        if pasados and not quedan:
+            w_n = singular.get(what, what) if n == 1 else what
+            return f"Señor, esta semana tuvo {n} {w_n}{de} y ya no le queda ninguno.{tail}"
+        m = len(quedan)
+        shown = quedan[:8]
+        w_m = singular.get(what, what) if m == 1 else what
+        if pasados:
+            head = f"Señor, esta semana le queda 1 {w_m}{de}." if m == 1 else f"Señor, esta semana le quedan {m} {w_m}{de}."
+        else:
+            head = f"Señor, esta semana tiene {m} {w_m}{de}."
+        if m > len(shown):
+            fem = _articulo(singular.get(what, what)) == "la"
+            head += f" Le nombro {'las próximas' if fem else 'los próximos'} {len(shown)}."
+        return head + " " + say_natural(shown, now) + "." + tail
     shown = found[:8]
-    items = say_grouped(shown, one_day)
+    items = say_grouped(shown, one_day) if one_day else say_natural(shown, now)
     n = len(found)
     if n == 1:
-        what = {"controles": "control", "ejercicios": "ejercicio", "exámenes": "examen", "tareas": "tarea",
-                "auxiliares": "auxiliar", "cátedras": "cátedra", "evaluaciones": "evaluación", "clases": "clase",
-                "entregas": "entrega",
-                "eventos": "evento"}.get(what, what)
-    head = f"Señor, para {label} veo {n} {what}{de}" + (f"; le nombro {len(shown)} por orden de fecha" if n > len(shown) else "") + ": "
+        what = singular.get(what, what)
+    if one_day:
+        head = f"Señor, para {label} veo {n} {what}{de}" + (f"; le nombro {len(shown)} por orden de fecha" if n > len(shown) else "") + ": "
+    else:
+        fem = _articulo(singular.get(what, what)) == "la"
+        head = f"Señor, para {label} veo {n} {what}{de}." + (
+            f" Le nombro {'las primeras' if fem else 'los primeros'} {len(shown)}." if n > len(shown) else "") + " "
     if not vista_semana:
         LAST_VIEW = _make_view(found, a, b, f"{what[:1].upper() + what[1:]}{de} · {label}")
     return head + items + "." + tail
@@ -1105,12 +1396,48 @@ def _gcal_connected() -> bool:
         return False
 
 
+def _cuando_copia(ts: float) -> str:
+    d = datetime.fromtimestamp(ts)
+    dias = (datetime.now().date() - d.date()).days
+    dia = "de hoy" if dias == 0 else ("de ayer" if dias == 1 else f"del {d.day} de {MESES[d.month - 1]}")
+    return f"{dia} a las {d:%H:%M}"
+
+
+def _motivo(err: str) -> str:
+    """Error de un calendario -> frase corta para decirla en voz alta."""
+    nombre, _, causa = err.partition(": ")
+    c = _plain(causa)
+    if "vencio o fue revocada" in c or "invalid_grant" in c:
+        causa = "la autorización de Google venció"
+    elif "no esta conectado" in c:
+        causa = "no está conectado"
+    elif "urlopen" in c or "timed out" in c or "getaddrinfo" in c or "conexion" in c:
+        causa = "no hubo conexión"
+    return f"{nombre} ({causa[:90]})"
+
+
 def _tail(errors: list[str], stale: bool) -> str:
+    """Aviso al final de la respuesta: qué calendario falló y si lo nombrado puede estar desactualizado.
+    Uso real 23-11-2026: nombró los eventos de hoy (leídos bien del enlace iCal) y luego dijo «No pude leer el
+    calendario», como si todo fuera inventado; era solo la conexión de Google Calendar la que había vencido."""
+    partes = []
+    copias = _LECTURA.get("copias") or {}
+    if copias:
+        partes.append(" Ojo: " + "; ".join(
+            f"no pude actualizar {n}, así que usé la copia guardada {_cuando_copia(t)} y puede estar desactualizada"
+            for n, t in copias.items()) + ".")
+    elif stale:
+        partes.append(" Ojo: no pude actualizar el calendario y usé una copia guardada; puede estar desactualizada.")
     if errors:
-        return " No pude leer el calendario: " + "; ".join(errors)[:160] + "."
-    if stale:
-        return " Ojo: no pude actualizar el calendario y usé la última copia guardada."
-    return ""
+        fallas = " ni ".join(_motivo(e) for e in errors)
+        leidos = [n for n in _LECTURA.get("ok") or [] if n not in copias]
+        if leidos:
+            partes.append(f" {'Lo demás' if copias else 'Esto'} sale de {' y '.join(leidos)}, leído recién. No pude leer {fallas}, así que podría faltar algo.")
+        else:
+            partes.append(f" No pude leer {fallas}.")
+        if any("Google" in e and ("venció" in e or "revocada" in e) for e in errors):
+            partes.append(" Para arreglarlo, abra Conectar-Google-Calendar.")
+    return "".join(partes)
 
 
 def debug_summary(limit: int = 40) -> str:

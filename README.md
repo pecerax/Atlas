@@ -1,4 +1,4 @@
-# Atlas v1.1
+# Atlas v1.2.3
 
 Asistente personal de voz para Windows, en español, que corre en el propio computador con un modelo local ([Ollama](https://ollama.com)). Lee el correo, la agenda, las notas de U-Cursos y Canvas y la mensajería, avisa lo importante y responde por voz.
 

@@ -382,6 +382,18 @@ def rewrite_order(text: str, history: list[tuple[str, str]] | None = None, model
     El 9B casi nunca usaba una herramienta para actuar (evaluar_orden.py: 6 de 20), pero sí reescribe bien."""
     import urllib.request
 
+    # 23-11-2026: primero Claude Haiku (atlas_interprete.py), que entiende mejor y tarda menos. Solo viaja la frase
+    # del usuario, con montos, RUT, correos, tarjetas y teléfonos ocultos; las respuestas de Atlas no salen del PC.
+    # None = apagado, sin clave, sin internet o tope de gasto: sigue el modelo local como siempre.
+    try:
+        import atlas_interprete
+
+        orden = atlas_interprete.traducir(text, history, REWRITE_PROMPT, log)
+    except Exception as exc:  # noqa: BLE001
+        log(f"  Haiku: error {type(exc).__name__}; sigue el modelo local")
+        orden = None
+    if orden is not None:
+        return orden
     host = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
     host = host if host.startswith("http") else "http://" + host
     ctx = "".join(f"{'Usuario' if r == 'user' else 'Atlas'}: {c[:300]}\n" for r, c in (history or [])[-4:])
@@ -1377,6 +1389,11 @@ def claims_action(content: str) -> bool:
         r"\breproduciendo\b|\breproductor en marcha\b|\b(?:ya\s+)?est[aá] sonando\b|\bya (?:est[aá]|qued[oó]) (?:abiert|puest|sonand|agendad|marcad|enviad)|"
         r"\b(?:abr[ií]|puse|reproduje|apagu[eé]|cerr[eé]|envi[eé]|borr[eé]|agend[eé]|marqu[eé]|silenci[eé]|bloqu[eé]|"
         r"conect[eé]|vincul[eé]|guard[eé]|activ[eé]|desactiv[eé]|instal[eé]|llam[eé])\b|"  # uso real: «conecté sus cursos»
+        # da por hecho en perfecto o pretérito (uso real 23-11-2026: «He borrado la reunión de mañana…» sin herramienta)
+        r"\b(?:ya\s+)?(?:he|hemos|lo he|la he|los he|las he|se lo he|se la he)\s+(?:borrad|eliminad|agendad|cread|enviad|"
+        r"movid|cancelad|marcad|guardad|cambiad|actualizad|añadid|agregad|anotad|programad|reprogramad|quitad|"
+        r"modificad|renombrad|puest|abiert|hech)o\b|"
+        r"\b(?:elimin[eé]|creé|moví|cancelé|quité|añadí|agregué|actualicé|anoté|programé|reprogramé|modifiqué|renombré)(?!\w)|"
         # "voy a reproducir…", "le voy a poner…", "lo pondré", "se la pongo ahora mismo" (uso real: «Juan Hotel California»)
         r"\bvoy a (?:reproduc|pon|abr|cerr|marc|borr|envi|agend|cre|apag|toc|silenci|bloque|mov|elimin|archiv|correg|cambi)\w*|"
         r"\b(?:pondr[eé]|har[eé])\b|\b(?:se |le |lo |la )?(?:pongo|reproduzco|abro|toco)\b.{0,30}\bahora\b|"
@@ -1407,6 +1424,32 @@ def launch(path: str) -> None:
                          creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     else:
         os.startfile(path)  # .exe y .lnk  # noqa: S606
+
+
+def _lanzar(tipo: str) -> None:
+    """Órdenes de voz de mantenimiento (23-11-2026). «google»: abre Conectar-Google-Calendar.cmd en una consola visible;
+    «reinicio»: arranca otro Atlas igual que Atlas.cmd, con --reiniciar (el nuevo cierra a este). Nada en las pruebas."""
+    if en_pruebas():
+        return
+    base = Path(__file__).resolve().parent.parent   # la carpeta de Atlas (no HERE: las pruebas lo cambian)
+    if tipo == "google":
+        subprocess.Popen(["cmd", "/c", str(base / "Conectar-Google-Calendar.cmd")], cwd=str(base),
+                         creationflags=getattr(subprocess, "CREATE_NEW_CONSOLE", 0))
+    elif tipo == "reinicio":
+        exe = base / "src" / ".venv" / "Scripts" / "Atlas.exe"
+        if not exe.exists():
+            exe = base / "src" / ".venv" / "Scripts" / "pythonw.exe"
+        if not exe.exists():
+            exe = Path(sys.executable)
+        # con «start», como Atlas.cmd: el Atlas nuevo no queda como hijo de este, así stop_old_instances lo puede cerrar
+        subprocess.Popen(["cmd", "/c", "start", "Atlas", str(exe), str(Path(__file__).resolve()), "--reiniciar"],
+                         cwd=str(base / "src"),
+                         creationflags=getattr(subprocess, "DETACHED_PROCESS", 0)
+                         | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0))
+
+
+LANZAR = _lanzar   # las pruebas lo reemplazan para ver qué se habría lanzado
+REINICIO_ESPERA = 1.5   # segundos entre responder «Me reinicio» y lanzar el Atlas nuevo (las pruebas usan 0)
 
 
 def acceso_slug(nombre: str) -> str:
@@ -2262,6 +2305,8 @@ class Atlas:
         late = time.time() - self.t0
         if "--no-window" in sys.argv:
             b["tecla"] = b["flotante"] = "off"
+        elif "--fondo" in sys.argv and b["flotante"] is False:
+            b["flotante"] = "off"
         if b["flotante"] is False and late > 25:
             b["flotante"] = "error"
         if b["agenda"] is False and late > 60:
@@ -2435,10 +2480,19 @@ class Atlas:
             return fe
         return None
 
+    REF_BORRAR = re.compile(r"^[\s¿¡]*(?:(?:oye|atlas|jarvis|por favor|ya|y)[,\s]+)*"
+                            r"(?:b[oó]rr|elim[ií]n|qu[ií]t|canc[eé]l)[ae](?:me)?(?:lo|la)\b[\s.!¡?]*(?:por favor)?[\s.!]*$", re.I)
+
     def resolve_refs(self, text: str) -> tuple[str, dict | None]:
         """«… esa reunión …» -> el nombre del evento del que se viene hablando, para que cualquier ruta lo encuentre.
         Si el evento aún espera el «sí» (no está en Google), la frase queda igual y la ve route_evento_contactos.
         -> (texto, {"noun", "focus"}) o (texto, None) si no hay referencia."""
+        if self.REF_BORRAR.match(text or ""):
+            # «bórralo», «elimínelo» (23-11-2026): borrar el evento del que se viene hablando, con su confirmación
+            fo = self.focus()
+            if fo and fo.get("estado") != "pendiente":
+                log(f"  referencia «{text.strip()}» -> borrar «{fo['summary']}»")
+                return f"elimina el evento {fo['summary']}", {"noun": "evento", "focus": fo}
         m = self.REF_EVENT.search(text or "")
         if not m:
             return text, None
@@ -2712,6 +2766,17 @@ class Atlas:
             elif re.search(r"m[uú]sica|canci[oó]n|reproduc|youtube|\btema\b|playlist", text + " " + content, re.I):
                 content = ("No alcancé a poner nada, señor: no entendí bien qué quería escuchar. Dígamelo de forma directa, "
                            "por ejemplo «pon música de Ado».")
+            elif re.search(r"\b(?:b[oó]rr|elimin|quit|cancel)\w*", text + " " + content, re.I) \
+                    and re.search(r"evento|reuni[oó]n|\bcita\b|calendario|agenda|\b\w+(?:lo|la)\b", text + " " + content, re.I):
+                # dijo haber borrado sin herramienta: se prepara el borrado de verdad (con su «sí») o se dice que no se hizo
+                fo = self.focus()
+                r = self._calendar_change(f"elimina el evento {fo['summary']}") if fo and fo.get("estado") != "pendiente" else None
+                if r and r.get("reply") and self.pending:
+                    self.history[-1] = Message(role=Role.ASSISTANT, content=r["reply"])
+                    log(f"  en vez de decir que borró, preparé el borrado: {r['reply'][:160]}")
+                    return r
+                content = (f"No alcancé a hacerlo, señor: no ejecuté ninguna acción. ¿Quiere que borre «{fo['summary']}»?"
+                           if fo else "No hice ningún cambio, señor: no ejecuté ninguna acción.")
             elif re.search(r"agend|calendario|evento|reuni[oó]n|\bcita\b", text + " " + content, re.I):
                 content = ("No alcancé a preparar ese evento, señor: no entendí bien la fecha o la hora. Dígamelo de forma "
                            "directa, por ejemplo «agenda hackathon el viernes de 8 a 11 de la noche».")
@@ -2832,6 +2897,9 @@ class Atlas:
 
         Una ruta devuelve {"reply": …} cuando ya tiene la respuesta, o {"data": …, "hint": …} cuando trae datos
         reales para que el modelo los redacte. Si ninguna calza, responde el modelo ("modelo")."""
+        r = self.route_mantenimiento(text)  # antes del diccionario: este quita el nombre («reinicia Atlas» -> «Reinicia»)
+        if r:
+            return "mantenimiento", r, text
         # lo que el usuario corrigió con el lápiz ✎ (diccionario.json y frases.json); Atlas no adivina nombres parecidos
         text = self.diccionario_y_frases(text)
         r = self.route_corregir_voz(text)  # «me escuchaste mal»: se corrige con el lápiz de la consola, no por voz
@@ -2840,6 +2908,9 @@ class Atlas:
         r = self.route_apagar_alarma(text)  # algo está sonando y dice «apaga la alarma»: antes que todo
         if r:
             return "recordatorio", r, text
+        r = self.route_mantenimiento(text)  # «reconecta Google Calendar», «reiníciate»: antes que agenda, PC y modelo
+        if r:
+            return "mantenimiento", r, text
         r = self.route_baco(text)  # «pon Baco Ado», «pon Baco Ado en aleatorio»; «siguiente»/«anterior» con una cola de Baco
         if r:
             return "baco", r, text
@@ -4446,6 +4517,34 @@ class Atlas:
     def ringing(self) -> list[dict]:
         return [a for a in self.alerts if a.get("ring") and a.get("tipo") != "llamada"]
 
+    def route_mantenimiento(self, text: str) -> dict | None:
+        """«Atlas, reconecta Google Calendar» abre la conexión con Google; «Atlas, reiníciate» / «reinicia Atlas» reinicia
+        Atlas (no el PC: «reinicia el computador» sigue en la ruta pc, con confirmación). 23-11-2026."""
+        t = " " + re.sub(r"\s+", " ", re.sub(r"[^\w ]+", " ", _plain(text))).strip() + " "
+        verbo = r"(?:re ?conect(?:a|ar|es|ame|alo)|conect(?:a|ar|es|alo)|vuelv\w* a conectar|conecta de nuevo)"
+        if re.search(rf"\b{verbo} (?:de nuevo |otra vez )?(?:a |con )?(?:el |la |mi |tu )?"
+                     r"(?:google calendar|calendario de google|google|calendario)\b", t):
+            LANZAR("google")
+            log("  mantenimiento: abrí Conectar-Google-Calendar")
+            return {"reply": "Abrí la conexión con Google Calendar, señor. Elija su cuenta en el navegador y acepte el "
+                             "permiso; si Google dice que no verificó la aplicación, elija Configuración avanzada y "
+                             "luego Ir a Atlas.", "tools": ["mantenimiento"]}
+        pc = r"\b(?:pc|computador|computadora|ordenador|equipo|compu|sistema operativo|windows)\b"
+        if not re.search(pc, t) and (re.search(r"\breini?c\w*te\b", t)
+                                     or re.search(r"\breinici\w* (?:a )?(?:atlas|jarvis)\b", t)):
+            log("  mantenimiento: me reinicio")
+
+            def _luego():
+                time.sleep(REINICIO_ESPERA)   # que alcance a llegar (y decirse) la respuesta antes de que el Atlas nuevo cierre este
+                try:
+                    LANZAR("reinicio")
+                except Exception as exc:  # noqa: BLE001
+                    log(f"  mantenimiento: no pude reiniciarme ({type(exc).__name__}: {exc})")
+
+            threading.Thread(target=_luego, daemon=True).start()
+            return {"reply": "Me reinicio, señor; vuelvo en unos segundos.", "tools": ["mantenimiento"]}
+        return None
+
     def route_apagar_alarma(self, text: str) -> dict | None:
         """«Apaga la alarma», «para el temporizador», «silencia eso», «ya, basta»: solo si algo está sonando.
         Si no suena nada, sigue a las otras rutas («borra la alarma de las 7» la toma la de recordatorios)."""
@@ -5206,7 +5305,15 @@ class Atlas:
     def _call_ring(self, ring: dict) -> None:
         import atlas_llamadas as L
 
-        if ring.get("audio") and ring.get("app") == "whatsapp":  # WhatsApp sonando en la bandeja (sin ventana)
+        if ring.get("celular"):  # el celular avisó la llamada de verdad (evento_celular): se sabe quién y por dónde
+            who = ring.get("quien") or ""
+            text = texto_llamada_celular(ring.get("app") or "", who)
+            log(f"  llamada entrante avisada por el celular ({ring.get('app') or 'telefono'})")
+        elif ring.get("audio") and ring.get("app") == "whatsapp" and celular_avisa_llamadas():
+            # 24-11-2026: con el celular avisando, el sonido de WhatsApp en el PC no se anuncia (era la falsa alarma)
+            log("  WhatsApp sonó en el PC, pero las llamadas las avisa el celular: no anuncio nada")
+            return
+        elif ring.get("audio") and ring.get("app") == "whatsapp":  # WhatsApp sonando en la bandeja (sin ventana)
             who = ""
             text = "Señor, le están llamando por WhatsApp."
             log("  llamada entrante de WhatsApp (detectada porque WhatsApp está sonando)")
@@ -5220,8 +5327,8 @@ class Atlas:
             text = f"Señor, le está llamando {who}{por}. ¿Contesto o rechazo?"
             log(f"  llamada entrante de {who} (textos: {(ring.get('texts') or [])[:6]})")
         alert = {"id": f"llamada-{int(time.time() * 1000)}", "tipo": "llamada", "ts": time.time(), "voz": None,
-                 "ring": True, "quien": who, "texto": text, "botones": not ring.get("audio"),
-                 "app": ring.get("app") or "telefono"}
+                 "ring": True, "quien": who, "texto": text, "botones": not ring.get("audio") and not ring.get("celular"),
+                 "app": ring.get("app") or "telefono", "celular": bool(ring.get("celular"))}
         self.call_alert = alert
         self.alerts.append(alert)
         self.actions.append({"t": time.strftime("%H:%M"), "tool": "llamada entrante", "ok": True})
@@ -5241,7 +5348,7 @@ class Atlas:
         """Al cortarse, Enlace Móvil anota la llamada: dice quién era si antes no se supo (llamada solo por audio)."""
         import atlas_llamadas as L
 
-        if a.get("botones") or a.get("app") == "whatsapp":  # Enlace Móvil no anota las de WhatsApp
+        if a.get("botones") or a.get("celular") or a.get("app") == "whatsapp":  # Enlace Móvil no anota las de WhatsApp
             return
         for _ in range(30):  # Enlace Móvil la anota ~20 s después de cortar (visto 15-11-2026)
             time.sleep(1.5)
@@ -7507,6 +7614,22 @@ class Handler(BaseHTTPRequestHandler):
             html = html.replace("__JARVIS_TOKEN__", TOKEN).replace("__JARVIS_VERSION__", HUD_VERSION)  # copias viejas de hud.html
             self._send(200, html.encode("utf-8"), "text/html; charset=utf-8")
             return
+        if self.path.split("?")[0] in ("/puente", "/puente/qrcode.js", "/api/puente"):   # «Vincular celular» (atlas_puente.py)
+            local = (self.headers.get("Host") or "").split(":")[0] in ("127.0.0.1", "localhost")
+            if not local:   # la página trae el token y el QR: solo hacia este PC
+                self._json({"error": "forbidden"}, 403)
+            elif self.path == "/puente":
+                html = (HERE / "puente.html").read_text(encoding="utf-8").replace("__ATLAS_TOKEN__", TOKEN)
+                self._send(200, html.encode("utf-8"), "text/html; charset=utf-8")
+            elif self.path == "/puente/qrcode.js":
+                self._send(200, (HERE.parent / "instalador" / "qrcode.js").read_bytes(), "text/javascript; charset=utf-8")
+            elif not self._authorized():
+                self._json({"error": "forbidden"}, 403)
+            else:
+                import atlas_puente
+
+                self._json(atlas_puente.vista())
+            return
         if self.path == "/api/credencial/hermes-pdf":   # solo si está guardada; nunca el valor
             if self._mismo_origen():
                 self._json({"guardada": clave_pdf_guardada()})
@@ -7588,6 +7711,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if self.path == "/api/status":
             LAST_BEAT[0] = time.time()
+            reabrir_flotante_si_falta()
             self._json(ATLAS.status())
             return
         if self.path == "/api/voz_apodos":  # rueda de ajustes, «Voz y apodos»: correcciones y apodos (atlas_voz_apodos.py)
@@ -7793,6 +7917,10 @@ class Handler(BaseHTTPRequestHandler):
                 self._json({"view": v or None})
             elif self.path == "/api/stop":  # botón ■: corta lo que piensa, lo que dice y lo que escucha
                 self._json(ATLAS.stop_turn())
+            elif self.path == "/api/apagar" and seguir_de_fondo():  # ventana cerrada, pero Atlas sigue de fondo
+                detener_voz()
+                log("Ventana de Atlas cerrada: Atlas sigue de fondo (celular / Atlas-fondo)")
+                self._json({"ok": True, "fondo": True})
             elif self.path == "/api/apagar":  # el círculo flotante vio que se cerró la ventana: cerrar todo Atlas
                 detener_voz()  # lo primero: que no siga hablando mientras se apaga
                 log("Ventana de Atlas cerrada: apagando todo (servidor, Telegram, tecla Fin)")
@@ -7942,6 +8070,26 @@ class Handler(BaseHTTPRequestHandler):
                     self._json(PI.terminar(str(data.get("como", "listo"))))
                 else:
                     self._json({"ok": False, "error": "Operación desconocida."})
+            elif self.path == "/api/puente":  # «Vincular celular»: prender/apagar, pedir el QR, desvincular (solo este PC)
+                import atlas_puente
+
+                op = str(data.get("op", ""))
+                if not self._mismo_origen():
+                    self._json({"error": "forbidden"}, 403)
+                elif op in ("activar", "apagar"):
+                    atlas_puente.activar(op == "activar")
+                    log(f"  puente {'activado' if op == 'activar' else 'apagado'} desde Vincular celular")
+                    self._json(atlas_puente.vista())
+                elif op == "codigo":
+                    if not atlas_puente.corriendo():
+                        self._json({"error": "El puente está apagado."})
+                    else:
+                        self._json(atlas_puente.nuevo_codigo())
+                elif op == "desvincular":
+                    atlas_puente.desvincular(str(data.get("id", "")))
+                    self._json(atlas_puente.vista())
+                else:
+                    self._json({"error": "Operación desconocida."})
             elif self.path == "/api/speak":
                 audio, ctype = ATLAS.speak(str(data.get("text", ""))[:4000])
                 self._json({"audio": base64.b64encode(audio).decode("ascii"), "type": ctype})
@@ -8037,8 +8185,8 @@ def start_flotante(url: str) -> None:
         # Atlas.exe (pythonw con nombre e ícono de Atlas): el círculo también sale como «Atlas» en el Administrador de tareas
         w = exe if exe.name.lower() == "atlas.exe" else exe.with_name("pythonw.exe")
         env = dict(os.environ, ATLAS_URL=url, ATLAS_TOKEN=TOKEN, JARVIS_URL=url, JARVIS_TOKEN=TOKEN)
-        subprocess.Popen([str(w if w.exists() else exe), str(HERE / "atlas_flotante.py")], env=env, cwd=str(HERE),
-                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        FLOTANTE_PROC[0] = subprocess.Popen([str(w if w.exists() else exe), str(HERE / "atlas_flotante.py")], env=env,
+                                            cwd=str(HERE), creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     except Exception as exc:  # noqa: BLE001
         log(f"No pude abrir el círculo flotante: {exc}")
 
@@ -8176,14 +8324,123 @@ def open_window(url: str) -> None:
         webbrowser.open(url)
 
 
+# Atlas de fondo (24-11-2026, propuesta «Atlas con celular», paso 1): cerrar la ventana ya no tiene que apagar Atlas.
+# El celular (Puente Atlas) necesita a quién hablarle aunque la ventana esté cerrada. ajustes.json «fondo»:
+#   "auto"    (predeterminado) sigue de fondo solo si hay un celular vinculado y el Puente está activado;
+#   "siempre" sigue de fondo siempre; "nunca" cerrar la ventana cierra Atlas, como antes.
+# Atlas-fondo.cmd (--fondo) arranca sin ventana y siempre de fondo. Cerrar-Atlas.cmd (--cerrar) lo apaga del todo.
+FONDO_MODOS = ("auto", "siempre", "nunca")
+
+
+def modo_fondo() -> str:
+    try:
+        import atlas_ajustes
+
+        m = str(atlas_ajustes.leer().get("fondo") or "auto").strip().lower()
+    except Exception:  # noqa: BLE001
+        m = "auto"
+    return m if m in FONDO_MODOS else "auto"
+
+
+def _puente_listo() -> bool:
+    """¿Hay un celular que podría hablarle a Atlas? (Puente activado y al menos un celular vinculado)"""
+    try:
+        import atlas_puente
+
+        return bool(atlas_puente.activo() and atlas_puente.dispositivos())
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def seguir_de_fondo(modo: str | None = None, puente_listo: bool | None = None, argv: list[str] | None = None) -> bool:
+    """¿Atlas sigue corriendo (sin ventana) cuando se cierra la ventana? Los parámetros son para las pruebas."""
+    if "--fondo" in (sys.argv if argv is None else argv):
+        return True
+    modo = modo_fondo() if modo is None else modo
+    if modo == "siempre":
+        return True
+    if modo == "nunca":
+        return False
+    return _puente_listo() if puente_listo is None else bool(puente_listo)
+
+
+def decision_watchdog(sin_senal_seg: float, fondo: bool) -> str:
+    """"seguir" (la ventana da señales), "fondo" (se cerró pero Atlas sigue) o "apagar"."""
+    if sin_senal_seg <= HEARTBEAT_TIMEOUT:
+        return "seguir"
+    return "fondo" if fondo else "apagar"
+
+
+FLOTANTE_PROC: list = [None]   # el círculo flotante que abrió este servidor (para reabrirlo al volver la ventana)
+_FLOTANTE_REABIERTO = [0.0]
+
+
+def reabrir_flotante_si_falta() -> None:
+    """La ventana volvió (Atlas estaba de fondo): si el círculo flotante se cerró con la ventana, se abre otro.
+    Lo llama /api/status, que la ventana pide seguido; a lo más un intento cada 30 s."""
+    if en_pruebas() or "--no-window" in sys.argv or (FLOTANTE_PROC[0] is None and "--fondo" not in sys.argv):
+        return
+    p = FLOTANTE_PROC[0]   # con --fondo no hay círculo hasta que se abre la ventana por primera vez
+    try:
+        vivo = p is not None and p.poll() is None
+    except Exception:  # noqa: BLE001
+        vivo = True
+    if vivo or time.time() - _FLOTANTE_REABIERTO[0] < 30:
+        return
+    _FLOTANTE_REABIERTO[0] = time.time()
+    log("La ventana volvió: reabro el círculo flotante")
+    start_flotante(f"http://127.0.0.1:{PORT}/")
+
+
 def watchdog(server: ThreadingHTTPServer) -> None:
     time.sleep(40)
+    avisado = False
     while True:
         time.sleep(5)
-        if time.time() - LAST_BEAT[0] > HEARTBEAT_TIMEOUT:
+        que = decision_watchdog(time.time() - LAST_BEAT[0], seguir_de_fondo())
+        if que == "apagar":
             log("Ventana cerrada: apagando Atlas HUD")
             server.shutdown()
             return
+        if que == "fondo" and not avisado:
+            log("Ventana cerrada: Atlas sigue de fondo (celular / Atlas-fondo). Para apagarlo: Cerrar-Atlas.cmd")
+        avisado = que == "fondo"
+
+
+def cerrar_todo() -> int:
+    """Cerrar-Atlas.cmd: apaga el Atlas que esté corriendo (servidor, círculo flotante) y cierra su ventana.
+    A diferencia de stop_old_instances, también reconoce Atlas.exe (el pythonw con nombre de Atlas)."""
+    n = 0
+    try:
+        import psutil
+
+        me = os.getpid()
+        mine = {me}
+        try:
+            mine |= {p.pid for p in psutil.Process(me).parents()}
+            mine |= {c.pid for c in psutil.Process(me).children(recursive=True)}
+        except Exception:  # noqa: BLE001
+            pass
+        for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+            try:
+                name = (proc.info.get("name") or "").lower()
+                cmd = " ".join(proc.info.get("cmdline") or [])
+                if (proc.info["pid"] not in mine and (name.startswith("python") or name == "atlas.exe")
+                        and ("hud_server.py" in cmd or "atlas_flotante.py" in cmd)):
+                    proc.kill()
+                    n += 1
+            except Exception:  # noqa: BLE001
+                continue
+    except Exception as exc:  # noqa: BLE001
+        log(f"Cerrar Atlas: {exc}")
+    try:
+        import ctypes
+
+        for hwnd in atlas_windows():
+            ctypes.windll.user32.PostMessageW(ctypes.c_void_p(hwnd), 0x0010, 0, 0)  # WM_CLOSE
+    except Exception:  # noqa: BLE001
+        pass
+    return n
 
 
 def main() -> None:
@@ -8198,8 +8455,14 @@ def main() -> None:
         except Exception:  # noqa: BLE001
             logf = open(HERE / "hud.log", "a", encoding="utf-8", buffering=1)
         sys.stdout = sys.stderr = logf
-    log(f"Iniciando Atlas HUD v{HUD_VERSION} (pid {os.getpid()})")
-    if "--no-window" not in sys.argv and "--reiniciar" not in sys.argv and servidor_vivo():
+    if "--cerrar" in sys.argv:  # Cerrar-Atlas.cmd
+        log(f"Cerrar Atlas: cerré {cerrar_todo()} proceso(s)")
+        return
+    log(f"Iniciando Atlas HUD v{HUD_VERSION} (pid {os.getpid()})" + (" de fondo, sin ventana" if "--fondo" in sys.argv else ""))
+    if "--fondo" in sys.argv and servidor_vivo():  # Atlas-fondo.cmd con Atlas ya corriendo: nada que hacer
+        log("Atlas ya estaba corriendo: no arranco otro")
+        return
+    if "--no-window" not in sys.argv and "--fondo" not in sys.argv and "--reiniciar" not in sys.argv and servidor_vivo():
         # segundo Atlas.cmd (doble clic, acceso directo otra vez): no se arranca otro servidor ni otra ventana
         wins = atlas_windows()
         if wins:
@@ -8222,6 +8485,12 @@ def main() -> None:
     except OSError as exc:
         log(f"No pude abrir el puerto {PORT}: {exc}")
         return
+    try:  # Puente Atlas: la puerta de la app del celular. Solo se abre si el usuario lo activó en «Vincular celular»
+        import atlas_puente
+
+        atlas_puente.iniciar(sys.modules[__name__], log=log)
+    except Exception as exc:  # noqa: BLE001
+        log(f"Puente: no pude iniciarlo ({type(exc).__name__}: {exc})")
     try:  # Baco: mide el tiempo de los juegos del PC que no son de Steam (mira los procesos cada 30 s)
         import atlas_baco
 
@@ -8322,6 +8591,126 @@ def avisos_banco_turno(carpeta: Path, script: Path, visto):
     return firma if r.returncode == 0 else visto
 
 
+# ----------------------------------------------------------------------------- eventos del celular (24-11-2026)
+# Propuesta «Atlas con celular», pasos 2 y 3: el celular lee las notificaciones y llamadas de verdad (Android) y las manda
+# por el Puente (POST /p/evento, firmado). atlas_puente.py llama a evento_celular(ev) sin esperar. Así se acaba la falsa
+# alarma de WhatsApp (23-11-2026): el PC solo oía que WhatsApp de escritorio sonaba 3 s y lo anunciaba como llamada.
+# Mientras el celular esté avisando, esa detección por sonido de WhatsApp se apaga sola (celular_avisa_llamadas).
+from collections import deque as _deque
+
+# paquetes Android extra que el celular debe leer (además de WhatsApp, WhatsApp Business, Telegram y las llamadas).
+# El Puente los manda a la app en /p/estado («avisos_apps»). Vacío hasta saber el paquete de la app del banco.
+AVISOS_CELULAR: list[str] = []
+APPS_CELULAR = {"com.whatsapp": "whatsapp", "com.whatsapp.w4b": "whatsapp", "org.telegram.messenger": "telegram",
+                "org.telegram.messenger.web": "telegram", "org.thunderdog.challegram": "telegram"}
+NOTIF_CELULAR: _deque = _deque(maxlen=50)   # últimos avisos del celular, solo en memoria (no se guardan en disco)
+_CEL: dict = {"ultimo": None, "guardado": 0.0}
+CELULAR_DIAS = 7          # el celular «avisa llamadas» si mandó algún evento en estos días...
+CELULAR_VISTO_MIN = 10    # ...y se conectó al Puente hace menos de estos minutos
+
+
+def _cel_archivo() -> Path:
+    return HERE / "celular_eventos.json"
+
+
+def _cel_ultimo() -> float | None:
+    if _CEL["ultimo"] is None:
+        try:
+            _CEL["ultimo"] = float(json.loads(_cel_archivo().read_text(encoding="utf-8")).get("ultimo") or 0) or None
+        except (OSError, ValueError, AttributeError):
+            _CEL["ultimo"] = 0.0
+    return _CEL["ultimo"] or None
+
+
+def _cel_vistos() -> list[float]:
+    """Cuándo se vio cada celular vinculado (dispositivos.json del Puente, «AAAA-MM-DD HH:MM»)."""
+    out = []
+    try:
+        import atlas_puente
+
+        for dsp in atlas_puente.dispositivos():
+            try:
+                out.append(datetime.strptime(str(dsp.get("visto") or ""), "%Y-%m-%d %H:%M").timestamp())
+            except ValueError:
+                continue
+    except Exception:  # noqa: BLE001
+        pass
+    return out
+
+
+def celular_avisa_llamadas(ultimo: float | None = None, vistos: list[float] | None = None,
+                           ahora: float | None = None) -> bool:
+    """¿Las llamadas las está avisando el celular? Sí si mandó eventos en los últimos días (tiene el lector de
+    notificaciones encendido) y está conectado ahora. Entonces el PC no adivina llamadas de WhatsApp por el sonido."""
+    ahora = time.time() if ahora is None else ahora
+    ultimo = _cel_ultimo() if ultimo is None else ultimo
+    vistos = _cel_vistos() if vistos is None else vistos
+    if not ultimo or ahora - ultimo > CELULAR_DIAS * 86400:
+        return False
+    # «visto» se anota con minutos y a lo más una vez por minuto: se da un minuto de holgura
+    return any(ahora - v <= (CELULAR_VISTO_MIN + 1) * 60 for v in vistos)
+
+
+def limpiar_evento(ev) -> dict | None:
+    """El evento tal como lo usa Atlas, o None si no sirve. Recorta todo (el Puente ya lo limita, esto es por si acaso)."""
+    if not isinstance(ev, dict):
+        return None
+    tipo = str(ev.get("tipo") or "")
+    if tipo not in ("notificacion", "llamada"):
+        return None
+    paquete = str(ev.get("app") or "")[:120]
+    out = {"tipo": tipo, "paquete": paquete, "app": APPS_CELULAR.get(paquete, "telefono" if tipo == "llamada" else "otra"),
+           "de": " ".join(str(ev.get("de") or "").split())[:80], "texto": " ".join(str(ev.get("texto") or "").split())[:240]}
+    try:
+        t = float(ev.get("t") or 0) / 1000
+    except (TypeError, ValueError):
+        t = 0.0
+    out["t"] = t if abs(time.time() - t) < 86400 else time.time()
+    if tipo == "llamada":
+        estado = str(ev.get("estado") or "entrante")
+        if estado not in ("entrante", "fin"):
+            return None
+        out["estado"] = estado
+    return out
+
+
+def texto_llamada_celular(app: str, de: str) -> str:
+    por = {"whatsapp": " por WhatsApp", "telegram": " por Telegram"}.get(app, "")
+    return f"Señor, le está llamando {de}{por}." if de else f"Señor, tiene una llamada{por} en el celular."
+
+
+def evento_celular(ev) -> None:
+    """Lo llama atlas_puente.py por cada POST /p/evento. No bloquea: el trabajo va en un hilo."""
+    e = limpiar_evento(ev)
+    if e:
+        threading.Thread(target=_evento_celular, args=(e,), daemon=True, name="evento-celular").start()
+
+
+def _evento_celular(e: dict) -> None:
+    ahora = time.time()
+    _CEL["ultimo"] = ahora
+    if ahora - _CEL["guardado"] > 60 and not en_pruebas():   # basta saber que el lector está encendido: 1 vez por minuto
+        _CEL["guardado"] = ahora
+        try:
+            _cel_archivo().write_text(json.dumps({"ultimo": ahora}), encoding="utf-8")
+        except OSError:
+            pass
+    try:
+        if e["tipo"] == "notificacion":
+            NOTIF_CELULAR.append(e)
+            log(f"  aviso del celular: {e['app']}")   # sin quién ni texto: hud.log no lleva datos personales
+            return
+        a = getattr(ATLAS, "call_alert", None)
+        if e["estado"] == "entrante":
+            if a and a.get("celular") and ahora - a.get("ts", 0) < 60:
+                return   # el celular repite la notificación de la misma llamada mientras suena
+            ATLAS._call_ring({"celular": True, "app": e["app"], "quien": e["de"], "texts": [], "audio": False})
+        elif a and a.get("celular"):
+            ATLAS._call_end()
+    except Exception as exc:  # noqa: BLE001
+        log(f"  evento del celular: {type(exc).__name__}: {exc}")
+
+
 def avisos_banco_loop() -> None:
     """Al iniciar y cada 10 minutos: si cambió el archivo de avisos del banco que trae Syncthing desde el celular,
     Hermes suma las compras nuevas (actualizar_apolo.py --solo-avisos, sin abrir el correo).
@@ -8370,7 +8759,9 @@ def _serve(server: ThreadingHTTPServer) -> None:
             log("Telegram activado")
     except Exception as exc:  # noqa: BLE001
         log(f"Telegram no arrancó: {exc}")
-    if "--no-window" not in sys.argv:
+    if "--fondo" in sys.argv and not en_pruebas():  # sin ventana, pero la tecla Fin sirve igual (habla por los parlantes)
+        threading.Thread(target=hotkey_loop, daemon=True).start()
+    elif "--no-window" not in sys.argv:
         viejas = cerrar_ventanas_viejas()  # de un Atlas anterior que ya no responde: si no, quedaban dos
         if viejas:
             log(f"Cerré {viejas} ventana(s) de un Atlas anterior")

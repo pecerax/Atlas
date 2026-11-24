@@ -36,6 +36,16 @@ DEFAULTS: dict = {
         "ucursos_min": 20,
         "ucursos_con_nota_min": 5,  # cuando espera una nota puntual: solo ese ramo (pedido 18-11-2026)
     },
+    # 24-11-2026: cerrar la ventana de Atlas: "auto" sigue de fondo si hay un celular vinculado (Puente activo),
+    # "siempre" sigue de fondo, "nunca" cierra todo Atlas como antes. Ver hud_server.seguir_de_fondo.
+    "fondo": "auto",
+    # 23-11-2026: Claude Haiku traduce la frase a una orden cuando las reglas no la entienden (atlas_interprete.py).
+    # «apagado» = todo local, como antes. Sin clave guardada (Guardar-clave-Haiku.cmd) tampoco se usa.
+    "interprete": {
+        "haiku": "encendido",
+        "tope_usd_mes": 5,           # al llegar a este gasto en el mes, vuelve solo el modelo local
+        "espera_seg": 4,             # si Haiku tarda más que esto, sigue el modelo local
+    },
 }
 
 # seccion, clave, nombre, explicación, frase por voz (o ""), archivo si no es ajustes.json
@@ -94,6 +104,18 @@ CATALOGO: list[dict] = [
     {"seccion": "Voz y trato", "clave": "stt_model", "nombre": "Modelo para entender la voz",
      "explica": "parakeet o un tamaño de Whisper (por ejemplo large-v3-turbo).",
      "palabras": "reconocimiento voz entender escuchar modelo microfono parakeet whisper"},
+    {"seccion": "Voz y trato", "clave": "interprete.haiku", "opciones": ["encendido", "apagado"],
+     "nombre": "Entender frases difíciles con Claude Haiku",
+     "explica": "encendido o apagado. Encendido: cuando Atlas no entiende una frase, la manda a Claude Haiku (por internet) "
+                "para traducirla a una orden; viaja solo su frase, con montos, RUT, correos y tarjetas ocultos. "
+                "Apagado: todo queda en su PC. Necesita la clave que se guarda con Guardar-clave-Haiku.cmd.",
+     "palabras": "haiku claude anthropic interprete entender entiende frase orden internet nube local privacidad api clave"},
+    {"seccion": "Celular", "clave": "fondo", "opciones": ["auto", "siempre", "nunca"],
+     "nombre": "Al cerrar la ventana de Atlas",
+     "explica": "auto, siempre o nunca. Auto: si hay un celular vinculado, Atlas sigue de fondo para que la app del "
+                "celular funcione; si no, se cierra. Siempre: sigue de fondo. Nunca: cerrar la ventana cierra Atlas. "
+                "Para apagarlo del todo: Cerrar-Atlas.cmd.",
+     "palabras": "fondo segundo plano cerrar ventana apagar celular movil puente seguir corriendo siempre"},
     {"seccion": "Voz y trato", "clave": "voz.json", "nombre": "Voz con la que habla",
      "explica": "La voz de Piper y su velocidad.", "archivo": "voz.json",
      "palabras": "voz habla hablar velocidad lento rapido piper suena"},

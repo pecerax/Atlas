@@ -1,6 +1,6 @@
 {
  "_nota": "Reglas base de Atlas: correcciones generales de la voz que se suman al diccionario de cada persona una vez por versión, sin pisar las suyas ni volver a poner lo que borró. Las arma _publicar/exportar.py; no se editan a mano.",
- "version": "cd15268ec17f",
+ "version": "4cc203706abc",
  "palabras": [
   {
    "escuchado": "eernes",
@@ -119,6 +119,10 @@
   {
    "escuchado": "Suto Mayo",
    "correcto": "ZUTOMAYO"
+  },
+  {
+   "escuchado": "High Canvas",
+   "correcto": "Haiku"
   }
  ],
  "reglas": [
@@ -816,7 +820,8 @@
   "U-Cursos",
   "Canvas",
   "WhatsApp",
-  "Telegram"
+  "Telegram",
+  "Haiku"
  ],
  "frases": [
   {

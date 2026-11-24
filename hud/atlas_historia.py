@@ -812,36 +812,86 @@ def _historiales_navegador() -> list[tuple[str, Path]]:
     return out
 
 
+def _historiales_firefox() -> list[tuple[str, Path]]:
+    """23-11: places.sqlite de los perfiles de Firefox (su navegador de uso; Edge no se usa desde octubre)."""
+    base = Path(os.environ.get("APPDATA", HOME / "AppData" / "Roaming")) / "Mozilla" / "Firefox" / "Profiles"
+    out = []
+    try:
+        for perfil in base.iterdir():
+            h = perfil / "places.sqlite"
+            if h.is_file():
+                out.append((f"Firefox/{perfil.name}", h))
+    except OSError:
+        pass
+    return out
+
+
+def _clasificar_visita(url: str, title: str, dom: str) -> tuple[str, str]:
+    """23-11: una búsqueda de Google o un video de YouTube hecho en el navegador cuenta igual que los de Takeout."""
+    from urllib.parse import parse_qs, urlsplit
+
+    u = urlsplit(url)
+    host = u.netloc.lower().split(":")[0]
+    if re.match(r"(www\.)?google\.[a-z.]+$", host) and u.path == "/search":
+        q = (parse_qs(u.query).get("q") or [""])[0].strip()
+        if q:
+            return "busqueda", f"buscó {q[:200]}"
+    if host in ("www.youtube.com", "youtube.com", "m.youtube.com") and u.path == "/watch":
+        t = re.sub(r"^\(\d+\)\s*", "", re.sub(r"\s*-\s*YouTube\s*$", "", title or "")).strip()
+        if t:
+            return "youtube", f"vio {t[:200]}"
+    return "web", f"visitó «{(title or dom)[:150]}»"
+
+
 def importar_navegador(con) -> int:
     """Historial local del navegador: se copia (está bloqueado con el navegador abierto) y se leen solo las visitas
-    nuevas. Las páginas de Atlas (127.0.0.1) y las internas no cuentan."""
+    nuevas. Las páginas de Atlas (127.0.0.1) y las internas no cuentan. Chrome, Edge, Brave y (23-11) Firefox."""
     import shutil
 
+    # lo que ya trajo Google Takeout (búsquedas y YouTube) no se repite: del navegador solo se toma lo posterior
+    corte = (con.execute("SELECT MAX(fecha) FROM items WHERE fuente IN ('busqueda','youtube') AND detalle <> 'navegador'")
+             .fetchone()[0] or "")
     n = 0
-    for nombre, h in _historiales_navegador():
+    fuentes_nav = [(nombre, h, "chromium") for nombre, h in _historiales_navegador()]
+    fuentes_nav += [(nombre, h, "firefox") for nombre, h in _historiales_firefox()]
+    for nombre, h, tipo in fuentes_nav:
         tmp = DIR / "_history_copia.sqlite"
+        wal = Path(str(h) + "-wal")
+        tmp_wal = Path(str(tmp) + "-wal")
         try:
             shutil.copy2(h, tmp)
+            if tipo == "firefox" and wal.is_file():  # lo más reciente de Firefox está en el -wal
+                shutil.copy2(wal, tmp_wal)
             src = sqlite3.connect(str(tmp))
             ultimo = int(_estado(con, f"nav_{nombre}") or 0)
-            rows = src.execute("SELECT v.visit_time, u.url, u.title FROM visits v JOIN urls u ON u.id=v.url "
-                               "WHERE v.visit_time>? ORDER BY v.visit_time", (ultimo,)).fetchall()
+            sql = ("SELECT v.visit_date, p.url, p.title FROM moz_historyvisits v JOIN moz_places p ON p.id=v.place_id "
+                   "WHERE v.visit_date>? ORDER BY v.visit_date") if tipo == "firefox" else (
+                   "SELECT v.visit_time, u.url, u.title FROM visits v JOIN urls u ON u.id=v.url "
+                   "WHERE v.visit_time>? ORDER BY v.visit_time")
+            rows = src.execute(sql, (ultimo,)).fetchall()
             src.close()
         except Exception:  # noqa: BLE001
             continue
         finally:
-            try:
-                tmp.unlink()
-            except OSError:
-                pass
+            for t in (tmp, tmp_wal, Path(str(tmp) + "-shm")):
+                try:
+                    t.unlink()
+                except OSError:
+                    pass
         for vt, url, title in rows:
             ultimo = max(ultimo, vt)
             if not re.match(r"https?://", url or "") or re.match(r"https?://(127\.0\.0\.1|localhost)", url):
                 continue
-            d = datetime(1601, 1, 1) + timedelta(microseconds=vt)  # hora UTC de Chrome/Edge
-            d = d.replace(tzinfo=__import__("datetime").timezone.utc).astimezone()
+            if tipo == "firefox":  # microsegundos desde 1970 (UTC)
+                d = datetime.fromtimestamp(vt / 1e6, __import__("datetime").timezone.utc).astimezone()
+            else:  # microsegundos desde 1601 (UTC) en Chrome/Edge
+                d = datetime(1601, 1, 1) + timedelta(microseconds=vt)
+                d = d.replace(tzinfo=__import__("datetime").timezone.utc).astimezone()
             dom = re.sub(r"^https?://(www\.)?([^/:]+).*$", r"\2", url)
-            _put(con, "web", d.date().isoformat(), d.strftime("%H:%M"), f"visitó «{(title or dom)[:150]}»", dom)
+            fuente, titulo = _clasificar_visita(url, title or "", dom)
+            if fuente != "web" and d.date().isoformat() < corte:
+                continue
+            _put(con, fuente, d.date().isoformat(), d.strftime("%H:%M"), titulo, dom if fuente == "web" else "navegador")
             n += 1
         _estado(con, f"nav_{nombre}", ultimo)
     return n
@@ -1172,6 +1222,12 @@ def _rutas_error() -> dict | None:
     return {"desde": desde, "motivo": "Google cerró el acceso de Atlas a sus Rutas" if google else "la descarga está fallando"}
 
 
+def _junto(q: dict, *claves) -> tuple | None:
+    """23-11: (días, último) de varias fuentes juntas, para que «uso del PC» cuente también lo del navegador."""
+    v = [q[k] for k in claves if k in q and q[k][1]]
+    return (max(n for n, _ in v), max(u for _, u in v)) if v else None
+
+
 def fuentes() -> dict:
     """Cómo se arma la historia (modo) y el estado de cada fuente, solo con conteos y fechas."""
     con = db()
@@ -1210,7 +1266,7 @@ def fuentes() -> dict:
                 f("chats", "Horas de sus chats de WhatsApp", q.get("chat_hora"), False,
                   "Exporte un chat «sin archivos» y déjelo en Descargas. Se guardan solo las horas en que usted escribió (±1 min) y el archivo va a la papelera.",
                   "IMPORTAR", 14),
-                f("pc", "Búsquedas, YouTube y uso del PC", q.get("busqueda"), True, "Solo dicen a qué hora estaba despierto.")]}
+                f("pc", "Búsquedas, YouTube y uso del PC", _junto(q, "busqueda", "youtube", "web"), True, "Solo dicen a qué hora estaba despierto.")]}
 
 
 def importar_todo() -> dict:
@@ -1274,9 +1330,38 @@ def _eventos(a: date, b: date) -> list[dict]:
                         "fin": "" if e.get("allday") else min(e["when"] + dur, datetime.combine(e["when"].date(), datetime.max.time())).strftime("%H:%M"),
                         "titulo": e.get("summary", ""), "lugar": e.get("location", ""), "clase": tipo == "clase",
                         "tipo": tipo, "curso": e.get("course", ""), "kind": e.get("kind", "")})
-        return out
+        return _juntar_repetidos(out)
     except Exception:  # noqa: BLE001
         return []
+
+
+_GENERICAS = {"catedra", "auxiliar", "laboratorio", "ayudantia", "clase", "taller", "control", "examen", "sala", "seccion",
+              "introduccion", "programacion", "perspectiva", "historica", "tecnologia", "sociedad", "ingenieria"}
+
+
+def _palabras_ramo(t: str) -> set[str]:
+    return {w for w in re.findall(r"[a-z]{6,}", _plain(t)) if w not in _GENERICAS}
+
+
+def _juntar_repetidos(evs: list[dict]) -> list[dict]:
+    """23-11: la misma clase anotada dos veces (U-Cursos «Auxiliar - Ciberseguridad» y en su calendario
+    «Laboratorio Ciberseguridad», misma hora) sale una sola vez: queda la de U-Cursos (trae ramo y sala) y dura
+    hasta la hora de término más tardía de las dos."""
+    fuera = set()
+    for i, a in enumerate(evs):
+        if i in fuera or not a["hora"] or not a.get("curso"):
+            continue
+        clave = _palabras_ramo(a["curso"])
+        if not clave:
+            continue
+        for j, b in enumerate(evs):
+            if j == i or j in fuera or b.get("curso") or b["fecha"] != a["fecha"] or b["hora"] != a["hora"]:
+                continue
+            if clave & _palabras_ramo(b["titulo"]):
+                fuera.add(j)
+                if b["fin"] > a["fin"]:
+                    a["fin"] = b["fin"]
+    return [e for k, e in enumerate(evs) if k not in fuera]
 
 
 _RX_VIAJE = re.compile(r"uber|didi|cabify|beat|indrive", re.I)
@@ -2312,6 +2397,27 @@ def _km(a, b, c, d_) -> float:
     return 12742 * math.asin(math.sqrt(min(1, h)))
 
 
+def _dias_rutas(mes: str) -> set[str]:
+    """23-11: días del mes («2026-11») con ubicación de Rutas de Maps, para que el calendario de Cronos los marque."""
+    if not CRONO_DB.exists():
+        return set()
+    try:
+        con = sqlite3.connect(f"file:{CRONO_DB.as_posix()}?mode=ro", uri=True)
+        try:
+            out = {r[0] for r in con.execute("SELECT DISTINCT substr(ts,1,10) FROM puntos WHERE ts LIKE ?", (mes + "-%",))}
+            for ini, fin in con.execute("SELECT inicio, fin FROM visitas UNION ALL SELECT inicio, fin FROM trayectos"):
+                a, b = date.fromisoformat(ini[:10]), date.fromisoformat(fin[:10])
+                while a <= b:
+                    if a.isoformat().startswith(mes):
+                        out.add(a.isoformat())
+                    a += timedelta(days=1)
+        finally:
+            con.close()
+        return out
+    except Exception:  # noqa: BLE001
+        return set()
+
+
 def _cronologia(f: date) -> tuple[list, list, tuple | None]:
     """Visitas y trayectos de Maps que tocan el día f, más dónde está su casa según Maps (o None)."""
     if not CRONO_DB.exists():
@@ -3218,7 +3324,7 @@ def http(metodo: str, sub: str, query: dict, body: dict | None = None) -> tuple[
                                                   (mes + "-%",))]
             finally:
                 con.close()
-            return js({"dias": dias})
+            return js({"dias": sorted(set(dias) | _dias_rutas(mes))})
         if metodo == "GET" and sub == "api/dia":
             a = date.fromisoformat(qv("desde") or qv("fecha"))
             b = date.fromisoformat(qv("hasta") or qv("fecha") or qv("desde"))

@@ -359,7 +359,7 @@ def bar_levels(mode: str, now: float, lvl: float | None) -> list[float]:
 # ------------------------------------------------------------------ núcleo de Atlas (17-11-2026)
 # El mismo globo de la pantalla principal (hud.html, «nucleo Gd»): esfera oscura con las Pléyades, borde cian → violeta
 # que gira, la estrella de Atlas que late al escuchar/hablar y suelta ondas. Coordenadas del SVG: centro 256, radio 170.
-NU_COLS = {"idle": ((79, 227, 255), (156, 123, 255)), "speaking": ((79, 227, 255), (156, 123, 255)),
+NU_COLS = {"idle": ((79, 227, 255), (156, 123, 255)), "speaking": ((255, 255, 255), (207, 239, 255)),
            "listening": ((95, 242, 192), (79, 227, 255)), "thinking": ((255, 176, 79), (255, 110, 138))}
 NU_ST = [(252.8, 289.8, 12.7, 30.5), (365.8, 288.2, 10, 24.1), (324.6, 239.9, 9.5, 22.8), (303, 319.6, 8.5, 20.4),
          (351.4, 221, 8.1, 19.5), (179.1, 283.8, 5.7, 13.7), (368.9, 254.8, 4.4, 10.7), (321.1, 204.4, 3.4, 8.3)]
@@ -480,7 +480,7 @@ def render(angle: float, mode: str, now: float, label_mask, angle2: float | None
 def render_reactor(angle: float, mode: str, now: float, label_mask, angle2: float | None = None) -> bytes:
     """Dibujo anterior (reactor de Jarvis). Ya no se usa; queda solo como referencia."""
     inner = angle * 0.6 if angle2 is None else angle2
-    col = GREEN if mode == "listening" else AMBER if mode == "thinking" else CYAN
+    col = GREEN if mode == "listening" else AMBER if mode == "thinking" else (255, 255, 255) if mode == "speaking" else CYAN
     f = Frame()
     f.over(BG, DISC * 0.97)
     f.over(DIM, RIM * 0.9)

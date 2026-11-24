@@ -18,5 +18,10 @@
     "vigilancia_correo_seg": 240,
     "ucursos_min": 20,
     "ucursos_con_nota_min": 10
+  },
+  "interprete": {
+    "haiku": "encendido",
+    "tope_usd_mes": 5,
+    "espera_seg": 4
   }
 }

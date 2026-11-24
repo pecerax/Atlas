@@ -13,6 +13,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import os
 import re
 import secrets
 import time
@@ -261,8 +262,15 @@ def _top(query: str, events: list[dict], day_given: bool) -> list[dict]:
     toks = [w for w in re.findall(r"[a-z0-9]{3,}", _plain(query)) if w not in _Q_STOP]
     strong = [t for t in toks if t not in _Q_GENERIC]
 
+    def same(t: str, w: str) -> bool:
+        # palabras cortas del evento («con», «del») solo calzan iguales: «con» no es el comienzo de «controles»
+        # (uso real 23-11-2026: «Revisar Controles» calzaba con «Reunión con Felipe»)
+        if len(w) < 4:
+            return t == w
+        return w.startswith(t[:5]) or t.startswith(w[:5])
+
     def hits(tokens: list[str], words: list[str]) -> int:
-        return sum(1 for t in tokens if any(w.startswith(t[:5]) or t.startswith(w[:5]) for w in words))
+        return sum(1 for t in tokens if any(same(t, w) for w in words))
 
     scored = []
     for e in events:
@@ -330,8 +338,9 @@ _Q_GENERIC = {"reunion", "reuniones", "cita", "citas", "laboratorio", "lab", "cl
               "almuerzo", "cena", "junta", "control", "examen", "recordatorio", "compromiso", "turno", "auxiliar",
               "catedra", "ayudantia", "entrega"}
 
-DEL = (r"(?:b[oó]rra(?:me|r|s)?|borres|elim[ií]na(?:me|r|s)?|elimines|canc[eé]la(?:me|r|s)?|canceles|qu[ií]ta(?:me|r|s)?|quites|"
-       r"s[aá]ca(?:me|r|s)?|saques|an[uú]la(?:r|s)?|anules)")
+DEL = (r"(?:b[oó]rr[ae](?:me|r|s|lo|la|melo|mela)?|borres|elim[ií]n[ae](?:me|r|s|lo|la|melo|mela)?|elimines|"
+       r"canc[eé]l[ae](?:me|r|s|lo|la)?|canceles|qu[ií]t[ae](?:me|r|s|lo|la)?|quites|"
+       r"s[aá]c[ae](?:me|r|s|lo|la)?|s[aá]que(?:lo|la)?|saques|an[uú]l[ae](?:r|s|lo|la)?|anules)")   # usted: «elimine» (23-11-2026)
 MOVE = (r"(?:mu[eé]ve(?:me|lo|la)?|muevas|mover|c[aá]mbia(?:me|lo|la)?|cambies|cambiar|p[aá]sa(?:me|lo|la)?|pases|pasar|"
         r"reag[eé]nda(?:me|r|s)?|reagendes|reprogr[aá]ma(?:me|r|s)?|reprogrames|c[oó]rre(?:me|lo|la|r)?|corras|"
         r"atr[aá]sa(?:me|r|lo|la)?|adel[aá]nta(?:me|r|lo|la)?)")
@@ -369,6 +378,10 @@ def parse_change(text: str, now: datetime | None = None) -> dict | None:
     m = re.match(LEAD + DEL + r"\b", text, re.I)
     if m:
         rest = text[m.end():]
+        # «Elimine a ese evento» (uso real 23-11-2026: la «a» de más hacía que nadie lo entendiera)
+        rest = re.sub(r"^\s+a\s+(?=(?:el|la|los|las|es[ae]|est[ae]|mi|su)\b)", " ", rest, flags=re.I)
+        if not rest.strip(" .,!¡?¿"):
+            return None   # «bórralo» solo: qué evento es lo decide resolve_refs (el del que se viene hablando), no esta regla
         new_title = None
         mm = re.search(r"\s+y\s+(?:luego\s+|despu[eé]s\s+)?(?:pon(?:me|gas)?|crea(?:me|s)?|ag[eé]nda(?:me)?|agr[eé]ga(?:me)?|a[nñ]ade|deja|fija)\s+"
                        r"(.+?)\s+(?:en|a)\s+(?:el|la|ese|esa)\s*mism[oa]\s+(?:horario|hora|d[ií]a|bloque)[^.]*\.?\s*$", rest, re.I)
