@@ -67,13 +67,19 @@ body[data-modo="pensando"] .estado{color:var(--ambar)}
 .mbtn i{display:block;height:1.5px;background:var(--dim);width:22px}.mbtn i:nth-child(2){width:15px}
 .pista{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--tenue);min-height:16px;text-align:center}
 #velo{position:fixed;inset:0;background:rgba(1,4,10,.6);opacity:0;pointer-events:none;transition:opacity .2s}
-#menu{position:fixed;left:0;top:0;bottom:0;width:min(72vw,300px);background:rgba(3,14,24,.97);border-right:1px solid var(--line);transform:translateX(-102%);transition:transform .22s ease-out;
+#menu{position:fixed;left:0;top:0;bottom:0;width:min(82vw,340px);background:rgba(3,14,24,.97);border-right:1px solid var(--line);transform:translateX(-102%);transition:transform .22s ease-out;
   display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 26px) 26px 26px;gap:2px}
-#menu .wm{margin-bottom:26px}
-#menu button{text-align:left;font-family:var(--mono);font-size:13px;letter-spacing:.3em;color:var(--texto);padding:18px 0;border-bottom:1px solid rgba(79,227,255,.09)}
-#menu #btnApp{color:var(--ambar)}
+#menu .wm{margin-bottom:12px}
+.mest{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--tenue)}
+.mapps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:14px 0 16px;border-bottom:1px solid rgba(79,227,255,.12)}
+#menu .mapps button{width:100%;max-width:52px;aspect-ratio:1;min-height:0;padding:8px;justify-self:center;box-sizing:border-box;border:1px solid color-mix(in srgb,var(--k) 38%,transparent);border-radius:50%;color:var(--k);background:color-mix(in srgb,var(--k) 9%,transparent)}
+.mapps svg{width:100%;height:100%;display:block}
+#menu button[data-menu],#menu #btnApp{display:flex;justify-content:space-between;align-items:baseline;gap:12px;text-align:left;min-height:58px;padding:16px 0;border-bottom:1px solid rgba(79,227,255,.09);color:var(--texto)}
+#menu button b{font-size:19px;font-weight:600;letter-spacing:.01em}
+#menu button small{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;color:var(--tenue);text-align:right}
+#menu #btnApp b,#menu #btnApp small{color:var(--ambar)}
 #menu #btnApp[hidden]{display:none}
-.ver-n{margin-top:auto;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--tenue);padding-top:16px}
+.ver-n{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--tenue);padding-top:16px}
 .mbtn.nueva i:first-child{background:var(--ambar)}
 body.menu #velo{opacity:1;pointer-events:auto}
 body.menu #menu{transform:none}
@@ -163,9 +169,20 @@ body.menu #menu{transform:none}
 #p-app .vacio{color:var(--amuted)}
 .vacio{color:var(--tenue);text-align:center;margin-top:30px;max-width:26ch;align-self:center}
 
-.aps{width:100%;display:flex;flex-direction:column;gap:4px;margin-top:18px}
-.ap{display:flex;align-items:center;gap:18px;padding:11px 0;color:var(--k);width:100%;text-align:left}
-.ap .lg{width:46px;height:46px;flex:none}.ap .lg svg{width:100%;height:100%;display:block}
+/* Las apps flotan una por pantalla; se desliza a los lados y la del centro manda el color del cielo */
+.aps{flex:1;min-height:0;display:flex;align-items:center;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;width:100vw;margin:0 -28px;padding:0 25vw;scrollbar-width:none;overscroll-behavior-x:contain}
+.aps::-webkit-scrollbar{display:none}
+body.menu .aps{overflow:hidden}
+.ap{flex:none;width:50vw;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;gap:26px;color:var(--k);transform:scale(.6);opacity:.42;transition:transform .28s ease-out,opacity .28s}
+.ap.cen{transform:none;opacity:1}
+.ap .lg{width:min(46vw,34vh);aspect-ratio:1;display:block;filter:drop-shadow(0 0 28px color-mix(in srgb,var(--k) 50%,transparent));animation:flota 5.5s ease-in-out infinite}
+.ap:nth-child(even) .lg{animation-delay:-2.7s}
+.ap .lg svg{width:100%;height:100%;display:block}
+.ap .nm{font-size:22px}
+@keyframes flota{50%{transform:translateY(-10px)}}
+.apts{display:flex;gap:10px;justify-content:center;padding:18px 0 8px;flex:none}
+.apts i{width:6px;height:6px;border-radius:50%;background:var(--dim);opacity:.4;transition:all .25s}
+.apts i.on{opacity:1;width:20px;border-radius:3px;background:var(--k)}
 .nm{font-weight:600;letter-spacing:.32em;font-size:18px;color:var(--k);white-space:nowrap}
 .nm .eg{display:inline-block;vertical-align:baseline;width:.72em;height:.72em;margin-right:.3em}
 .nm .eg svg{width:100%;height:100%;display:block;overflow:visible}
@@ -186,7 +203,7 @@ body.menu #menu{transform:none}
 .avisos .accion.on{border-color:var(--ok);color:var(--ok)}
 .accion.rojo{border-color:var(--mal);color:var(--mal);background:none}
 .error{color:var(--mal);text-align:center;font-size:15px;min-height:22px;margin-top:12px;max-width:28ch}
-@media (prefers-reduced-motion:reduce){.nucleo,.pant.on{animation:none!important}#menu,#velo,.hoja{transition:none}}
+@media (prefers-reduced-motion:reduce){.nucleo,.pant.on,.ap .lg{animation:none!important}#menu,#velo,.hoja{transition:none}}
 </style>
 </head>
 <body data-modo="sinpc">
@@ -232,11 +249,15 @@ body.menu #menu{transform:none}
 <div id="velo"></div>
 <nav id="menu" aria-label="Menú" aria-hidden="true">
   <span class="wm" data-marca></span>
-  <button data-menu="hoy">HOY</button>
-  <button data-menu="apps">APPS</button>
-  <button data-menu="escribir">ESCRIBIR</button>
-  <button data-menu="enlace">ENLACE</button>
-  <button id="btnApp" hidden>ACTUALIZAR ›</button>
+  <div class="mest"><span class="pt"></span><span id="menuEst"></span></div>
+  <div class="aire"></div>
+  <!-- todo lo que se toca queda abajo, al alcance del pulgar: primero las apps, a un toque -->
+  <div class="mapps" id="menuApps"></div>
+  <button data-menu="hoy"><b>Hoy</b><small id="mHoy"></small></button>
+  <button data-menu="apps"><b>Apps</b><small>Ver todas</small></button>
+  <button data-menu="escribir"><b>Escribir</b><small>En vez de hablar</small></button>
+  <button data-menu="enlace"><b>Enlace</b><small id="mEnl"></small></button>
+  <button id="btnApp" hidden><b>Actualizar</b><small>Versión nueva</small></button>
   <div class="ver-n" id="verN"></div>
 </nav>
 
@@ -257,6 +278,7 @@ body.menu #menu{transform:none}
 <section class="pant" id="p-apps">
   <button class="titulo" data-ir="principal">‹ APPS</button>
   <div class="aps" id="aps"></div>
+  <div class="apts" id="apts"></div>
 </section>
 
 <!-- BACO: lo que suena en el PC -->
