@@ -70,7 +70,10 @@ let appAbierta = "";
 const ESTRELLAS = { cronos: [25, 25], hermes: [72, 20], fortuna: [50, 37], baco: [21, 50], atenea: [79, 51], hoy: [33, 67], escribir: [71, 70], enlace: [50, 84] };
 const UNIONES = [["cronos", "fortuna"], ["hermes", "fortuna"], ["cronos", "hermes"], ["fortuna", "baco"], ["fortuna", "atenea"], ["baco", "hoy"], ["atenea", "escribir"], ["hoy", "enlace"], ["escribir", "enlace"], ["hoy", "escribir"]];
 function abrirLaApp(k) { if (k === "baco") return ir("baco"); appAbierta = k; nombre($("appNm"), k); ir("app"); abrirApp(k); }
+let appsPintadas = null;
 function pintarApps(lista) {
+  // el PC manda la lista en cada consulta: solo se redibuja si cambió (redibujar siempre hacía parpadear los íconos)
+  const clave = JSON.stringify(lista || null); if (clave === appsPintadas) return; appsPintadas = clave;
   const box = $("aps"), pts = $("apts"), mini = $("consApps"), hay = []; box.textContent = ""; pts.textContent = ""; mini.textContent = "";
   const tiene = new Set((lista || []).map((n) => String(n).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")));
   for (const k of ORDEN) { if (lista && lista.length && !tiene.has(k)) continue;
@@ -96,6 +99,8 @@ function centrarApps() {
   if (mejor && pantalla === "apps") document.documentElement.style.setProperty("--c", LOGOS[mejor.dataset.k].c);
 }
 $("aps").addEventListener("scroll", () => requestAnimationFrame(centrarApps), { passive: true });
+// tocar en cualquier parte del selector abre la app del centro (los botones y los íconos de los lados siguen haciendo lo suyo)
+$("p-apps").addEventListener("click", (e) => { if (e.target.closest("button")) return; const c = document.querySelector("#aps .ap.cen"); if (c) abrirLaApp(c.dataset.k); });
 function pintarMenu() {
   const n = est ? (est.recordatorios || []).length + (est.tareas || []).length : 0;
   $("mHoy").textContent = n ? n + (n === 1 ? " pendiente" : " pendientes") : "";

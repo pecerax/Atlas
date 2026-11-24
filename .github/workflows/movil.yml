@@ -96,8 +96,9 @@ jobs:
           openssl dgst -sha256 -sign "$RUNNER_TEMP/k.pem" -out ui.zip.sig ui.zip
           rm -f "$RUNNER_TEMP/k.pem" "$RUNNER_TEMP/k.p12"
           openssl dgst -sha256 -verify "$RUNNER_TEMP/pub.pem" -signature ui.zip.sig ui.zip
-          # el mismo número que calcula build.gradle.kts a partir de movil/VERSION (1.x.y -> x*10000 + y)
-          APP=$(awk -F. '{print $2 * 10000 + $3}' movil/VERSION)
+          # movil/VERSION_APP es la última versión que cambió la app misma (no solo la pantalla): solo desde ahí
+          # se ofrece instalar. Mismo cálculo que build.gradle.kts: 1.x.y -> x*10000 + y
+          APP=$(awk -F. '{print $2 * 10000 + $3}' movil/VERSION_APP)
           echo "{\"ui\": $UI_N, \"ui_min_app\": $UI_MIN, \"app\": $APP}" > actual.json
           cat actual.json; ls -l ui.zip ui.zip.sig
       - uses: actions/upload-artifact@v4
