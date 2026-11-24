@@ -23,6 +23,7 @@ if (!window.Nativo) {
       setTimeout(() => Atlas._cb(id, 200, JSON.stringify(r)), ruta === "/p/chat" ? 1200 : 150); },
     grabar: () => ev("grabando"), pararGrabacion: () => { ev("oyendo"); setTimeout(() => ev("oido", { text: "¿Qué tengo mañana?" }), 900); }, cancelarGrabacion: () => {},
     decir: () => setTimeout(() => ev("callado"), 2500), callar: () => {},
+    avisos: () => JSON.stringify({ activo: !!window._av, permiso: !!window._av }), avisosPoner: (si) => { window._av = si; }, avisosApps: () => {},
     version: () => JSON.stringify({ app: "demo", ui: 0, appNueva: location.hash === "#app" }), actualizar: () => {},
   };
 }
@@ -109,6 +110,7 @@ async function sondear() {
   const r = await pedir("GET", "/p/estado");
   if (r.st === 200 && r.j) {
     fallos = 0; est = r.j; pintarApps(est.apps);
+    if (Nativo.avisosApps && Array.isArray(est.avisos_apps)) { const k = JSON.stringify(est.avisos_apps); if (k !== sondear.apps) { sondear.apps = k; Nativo.avisosApps(k); } }
     if (modo === "sinpc") { ponModo("espera"); if (!$("fraseAtlas").textContent) dice(null, saludo()); }
     if (!ocupado) pendiente(est.pendiente);
     if (modo === "pensando" && est.fase && est.fase.det) $("estadoTx").textContent = String(est.fase.det).toUpperCase().slice(0, 30);
@@ -187,7 +189,7 @@ const EVENTOS = {
   callado() { if (modo === "hablando") ponModo("espera"); },
   vinculado() { $("vincErr").textContent = ""; arrancar(); },
   vincerror(d) { $("vincErr").textContent = d.error || "No pude vincular. Pide otro código en el PC."; },
-  visible() { sondear(); },
+  visible() { sondear(); if (pantalla === "enlace") pintarAvisos(); },
 };
 
 // ---- VISTA: el horario de la semana (o una lista) que Atlas manda junto con su respuesta, igual que en el PC
@@ -265,8 +267,22 @@ function pintarEnlace() {
   const tailscale = /^100\.|\.ts\.net$/.test(v.host || "");
   fila(v.pc || "PC", modo === "sinpc" ? "SIN RESPUESTA" : "ATLAS " + ((est && est.version) || "") + " · " + (tailscale ? "POR TAILSCALE" : "POR WI‑FI DE CASA"), modo !== "sinpc");
   fila("Este celular", "VINCULADO", true);
+  pintarAvisos();
   fila("Visor", "MÁS ADELANTE", null, true); fila("Cámara para las manos", "MÁS ADELANTE", null, true);
 }
+// ---- avisos: el celular le cuenta al PC los mensajes (WhatsApp, Telegram y las apps que pida el PC) y las llamadas
+function pintarAvisos() {
+  if (!Nativo.avisos) return; let a = {}; try { a = JSON.parse(Nativo.avisos()); } catch (e) { return; }
+  $("avisosCaja").hidden = false; const b = $("btnAvisos"), falta = a.activo && !a.permiso;
+  b.classList.toggle("on", a.activo && a.permiso); b.dataset.activo = a.activo ? "1" : "";
+  b.textContent = falta ? "FALTA EL PERMISO · TOCA PARA DARLO" : a.activo ? "AVISOS AL PC: ACTIVADOS" : "AVISAR AL PC DE MENSAJES Y LLAMADAS";
+  $("avisosTx").textContent = falta ? "En la pantalla de Android, activa «Atlas: avisos al PC». Si aparece bloqueado, entra a Ajustes › Apps › Atlas › ⋮ › Permitir ajustes restringidos."
+    : a.activo ? "Atlas en tu PC se entera de tus mensajes de WhatsApp y Telegram y de tus llamadas. Toca para apagarlo."
+    : "Apagado. Si lo activas, este celular le envía a tu PC, y solo a tu PC, quién te escribe o llama y un resumen corto.";
+}
+$("btnAvisos").onclick = () => { const b = $("btnAvisos"); let a = {}; try { a = JSON.parse(Nativo.avisos()); } catch (e) { /* nada */ }
+  Nativo.avisosPoner(!(a.activo && a.permiso)); setTimeout(pintarAvisos, 300); };
+document.addEventListener("visibilitychange", () => { if (!document.hidden && pantalla === "enlace") pintarAvisos(); });
 $("btnDesv").onclick = () => { const b = $("btnDesv"); if (b.dataset.seguro) { Nativo.desvincular(); delete b.dataset.seguro; b.textContent = "DESVINCULAR ESTE CELULAR"; est = null; ir("vincular"); }
   else { b.dataset.seguro = "1"; b.textContent = "¿SEGURO? TOCA OTRA VEZ"; setTimeout(() => { delete b.dataset.seguro; b.textContent = "DESVINCULAR ESTE CELULAR"; }, 4000); } };
 $("btnEscanear").onclick = () => { $("vincErr").textContent = ""; Nativo.escanear(); };

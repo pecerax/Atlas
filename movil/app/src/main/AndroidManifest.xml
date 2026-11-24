@@ -34,6 +34,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Lector de notificaciones: apagado hasta que la persona lo activa en la app y en los ajustes de Android -->
+        <service
+            android:name=".Avisos"
+            android:exported="true"
+            android:label="Atlas: avisos al PC"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="portrait"

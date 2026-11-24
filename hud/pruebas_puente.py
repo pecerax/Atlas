@@ -194,6 +194,19 @@ ok("detener", cel.pedir("POST", "/p/detener")[0] == 200 and hud.ATLAS.detenido =
 ok("oír sin voz no revienta", cel.pedir("POST", "/p/oir", b"RIFFxxxx", tipo="audio/wav")[1].get("error") == "Voz no disponible")
 ok("ruta que no existe: 404", cel.pedir("GET", "/api/status")[0] == 404 and cel.pedir("POST", "/p/apagar")[0] == 404)
 ok("música: acción desconocida 400", cel.pedir("POST", "/p/musica", {"accion": "borrar"})[0] == 400)
+vistos = []
+hud.evento_celular = vistos.append
+hud.AVISOS_CELULAR = ["cl.banco.app"]
+st, r = cel.pedir("POST", "/p/evento", {"tipo": "notificacion", "app": "com.whatsapp", "de": "Ana\n" + "x" * 200, "texto": "hola " * 100, "t": 1795480000000})
+ok("evento: la notificación llega limpia al PC", st == 200 and r == {"ok": True} and len(vistos) == 1 and vistos[0]["app"] == "com.whatsapp"
+   and len(vistos[0]["de"]) <= 80 and "\n" not in vistos[0]["de"] and len(vistos[0]["texto"]) <= 240 and vistos[0]["t"] == 1795480000000)
+st, r = cel.pedir("POST", "/p/evento", {"tipo": "llamada", "app": "com.android.dialer", "de": "Mamá", "estado": "otra", "t": "x"})
+ok("evento: llamada con estado y hora corregidos", st == 200 and vistos[-1]["estado"] == "entrante" and vistos[-1]["t"] > 10**12)
+ok("evento: tipo desconocido 400", cel.pedir("POST", "/p/evento", {"tipo": "borrar"})[0] == 400 and len(vistos) == 2)
+hud.evento_celular = lambda ev: 1 / 0
+ok("evento: si el PC falla al procesarlo, el celular igual recibe 200", cel.pedir("POST", "/p/evento", {"tipo": "notificacion", "app": "a"})[0] == 200 and len(P.EVENTOS) == 3)
+ok("evento: sin firma no entra", cel.pedir("POST", "/p/evento", {"tipo": "notificacion"}, firmar=False)[0] in (401, 403))
+ok("estado: lista de apps que el PC quiere oír", cel.pedir("GET", "/p/estado")[1].get("avisos_apps") == ["cl.banco.app"])
 
 # --- ataques ---
 t, n = str(int(time.time() * 1000)), secrets.token_urlsafe(12)

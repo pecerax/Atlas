@@ -122,6 +122,8 @@ body.menu #menu{transform:none}
 
 .accion{width:100%;height:52px;border:1px solid var(--a);font-weight:700;letter-spacing:.2em;font-size:15px;background:rgba(79,227,255,.12)}
 .accion.sec{border-color:var(--line);color:var(--tenue);font-weight:400;margin-top:10px}
+.avisos{width:100%;margin-top:14px}.avisos small{display:block;margin-top:10px;font-size:12.5px;line-height:1.45;color:var(--tenue);text-align:center}
+.avisos .accion.on{border-color:var(--ok);color:var(--ok)}
 .accion.rojo{border-color:var(--mal);color:var(--mal);background:none}
 .error{color:var(--mal);text-align:center;font-size:15px;min-height:22px;margin-top:12px;max-width:28ch}
 @media (prefers-reduced-motion:reduce){.nucleo,.pant.on{animation:none!important}#menu,#velo,.hoja{transition:none}}
@@ -174,7 +176,7 @@ body.menu #menu{transform:none}
   <button data-menu="apps">APPS</button>
   <button data-menu="escribir">ESCRIBIR</button>
   <button data-menu="enlace">ENLACE</button>
-  <button id="btnApp" hidden>ACTUALIZAR APP ›</button>
+  <button id="btnApp" hidden>ACTUALIZAR ›</button>
   <div class="ver-n" id="verN"></div>
 </nav>
 
@@ -225,6 +227,10 @@ body.menu #menu{transform:none}
 <section class="pant" id="p-enlace">
   <button class="titulo" data-ir="principal">‹ ENLACE</button>
   <div class="lista" id="enlLista" style="flex:none"></div>
+  <div class="avisos" id="avisosCaja" hidden>
+    <button class="accion sec" id="btnAvisos">AVISAR AL PC DE MENSAJES Y LLAMADAS</button>
+    <small id="avisosTx"></small>
+  </div>
   <div class="aire"></div>
   <button class="accion rojo" id="btnDesv">DESVINCULAR ESTE CELULAR</button>
 </section>

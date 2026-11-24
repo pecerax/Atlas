@@ -27,6 +27,7 @@ import ssl
 import subprocess
 import threading
 import time
+from collections import deque
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -301,7 +302,37 @@ def _vista_estado(hud) -> dict:
         "recordatorios": st.get("reminders") or [], "tareas": st.get("tasks") or [], "pendientes": st.get("pendientes") or [],
         "apps": [a.get("nombre") for a in (st.get("apps") or [])], "pc": socket.gethostname(),
         "version": getattr(hud, "HUD_VERSION", ""),
+        # paquetes Android cuyas notificaciones interesan al PC, además de los que la app trae por defecto
+        "avisos_apps": [str(x)[:120] for x in (getattr(hud, "AVISOS_CELULAR", None) or [])][:30],
     }
+
+
+EVENTOS: deque = deque(maxlen=50)   # lo último que avisó el celular (notificaciones y llamadas), por si alguien quiere leerlo
+
+
+def _evento(hud, data: dict) -> tuple[int, dict]:
+    """Una notificación o llamada que el celular vio. Se limpia y se entrega a hud.evento_celular(ev) si existe.
+    {"tipo": "notificacion"|"llamada", "app", "de", "texto", "t" (ms), "estado" (llamada: "entrante"|"fin")}"""
+    tipo = data.get("tipo")
+    if tipo not in ("notificacion", "llamada"):
+        return 400, {"error": "tipo"}
+    limpio = lambda v, n: "".join(c for c in str(v or "") if c.isprintable() or c == " ")[:n].strip()  # noqa: E731
+    try:
+        t = int(data.get("t") or 0)
+    except (TypeError, ValueError, OverflowError):
+        t = 0
+    ev = {"tipo": tipo, "app": limpio(data.get("app"), 120), "de": limpio(data.get("de"), 80),
+          "texto": limpio(data.get("texto"), 240), "t": t if 0 < t < 10**14 else int(time.time() * 1000)}
+    if tipo == "llamada":
+        ev["estado"] = "fin" if data.get("estado") == "fin" else "entrante"
+    EVENTOS.append(ev)
+    aviso = getattr(hud, "evento_celular", None)
+    if callable(aviso):
+        try:
+            aviso(dict(ev))
+        except Exception:  # noqa: BLE001 - lo que haga el PC con el aviso no debe botar el pedido del celular
+            pass
+    return 200, {"ok": True}
 
 
 def _vista(v) -> dict | None:
@@ -358,6 +389,9 @@ def _atender(hud, ruta: str, data: dict, cuerpo: bytes) -> tuple[int, object, st
         return 200, {"reply": out.get("reply", "")}, "json"
     if ruta == "/p/detener":
         return 200, A.stop_turn(), "json"
+    if ruta == "/p/evento":
+        st, r = _evento(hud, data)
+        return st, r, "json"
     if ruta == "/p/musica":
         import atlas_baco
 
