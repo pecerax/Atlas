@@ -113,6 +113,37 @@ body.menu #menu{transform:none}
 .it.ev time{color:var(--k,var(--a));width:46px;line-height:1.35}
 .it.ev time i{display:block;font-style:normal;color:var(--tenue);font-size:10px}
 .dia b{color:var(--a);font-weight:400;margin-left:8px}
+/* entrada de cada app: la misma animación del PC, a pantalla completa */
+#appIntro{position:fixed;inset:0;z-index:60;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  background:radial-gradient(ellipse at 50% 46%,color-mix(in srgb,var(--c) 10%,#01040A),#01040A 70%);color:var(--c)}
+#appIntro .ilogo{width:min(62vw,280px);height:min(62vw,280px);overflow:visible;filter:drop-shadow(0 0 10px color-mix(in srgb,var(--c) 55%,transparent))}
+#appIntro .inm{font-size:min(9vw,40px);font-weight:600;letter-spacing:.3em;margin-right:-.3em;white-space:nowrap;color:var(--c);text-shadow:0 0 16px color-mix(in srgb,var(--c) 60%,transparent)}
+#appIntro .inm .eg{display:inline-block;width:.72em;height:.72em;margin:0 .3em 0 .04em;vertical-align:baseline}#appIntro .inm .eg svg{display:block;width:100%;height:100%;overflow:visible}
+/* horario: la semana arriba y el día elegido por horas */
+.sem{display:flex;gap:4px;flex:none;overflow-x:auto;scrollbar-width:none;margin:0 0 2px;padding:8px 0 6px;position:sticky;top:0;z-index:3;background:#020810}.sem::-webkit-scrollbar{display:none}
+.sem.larga button{flex:1 0 42px}
+.sem button{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 7px;border:1px solid rgba(79,227,255,.12);color:var(--tenue)}
+.sem button i{font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.14em}
+.sem button b{font-size:19px;font-weight:500;color:var(--texto)}
+.sem button span{display:flex;gap:3px;height:5px}.sem button u{width:5px;height:5px;border-radius:50%}
+.sem button.hoy b{color:var(--a)}
+.sem button.on{border-color:var(--a);background:rgba(79,227,255,.12);box-shadow:0 0 14px rgba(79,227,255,.18)}
+.hcab{display:flex;align-items:baseline;gap:10px;flex:none;font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--texto);margin:16px 0 8px}
+.hcab b{color:var(--a);font-weight:400}.hcab span{margin-left:auto;color:var(--tenue);font-size:10px}
+.hdia{display:flex;flex-direction:column;gap:5px;flex:none;margin-bottom:10px}
+.hdia div{border:1px solid color-mix(in srgb,var(--k) 55%,transparent);border-left:3px solid var(--k);background:color-mix(in srgb,var(--k) 12%,transparent);padding:8px 10px;font-size:14.5px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.hdia small,.hb small{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:color-mix(in srgb,var(--k) 75%,#fff)}
+.hgrid{position:relative;flex:none;margin:8px 0 14px}
+.hgrid .hl{position:absolute;left:0;right:0;border-top:1px solid rgba(79,227,255,.1);font-family:var(--mono);font-size:10px;color:var(--tenue);line-height:1;padding-top:0;transform:translateY(-.5px)}
+.hgrid .hl{text-indent:0}.hgrid .hl::first-line{line-height:0}
+.hb{position:absolute;overflow:hidden;border:1px solid color-mix(in srgb,var(--k) 60%,transparent);border-left:3px solid var(--k);background:color-mix(in srgb,var(--k) 16%,#02101A);padding:5px 8px;display:flex;flex-direction:column;gap:2px;box-shadow:0 0 12px color-mix(in srgb,var(--k) 14%,transparent)}
+.hb b{font-size:13.5px;font-weight:600;line-height:1.15;color:#fff}
+.hb.corto{flex-direction:row;align-items:center;gap:8px;padding-top:0;padding-bottom:0}.hb.corto b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hb.corto small{white-space:nowrap}
+.hb.tope{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--k) 22%,#02101A) 0 6px,color-mix(in srgb,var(--k) 10%,#02101A) 6px 12px)}
+.hgrid .ahora{position:absolute;left:44px;right:0;height:0;border-top:1.5px solid #FF6B6B;box-shadow:0 0 8px #FF6B6B;z-index:2}
+.hgrid .ahora::before{content:"";position:absolute;left:-4px;top:-4.5px;width:8px;height:8px;border-radius:50%;background:#FF6B6B}
+.hley{display:flex;flex-wrap:wrap;gap:6px 14px;flex:none;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--tenue);padding-bottom:16px}
+.hley i{display:inline-block;width:8px;height:8px;margin-right:6px}
 .tabs{display:none;width:100%;border:1px solid var(--line);margin:4px 0 2px}
 .tabs.on{display:grid;grid-template-columns:1fr 1fr 1fr}
 .tabs button{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--tenue);padding:12px 2px}
@@ -294,6 +325,7 @@ body.menu .aps{overflow:hidden}
 <!-- HOY -->
 <section class="pant" id="p-hoy">
   <button class="titulo" data-ir="principal">‹ HOY</button>
+  <button class="ver" id="hoyHorario">VER MI HORARIO DE LA SEMANA ›</button>
   <div class="lista" id="hoyLista"></div>
 </section>
 
@@ -347,5 +379,6 @@ body.menu .aps{overflow:hidden}
 <script src="logos.js"></script>
 <script src="app.js"></script>
 <script src="nucleo.js"></script>
+<script src="intros.js"></script>
 </body>
 </html>

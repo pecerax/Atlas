@@ -73,7 +73,8 @@ const UNIONES = [["apps", "hoy"], ["apps", "escribir"], ["hoy", "enlace"], ["esc
 // los planetas del sol «Aplicaciones»: uno por app que exista, con su color
 // [radio de la órbita, tamaño, segundos por vuelta, fracción de vuelta en que parte]
 const PLANETAS = [[30, 3.4, 26, .12], [42, 3.6, 44, .5], [30, 3, 26, .62], [42, 3, 44, .85], [42, 3.2, 44, .2], [30, 3, 26, .37], [42, 3, 44, .68]];
-function abrirLaApp(k) { if (k === "baco") return ir("baco"); appAbierta = k; nombre($("appNm"), k); ir("app"); abrirApp(k); }
+function abrirLaApp(k) { if (window.playAppIntro) playAppIntro(k);   // la misma entrada que tiene la app en el PC
+  if (k === "baco") return ir("baco"); appAbierta = k; nombre($("appNm"), k); ir("app"); abrirApp(k); }
 { const lin = $("consLineas");
   for (const [a, b] of UNIONES) { const p = ESTRELLAS[a], q = ESTRELLAS[b], l = document.createElementNS("http://www.w3.org/2000/svg", "line");
     l.setAttribute("x1", p[0]); l.setAttribute("y1", p[1]); l.setAttribute("x2", q[0]); l.setAttribute("y2", q[1]); lin.appendChild(l); } }
@@ -217,6 +218,7 @@ document.addEventListener("touchmove", (e) => { if (x0 === null) return;
   else if (pantalla === "principal") { if (dx < 0) return; menu(true); }
   else if (pantalla === "apps") { if (dx < 0 || apsIni > 8) return; ir("principal"); }   // desde la primera app, tirar más allá vuelve a Atlas
   else if (pantalla === "app" || pantalla === "baco") ir("apps");
+  else if (pantalla === "vista" && vDias.length) { if (!moverDia(dx < 0 ? 1 : -1)) { if (dx < 0) return; ir("principal"); } }   // el horario pasa de día; antes del primero vuelve a Atlas
   else if (["hoy", "enlace", "vista"].includes(pantalla)) { if (dx < 0) return; ir("principal"); }
   else return;
   x0 = null; deslizo = Date.now(); }, { passive: true });
@@ -424,18 +426,25 @@ function ponVista(v) {
   if (!v) { if (pantalla === "vista") ir("principal"); return; }
   const cal = v.tipo === "calendario";
   b.textContent = (cal ? "VER HORARIO" : "VER LISTA") + " ›";
-  vTab = cal && ["eventos", "clases", "ambos"].includes(v.pestana) ? v.pestana : "ambos";
+  vTab = cal && ["eventos", "clases", "ambos"].includes(v.pestana) ? v.pestana : "ambos"; vDia = null;
   pintarVista(); ir("vista");
 }
-function pintarVista() {
+// El horario se ve como en el PC pero de a un día: arriba la semana para elegir, abajo las horas con sus bloques.
+let vDia = null, vDias = [];
+const isoHoy = () => isoDe(new Date());
+const minDe = (h) => { const p = String(h || "").split(":").map(Number); return p.length >= 2 && !isNaN(p[0]) && !isNaN(p[1]) ? p[0] * 60 + p[1] : null; };
+function moverDia(n) { const i = vDias.indexOf(vDia) + n; if (i < 0 || i >= vDias.length) return false; vDia = vDias[i]; pintarVista(true); return true; }
+function pintarVista(mismo) {
   if (!vista) return;
-  const cal = vista.tipo === "calendario", box = $("vLista"); box.textContent = ""; box.scrollTop = 0;
+  const cal = vista.tipo === "calendario", box = $("vLista"); box.textContent = ""; if (!mismo) box.scrollTop = 0;
   $("vTitulo").textContent = "‹ " + (vista.titulo || (cal ? "Horario" : "Lista")).toUpperCase().slice(0, 34);
-  $("vTabs").classList.toggle("on", cal);
+  $("vTabs").classList.toggle("on", cal); $("p-vista").classList.toggle("cal", cal);
   document.querySelectorAll("#vTabs button").forEach((t) => t.classList.toggle("on", t.dataset.t === vTab));
   const items = vista.items.filter((it) => !cal || vTab === "ambos" || (vTab === "clases") === ES_CLASE(it))
     .slice().sort((a, b) => (a.dia || "").localeCompare(b.dia || "") || (a.hora || "").localeCompare(b.hora || ""));
-  const hoy = new Date(); const hoyIso = hoy.getFullYear() + "-" + String(hoy.getMonth() + 1).padStart(2, "0") + "-" + String(hoy.getDate()).padStart(2, "0");
+  vDias = [];
+  if (cal) return pintarHorario(box, items);
+  const hoyIso = isoHoy();
   let ultimo = null;
   for (const it of items) {
     if (it.dia && it.dia !== ultimo) { ultimo = it.dia; const p = it.dia.split("-").map(Number), f = new Date(p[0], p[1] - 1, p[2]);
@@ -448,11 +457,56 @@ function pintarVista() {
     if (sub) { const sm = document.createElement("small"); sm.textContent = sub.toUpperCase(); tx.appendChild(sm); }
     fila.append(tm, tx); box.appendChild(fila);
   }
-  if (!items.length) { const v = document.createElement("div"); v.className = "vacio"; v.textContent = vTab === "clases" ? "Sin clases en estos días." : vTab === "eventos" ? "Sin eventos en estos días." : "Nada en estos días."; box.appendChild(v); }
+  if (!items.length) { const v = document.createElement("div"); v.className = "vacio"; v.textContent = "Nada en estos días."; box.appendChild(v); }
+}
+function pintarHorario(box, items) {
+  const hoyIso = isoHoy(), ok = /^\d{4}-\d\d-\d\d$/;
+  // los días que cubre la vista: desde «desde» por «dias» días; si el PC no lo dice, los días que traen algo
+  if (ok.test(vista.desde || "")) { const p = vista.desde.split("-").map(Number), n = Math.min(14, Math.max(1, Number(vista.dias) || 7));
+    for (let i = 0; i < n; i++) vDias.push(isoDe(new Date(p[0], p[1] - 1, p[2] + i))); }
+  else vDias = [...new Set(vista.items.map((it) => it.dia).filter((d) => ok.test(d || "")))].sort();
+  if (!vDias.length) { box.appendChild(el("div", "vacio", "Nada en estos días.")); return; }
+  if (!vDias.includes(vDia)) vDia = vDias.includes(hoyIso) ? hoyIso : vDias.find((d) => items.some((it) => it.dia === d)) || vDias[0];
+  const sem = el("div", "sem" + (vDias.length > 7 ? " larga" : ""));
+  for (const d of vDias) { const p = d.split("-").map(Number), f = new Date(p[0], p[1] - 1, p[2]), b = el("button", (d === vDia ? "on" : "") + (d === hoyIso ? " hoy" : ""));
+    b.append(el("i", "", DIAS_V[f.getDay()].slice(0, 3)), el("b", "", String(p[2])));
+    const pts = el("span"); for (const it of items.filter((x) => x.dia === d).slice(0, 4)) { const o = el("u"); o.style.background = COLOR[it.tipo] || "#4FE3FF"; pts.appendChild(o); } b.appendChild(pts);
+    b.onclick = () => { vDia = d; pintarVista(true); }; sem.appendChild(b); }
+  box.appendChild(sem); const act = sem.querySelector(".on"); if (act && sem.scrollWidth > sem.clientWidth) sem.scrollLeft = act.offsetLeft - sem.clientWidth / 2 + act.offsetWidth / 2;
+  const p = vDia.split("-").map(Number), f = new Date(p[0], p[1] - 1, p[2]);
+  const del = items.filter((it) => it.dia === vDia), cab = el("div", "hcab", DIAS_V[f.getDay()] + " " + p[2] + " " + MESES_V[p[1] - 1]);
+  if (vDia === hoyIso) cab.appendChild(el("b", "", "HOY")); cab.appendChild(el("span", "", del.length ? del.length + (del.length === 1 ? " COSA" : " COSAS") : "LIBRE")); box.appendChild(cab);
+  // lo que no tiene hora (entregas, cumpleaños) va arriba, como la fila «DÍA» del PC
+  const sinHora = del.filter((it) => minDe(it.hora) === null), conHora = del.filter((it) => minDe(it.hora) !== null);
+  if (sinHora.length) { const fila = el("div", "hdia"); for (const it of sinHora) { const c = el("div", "", it.titulo || ""); c.style.setProperty("--k", COLOR[it.tipo] || "#4FE3FF");
+      if (it.tipo && it.tipo !== "evento") c.appendChild(el("small", "", it.tipo.toUpperCase())); fila.appendChild(c); } box.appendChild(fila); }
+  if (!conHora.length) { box.appendChild(el("div", "vacio", sinHora.length ? "Sin nada con hora este día." : vTab === "clases" ? "Sin clases este día." : vTab === "eventos" ? "Sin eventos este día." : "Día libre.")); return; }
+  const bl = conHora.map((it) => { const a = minDe(it.hora), z = minDe(it.fin); return { it, a, z: z !== null && z > a ? z : a + 60 }; }).sort((x, y) => x.a - y.a || y.z - x.z);
+  const h0 = Math.max(0, Math.min(8, Math.floor(bl[0].a / 60))), h1 = Math.min(24, Math.max(20, Math.ceil(Math.max(...bl.map((b) => b.z)) / 60))), PX = 58;
+  // los que se topan se reparten el ancho, y se marcan como tope
+  let grupo = [], finG = -1; const cerrar = () => { const n = Math.max(1, ...grupo.map((b) => b.col + 1)); grupo.forEach((b) => { b.n = n; }); grupo = []; };
+  for (const b of bl) { if (b.a >= finG) cerrar(); const usadas = grupo.filter((g) => g.z > b.a).map((g) => g.col); let c = 0; while (usadas.includes(c)) c++; b.col = c; grupo.push(b); finG = Math.max(finG, b.z); }
+  cerrar();
+  const g = el("div", "hgrid"); g.style.height = (h1 - h0) * PX + "px";
+  for (let h = h0; h <= h1; h++) { const l = el("div", "hl", String(h).padStart(2, "0") + ":00"); l.style.top = (h - h0) * PX + "px"; g.appendChild(l); }
+  for (const b of bl) { const it = b.it, c = el("div", "hb" + (b.n > 1 ? " tope" : "") + (b.z - b.a < 50 ? " corto" : ""));
+    c.style.cssText = "top:" + (b.a / 60 - h0) * PX + "px;height:" + Math.max(26, (b.z - b.a) / 60 * PX - 2) + "px;left:calc(50px + (100% - 54px) * " + b.col / b.n + ");width:calc((100% - 54px) / " + b.n + " - 3px)";
+    c.style.setProperty("--k", COLOR[it.tipo] || "#4FE3FF");
+    c.append(el("b", "", it.titulo || ""), el("small", "", [it.hora + (it.fin ? "–" + it.fin : ""), it.lugar, it.tipo && it.tipo !== "evento" ? it.tipo : ""].filter(Boolean).join(" · ").toUpperCase()));
+    g.appendChild(c); }
+  if (vDia === hoyIso) { const n = new Date(), m = n.getHours() * 60 + n.getMinutes(); if (m >= h0 * 60 && m <= h1 * 60) { const a = el("div", "ahora"); a.style.top = (m / 60 - h0) * PX + "px"; g.appendChild(a); } }
+  box.appendChild(g);
+  // que se vea de entrada lo primero del día (o la hora actual, si es hoy y ya empezó)
+  const ah = g.querySelector(".ahora"), pri = g.querySelector(".hb"), ver = ah && ah.offsetTop > pri.offsetTop ? ah : pri;
+  box.scrollTop = Math.max(0, g.offsetTop - box.offsetTop + ver.offsetTop - 130);
+  const usados = [...new Set(del.map((it) => it.tipo).filter((t) => COLOR[t]))];
+  if (usados.length > 1) { const ley = el("div", "hley"); for (const t of usados) { const s2 = el("span", "", t.toUpperCase()), i = el("i"); i.style.background = COLOR[t]; s2.prepend(i); ley.appendChild(s2); } box.appendChild(ley); }
 }
 document.querySelectorAll("#vTabs button").forEach((t) => { t.onclick = () => { vTab = t.dataset.t; pintarVista(); }; });
 
 // ---- HOY
+// el horario de la semana sin tener que pedirlo hablando: se le pregunta a Atlas igual que por voz
+$("hoyHorario").onclick = () => { ir("principal"); enviar("mi horario"); };
 function pintarHoy() {
   const box = $("hoyLista"); box.textContent = "";
   if (!est) { box.innerHTML = '<div class="vacio">Sin conexión con el PC.</div>'; return; }
