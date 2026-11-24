@@ -250,7 +250,11 @@ def _autorizado(h, metodo: str, ruta: str, cuerpo: bytes) -> dict | None:
     did, t, n, firma = (h.get("X-Atlas-Id") or ""), (h.get("X-Atlas-T") or ""), (h.get("X-Atlas-N") or ""), (h.get("X-Atlas-F") or "")
     if not (did and t.isdigit() and 8 <= len(n) <= 64 and firma):
         return None
-    if abs(time.time() - int(t) / 1000) > RELOJ_SEG:
+    try:   # auditoría 23-11-2026: una hora que no es un número normal se rechaza como cualquier otra (y cuenta como fallo)
+        hora = int(t) / 1000
+    except (ValueError, OverflowError):
+        return None
+    if abs(time.time() - hora) > RELOJ_SEG:
         return None
     disp = next((d for d in dispositivos() if d.get("id") == did), None)
     if not disp:
@@ -463,6 +467,11 @@ class _Servidor(ThreadingHTTPServer):
     allow_reuse_address = False
     daemon_threads = True
     tls: ssl.SSLContext
+
+    def verify_request(self, request, client_address) -> bool:
+        # auditoría 23-11-2026: a quien no viene de una red privada se le corta la conexión antes
+        # del saludo TLS; antes alcanzaba a negociar el cifrado y recién ahí recibía el 403
+        return _privada(client_address[0])
 
     def handle_error(self, request, client_address) -> None:
         pass   # conexiones cortadas, saludos TLS fallidos o sin TLS: no son un error de Atlas, no ensucian el registro

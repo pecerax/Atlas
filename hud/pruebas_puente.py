@@ -248,6 +248,9 @@ P._estado["fallos"].clear()
 ok("y después vuelve a atender", cel.pedir("GET", "/p/estado")[0] == 200)
 
 # --- direcciones ---
+ok("de fuera se corta antes del saludo TLS", P._Servidor.verify_request(None, None, ("8.8.8.8", 1)) is False
+   and P._Servidor.verify_request(None, None, ("192.168.1.9", 1)) is True)
+ok("hora que no es un número: se rechaza sin reventar", P._autorizado({"X-Atlas-Id": "x", "X-Atlas-T": "\u00b2", "X-Atlas-N": "12345678", "X-Atlas-F": "x"}, "GET", "/p/estado", b"") is None)
 ok("privadas", all(P._privada(x) for x in ("192.168.1.34", "10.0.0.5", "172.20.1.1", "100.101.102.103", "127.0.0.1", "::ffff:192.168.1.9")))
 ok("públicas no", not any(P._privada(x) for x in ("8.8.8.8", "100.128.0.1", "172.32.0.1", "200.1.2.3", "no-es-ip")))
 
