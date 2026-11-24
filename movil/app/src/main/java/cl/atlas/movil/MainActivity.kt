@@ -9,7 +9,6 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
-import android.provider.Settings
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
@@ -279,23 +278,6 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface
         fun version(): String = JSONObject().put("app", actualiza.nombreApp).put("ui", actualiza.nInterfaz)
             .put("appNueva", actualiza.apkLista != null).toString()
-
-        @JavascriptInterface
-        fun avisos(): String = JSONObject().put("activo", Avisos.activo(this@MainActivity))
-            .put("permiso", Avisos.conPermiso(this@MainActivity)).toString()
-
-        /** Activa o apaga el envío de notificaciones al PC. Si falta el permiso de Android, abre esa pantalla de ajustes. */
-        @JavascriptInterface
-        fun avisosPoner(si: Boolean) {
-            if (bloqueada) return
-            Avisos.poner(this@MainActivity, si)
-            if (si && !Avisos.conPermiso(this@MainActivity)) runOnUiThread {
-                try { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) } catch (e: Exception) { evento("apperror", JSONObject()) }
-            }
-        }
-
-        @JavascriptInterface
-        fun avisosApps(json: String) = Avisos.appsDelPc(this@MainActivity, json)
 
         @JavascriptInterface
         fun actualizar() {
