@@ -6,7 +6,7 @@ if exist "%LNK%" goto quitar
 echo Atlas no arranca solo con Windows.
 choice /c SN /m "Quiere que Atlas arranque de fondo al iniciar Windows"
 if errorlevel 2 goto fin
-powershell -NoProfile -Command "$s=(New-Object -ComObject WScript.Shell).CreateShortcut($env:LNK); $s.TargetPath=$env:LOCALAPPDATA+'\Atlas\Atlas-fondo.cmd'; $s.WorkingDirectory=$env:LOCALAPPDATA+'\Atlas'; $s.WindowStyle=7; $s.IconLocation=$env:LOCALAPPDATA+'\Atlas\atlas-nucleo.ico'; $s.Save()"
+powershell -NoProfile -Command "$s=(New-Object -ComObject WScript.Shell).CreateShortcut($env:LNK); $s.TargetPath=$env:LOCALAPPDATA+'\Atlas\Atlas-fondo.cmd'; $s.WorkingDirectory=$env:LOCALAPPDATA+'\Atlas'; $s.WindowStyle=7; $s.IconLocation=$env:LOCALAPPDATA+'\Atlas\atlas-escritorio-2.ico'; $s.Save()"
 if exist "%LNK%" (echo Listo: Atlas arrancara de fondo al iniciar Windows.) else (echo No pude crear el acceso directo.)
 goto fin
 :quitar
