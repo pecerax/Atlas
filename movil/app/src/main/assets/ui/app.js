@@ -255,7 +255,11 @@ function pintaCronos(box, d) {
     const tm = el("time", "", b.ini || "—"); if (b.fin) tm.appendChild(el("i", "", b.fin));
     const tx = el("div", "", b.titulo); tx.appendChild(el("small", "", c[1] + (b.conf && b.conf !== "alta" ? " · NO ES SEGURO" : ""))); it.append(tm, tx); box.appendChild(it); }
   if (!d.bloques.length) box.appendChild(el("div", "vacio", "No hay nada registrado ese día."));
-  if (d.parcial) box.appendChild(el("div", "nota", "FALTAN LOS VIAJES DEL CORREO: EL PC TODAVÍA LOS ESTÁ BUSCANDO.")).style.margin = "18px 0";
+  if (d.parcial) { box.appendChild(el("div", "nota", "BUSCANDO LOS VIAJES DEL CORREO EN EL PC…")).style.margin = "18px 0";
+    // el PC sigue armando el día completo: se le vuelve a preguntar un par de veces sin borrar lo que ya se ve
+    pintaCronos.n = pintaCronos.dia === d.fecha ? pintaCronos.n + 1 : 1; pintaCronos.dia = d.fecha;
+    if (pintaCronos.n <= 5) setTimeout(() => { if (pantalla === "app" && appAbierta === "cronos" && diaCronos === d.fecha) abrirApp("cronos", { fecha: d.fecha }); }, 4000); }
+  else pintaCronos.dia = null;
 }
 
 // ---- VISTA: el horario de la semana (o una lista) que Atlas manda junto con su respuesta, igual que en el PC

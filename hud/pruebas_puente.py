@@ -241,6 +241,19 @@ sys.modules["atlas_historia"] = types.SimpleNamespace(
 st, r = cel.pedir("POST", "/p/cronos", {"fecha": "2026-11-20"})
 ok("cronos: bloques del día, recortados y sin campos internos", st == 200 and r["fecha"] == "2026-11-20" and r["parcial"] is False and len(r["bloques"]) == 2
    and set(r["bloques"][0]) == {"ini", "fin", "fila", "titulo", "conf"} and len(r["bloques"][1]["titulo"]) <= 90)
+import threading as _th
+_suelta = _th.Event()
+def _dia_lento(f, correos=True):
+    if correos:
+        _suelta.wait(5)
+    return {"f": f, "correos": correos}
+sys.modules["atlas_historia"].dia = _dia_lento
+t0 = time.time()
+st, r = cel.pedir("POST", "/p/cronos", {"fecha": "2026-11-19"})
+ok("cronos: si el día completo tarda, responde al tiro el parcial", r["parcial"] is True and time.time() - t0 < 3 and len(r["bloques"]) == 2)
+_suelta.set(); time.sleep(0.3)
+t0 = time.time()
+ok("cronos: al volver a preguntar ya está completo y sale de lo guardado", cel.pedir("POST", "/p/cronos", {"fecha": "2026-11-19"})[1]["parcial"] is False and time.time() - t0 < 1)
 ok("cronos: fecha rara o futura cae en hoy", cel.pedir("POST", "/p/cronos", {"fecha": "2999-01-01"})[1]["fecha"] == _date.today().isoformat()
    and cel.pedir("POST", "/p/cronos", {"fecha": "x"})[1]["fecha"] == _date.today().isoformat())
 ok("apps: sin firma no entran", cel.pedir("POST", "/p/hermes", {}, firmar=False)[0] in (401, 403))

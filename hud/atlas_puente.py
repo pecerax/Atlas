@@ -383,6 +383,9 @@ def _app_fortuna() -> dict:
     return {"al": al.isoformat(), "mio": mio, "fondos": lista}
 
 
+_CRONOS: dict = {}   # fecha -> {"t", "listo", "d"}: el día completo de Cronos, guardado unos minutos
+
+
 def _app_cronos(data: dict) -> dict:
     import atlas_historia as C
     from datetime import date, timedelta
@@ -393,19 +396,34 @@ def _app_cronos(data: dict) -> dict:
         f = date.today()
     hoy = date.today()
     f = min(max(f, hoy - timedelta(days=3650)), hoy)
-    caja: dict = {}
+    # El día completo (con los recibos de viaje del correo, como el panel del PC) puede tardar varios segundos: se
+    # busca en un hilo aparte y se guarda un rato. Mientras no esté, el celular recibe al tiro el día sin correos
+    # («parcial») y vuelve a preguntar.
+    k = f.isoformat()
+    ahora = time.time()
+    with _lock:
+        for viejo in [x for x, v in _CRONOS.items() if ahora - v["t"] > (600 if x == hoy.isoformat() else 3600)]:
+            _CRONOS.pop(viejo, None)
+        ent = _CRONOS.get(k)
+        if ent is None:
+            if len(_CRONOS) >= 12:
+                _CRONOS.pop(min(_CRONOS, key=lambda x: _CRONOS[x]["t"]), None)
+            ent = _CRONOS[k] = {"t": ahora, "listo": threading.Event(), "d": None}
 
-    def completo():   # con los recibos de viaje del correo, como el panel del PC; puede tardar si hay que consultarlo
-        try:
-            caja["d"] = C.dia(f)
-        except Exception as exc:  # noqa: BLE001
-            caja["error"] = exc
+            def completo(ent=ent):
+                try:
+                    ent["d"] = C.dia(f)
+                except Exception:  # noqa: BLE001 - sin el día completo queda el parcial
+                    with _lock:
+                        if _CRONOS.get(k) is ent:
+                            _CRONOS.pop(k, None)
+                finally:
+                    ent["listo"].set()
 
-    h = threading.Thread(target=completo, daemon=True)
-    h.start()
-    h.join(9)
-    parcial = "d" not in caja
-    d = caja["d"] if not parcial else C.dia(f, correos=False)
+            threading.Thread(target=completo, daemon=True).start()
+    ent["listo"].wait(1.5)
+    parcial = ent["d"] is None
+    d = ent["d"] if not parcial else C.dia(f, correos=False)
     B = C.bloques(d, f)
     return {"fecha": f.isoformat(), "parcial": parcial,
             "bloques": [{"ini": _corto(b.get("ini"), 5), "fin": _corto(b.get("fin"), 5), "fila": _corto(b.get("fila"), 12),
