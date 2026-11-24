@@ -67,28 +67,29 @@ document.querySelectorAll("[data-marca]").forEach((e) => { e.innerHTML = unico(L
 document.querySelectorAll("[data-nm]").forEach((e) => nombre(e, e.dataset.nm));
 let appAbierta = "";
 // dónde va cada estrella del menú (en % del panel) y cuáles se unen
-const ESTRELLAS = { cronos: [25, 25], hermes: [72, 20], fortuna: [50, 37], baco: [21, 50], atenea: [79, 51], hoy: [33, 67], escribir: [71, 70], enlace: [50, 84] };
-const UNIONES = [["cronos", "fortuna"], ["hermes", "fortuna"], ["cronos", "hermes"], ["fortuna", "baco"], ["fortuna", "atenea"], ["baco", "hoy"], ["atenea", "escribir"], ["hoy", "enlace"], ["escribir", "enlace"], ["hoy", "escribir"]];
+const ESTRELLAS = { apps: [50, 33], hoy: [24, 62], escribir: [76, 62], enlace: [50, 82] };
+const UNIONES = [["apps", "hoy"], ["apps", "escribir"], ["hoy", "enlace"], ["escribir", "enlace"], ["hoy", "escribir"]];
+// los planetas del sol «Aplicaciones»: uno por app que exista, con su color
+const PLANETAS = [[76, 35, 3.4], [26, 33, 3], [50, 92, 3.6], [12, 68, 3], [90, 62, 3.2], [62, 14, 3], [30, 82, 3]];
 function abrirLaApp(k) { if (k === "baco") return ir("baco"); appAbierta = k; nombre($("appNm"), k); ir("app"); abrirApp(k); }
+{ const lin = $("consLineas");
+  for (const [a, b] of UNIONES) { const p = ESTRELLAS[a], q = ESTRELLAS[b], l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    l.setAttribute("x1", p[0]); l.setAttribute("y1", p[1]); l.setAttribute("x2", q[0]); l.setAttribute("y2", q[1]); lin.appendChild(l); } }
 let appsPintadas = null;
 function pintarApps(lista) {
   // el PC manda la lista en cada consulta: solo se redibuja si cambió (redibujar siempre hacía parpadear los íconos)
   const clave = JSON.stringify(lista || null); if (clave === appsPintadas) return; appsPintadas = clave;
-  const box = $("aps"), pts = $("apts"), mini = $("consApps"), hay = []; box.textContent = ""; pts.textContent = ""; mini.textContent = "";
+  const box = $("aps"), pts = $("apts"), mini = $("solPlanetas"), hay = []; box.textContent = ""; pts.textContent = ""; mini.textContent = "";
   const tiene = new Set((lista || []).map((n) => String(n).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")));
   for (const k of ORDEN) { if (lista && lista.length && !tiene.has(k)) continue;
     const b = document.createElement("button"); b.className = "ap"; b.dataset.k = k; b.style.setProperty("--k", LOGOS[k].c);
     b.innerHTML = '<span class="lg">' + unico(LOGOS[k].logo) + '</span><span class="nm"></span>'; nombre(b.querySelector(".nm"), k);
     b.onclick = () => { if (!b.classList.contains("cen")) return b.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }); abrirLaApp(k); };
     box.appendChild(b); const p = document.createElement("i"); p.style.setProperty("--k", LOGOS[k].c); pts.appendChild(p);
-    const m = document.createElement("button"), e = ESTRELLAS[k]; m.className = "es app"; m.style.cssText = "left:" + e[0] + "%;top:" + e[1] + "%"; m.style.setProperty("--k", LOGOS[k].c); m.style.setProperty("--i", hay.length);
-    m.innerHTML = '<span class="o">' + unico(LOGOS[k].logo) + "</span>"; m.setAttribute("aria-label", k);
-    m.onclick = () => { menu(false); abrirLaApp(k); }; mini.appendChild(m); hay.push(k); }
-  // las líneas de la constelación, solo entre las estrellas que existen
-  const ns = "http://www.w3.org/2000/svg", lin = $("consLineas"); lin.textContent = "";
-  for (const [a, b] of UNIONES) { const p = ESTRELLAS[a], q = ESTRELLAS[b]; if ((LOGOS[a] && !hay.includes(a)) || (LOGOS[b] && !hay.includes(b))) continue;
-    const l = document.createElementNS(ns, "line"); l.setAttribute("x1", p[0]); l.setAttribute("y1", p[1]); l.setAttribute("x2", q[0]); l.setAttribute("y2", q[1]); lin.appendChild(l); }
-  document.querySelectorAll("#menu .es[data-menu]").forEach((b, i) => b.style.setProperty("--i", hay.length + i));
+    hay.push(k); }
+  const ns = "http://www.w3.org/2000/svg";
+  hay.forEach((k, n) => { const q = PLANETAS[n % PLANETAS.length], c = document.createElementNS(ns, "circle");
+    c.setAttribute("cx", q[0]); c.setAttribute("cy", q[1]); c.setAttribute("r", q[2]); c.setAttribute("fill", LOGOS[k].c); mini.appendChild(c); });
   centrarApps();
 }
 // la app que queda al centro del carrusel se agranda, muestra su descripción y tiñe el cielo
