@@ -6,6 +6,11 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
+import android.view.Gravity
+import android.view.View
+import android.widget.FrameLayout
+import android.widget.TextView
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -13,6 +18,8 @@ import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
@@ -32,6 +39,15 @@ class MainActivity : AppCompatActivity() {
     private val red = Executors.newFixedThreadPool(3)
     private val turnoVoz = AtomicInteger(0)
     private val INICIO = "file:///android_asset/ui/index.html"
+
+    // Candado: si la app estuvo más de 5 minutos fuera de pantalla, pide huella o el PIN del celular antes de mostrar
+    // nada ni hablar con el PC. Solo aplica con un PC vinculado y si el celular tiene bloqueo de pantalla configurado.
+    private val CANDADO_MS = 5 * 60 * 1000L
+    private val LLAVES = BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL
+    private lateinit var candado: TextView
+    @Volatile private var bloqueada = false
+    private var pidiendo = false
+    private val memoria by lazy { getSharedPreferences("candado", MODE_PRIVATE) }
 
     private val escaner = registerForActivityResult(ScanContract()) { r ->
         val texto = r.contents ?: return@registerForActivityResult
@@ -70,7 +86,21 @@ class MainActivity : AppCompatActivity() {
                 request?.url?.toString() != INICIO
         }
         web.addJavascriptInterface(Nativo(), "Nativo")
-        setContentView(web)
+        candado = TextView(this).apply {
+            text = "ATLAS\n\nToca para desbloquear"
+            setTextColor(Color.parseColor("#8FB6C8"))
+            textSize = 15f
+            letterSpacing = 0.2f
+            gravity = Gravity.CENTER
+            setBackgroundColor(Color.parseColor("#01040A"))
+            visibility = View.GONE
+            isClickable = true
+            setOnClickListener { pedirLlave() }
+        }
+        setContentView(FrameLayout(this).apply {
+            addView(web, FrameLayout.LayoutParams(-1, -1))
+            addView(candado, FrameLayout.LayoutParams(-1, -1))
+        })
         web.loadUrl(INICIO)
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -86,10 +116,57 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    override fun onStart() {
+        super.onStart()
+        val salida = memoria.getLong("salida", 0L)
+        val ahora = SystemClock.elapsedRealtime()
+        // ahora < salida: el celular se reinició desde la última vez, así que también se pide
+        if (!bloqueada && salida != 0L && (ahora < salida || ahora - salida > CANDADO_MS) && puente.vinculado() &&
+            BiometricManager.from(this).canAuthenticate(LLAVES) == BiometricManager.BIOMETRIC_SUCCESS
+        ) bloquear()
+        if (bloqueada) pedirLlave()
+    }
+
+    override fun onStop() {
+        // si ya estaba bloqueada no se renueva la hora: salir y volver a entrar no la desbloquea
+        if (!bloqueada) memoria.edit().putLong("salida", SystemClock.elapsedRealtime()).apply()
+        super.onStop()
+    }
+
+    private fun bloquear() {
+        bloqueada = true
+        turnoVoz.incrementAndGet()
+        parlante.callar()
+        grabadora.cancelar()
+        candado.visibility = View.VISIBLE
+        web.visibility = View.INVISIBLE
+    }
+
+    private fun pedirLlave() {
+        if (pidiendo || !bloqueada) return
+        pidiendo = true
+        val aviso = BiometricPrompt.PromptInfo.Builder().setTitle("Atlas").setSubtitle("Confirma que eres tú")
+            .setAllowedAuthenticators(LLAVES).build()
+        BiometricPrompt(this, ContextCompat.getMainExecutor(this), object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                pidiendo = false
+                bloqueada = false
+                memoria.edit().putLong("salida", SystemClock.elapsedRealtime()).apply()
+                candado.visibility = View.GONE
+                web.visibility = View.VISIBLE
+                evento("visible", JSONObject())
+            }
+
+            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                pidiendo = false   // canceló o falló: queda bloqueada y puede tocar la pantalla para reintentar
+            }
+        }).authenticate(aviso)
+    }
+
     override fun onResume() {
         super.onResume()
         web.onResume()
-        evento("visible", JSONObject())
+        if (!bloqueada) evento("visible", JSONObject())
     }
 
     override fun onPause() {
@@ -117,7 +194,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun empezarAGrabar() {
-        if (grabadora.grabando()) return
+        if (bloqueada || grabadora.grabando()) return
         evento("grabando", JSONObject())
         grabadora.empezar { wav ->
             if (wav == null) {
@@ -148,6 +225,7 @@ class MainActivity : AppCompatActivity() {
 
         @JavascriptInterface
         fun escanear() {
+            if (bloqueada) return
             runOnUiThread {
                 escaner.launch(
                     ScanOptions().setDesiredBarcodeFormats(ScanOptions.QR_CODE).setBeepEnabled(false)
@@ -165,7 +243,7 @@ class MainActivity : AppCompatActivity() {
 
         @JavascriptInterface
         fun pedir(id: Int, metodo: String, ruta: String, cuerpo: String) {
-            if (metodo != "GET" && metodo != "POST" || !ruta.startsWith("/p/")) return
+            if (bloqueada || metodo != "GET" && metodo != "POST" || !ruta.startsWith("/p/")) return
             red.execute {
                 val r = try {
                     puente.pedir(metodo, ruta, cuerpo.toByteArray(), "application/json", if (ruta == "/p/chat" || ruta == "/p/confirmar") 180000 else 15000)
@@ -195,6 +273,7 @@ class MainActivity : AppCompatActivity() {
 
         @JavascriptInterface
         fun decir(texto: String) {
+            if (bloqueada) return
             val turno = turnoVoz.incrementAndGet()
             red.execute {
                 val r = try {
@@ -202,7 +281,7 @@ class MainActivity : AppCompatActivity() {
                 } catch (e: Exception) {
                     Respuesta(0, ByteArray(0), "")
                 }
-                if (turno != turnoVoz.get()) return@execute   // lo callaron mientras el PC preparaba la voz
+                if (turno != turnoVoz.get() || bloqueada) return@execute   // lo callaron mientras el PC preparaba la voz
                 if (r.estado == 200 && r.cuerpo.size > 44) {
                     parlante.tocar(r.cuerpo) { if (turno == turnoVoz.get()) evento("callado", JSONObject()) }
                 } else {
