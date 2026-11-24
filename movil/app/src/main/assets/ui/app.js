@@ -16,7 +16,9 @@ if (!window.Nativo) {
         musica: { titulo: "BRAIN", artista: "Ado", estado: "Playing", pos: 37, fin: 156 },
         recordatorios: [{ id: "1", tipo: "recordatorio", texto: "Repasar Redes", hora: "08:00", en: 30000 }], tareas: [{ texto: "Tarea 5 · Redes", hora: "23:59", en: 90000 }],
         pendientes: [{ id: "p", texto: "Responder correo del curso" }] },
-      "/p/chat": { reply: "Mañana a las 10:15 tiene Redes de computadores, señor.", pendiente: /recu/i.test(cuerpo) ? "Crear recordatorio «Repasar Redes», mañana 08:00" : null },
+      "/p/chat": { reply: "Esta semana tiene cuatro cosas, señor.", vista: /horario|evento/i.test(cuerpo) || location.hash === "#vista" ? { tipo: "calendario", titulo: "Mi horario · esta semana", desde: "2026-11-23", dias: 7, pestana: "ambos", items: [
+        { titulo: "Redes de computadores", dia: "2026-11-24", hora: "10:15", fin: "11:45", lugar: "B101", tipo: "clase" }, { titulo: "Auxiliar de Intro", dia: "2026-11-24", hora: "16:00", fin: "17:30", tipo: "auxiliar" },
+        { titulo: "Control 2 de Lenguajes", dia: "2026-11-25", hora: "18:00", fin: "20:00", lugar: "F10", tipo: "evaluacion" }, { titulo: "Entrega T5", dia: "2026-11-26", tipo: "entrega" }, { titulo: "Cumpleaños de Ana", dia: "2026-11-28", hora: "20:00", tipo: "google" }] } : null, pendiente: /recu/i.test(cuerpo) ? "Crear recordatorio «Repasar Redes», mañana 08:00" : null },
       "/p/confirmar": { reply: "Hecho, señor." } }[ruta] || { ok: true };
       setTimeout(() => Atlas._cb(id, 200, JSON.stringify(r)), ruta === "/p/chat" ? 1200 : 150); },
     grabar: () => ev("grabando"), pararGrabacion: () => { ev("oyendo"); setTimeout(() => ev("oido", { text: "¿Qué tengo mañana?" }), 900); }, cancelarGrabacion: () => {},
@@ -97,15 +99,16 @@ const saludo = () => { const h = new Date().getHours(); return (h < 12 ? "Buenos
 
 // ---- hablar
 async function enviar(texto) {
-  ocupado = true; dice(texto, ""); pendiente(null); ponModo("pensando");
+  ocupado = true; dice(texto, ""); pendiente(null); vista = null; $("verVista").hidden = true; ponModo("pensando");
   const r = await pedir("POST", "/p/chat", { text: texto });
   if (modo !== "pensando") { ocupado = false; return; }   // lo detuvieron mientras pensaba
   if (r.st !== 200 || !r.j) { ocupado = false; dice(null, r.st ? "Atlas tuvo un problema con ese pedido." : "No pude llegar al PC."); ponModo(r.st ? "espera" : "sinpc"); return; }
   if (r.j.detenido) { ocupado = false; ponModo("espera"); return; }
-  responder(r.j.reply, r.j.pendiente);
+  responder(r.j.reply, r.j.pendiente, r.j.vista);
 }
-function responder(texto, pend) {
+function responder(texto, pend, v) {
   dice(null, texto || ""); pendiente(pend); ocupado = false;
+  ponVista(v && v.items && v.items.length ? v : null);
   if (texto) { ponModo("hablando"); Nativo.decir(texto); } else ponModo("espera");
 }
 async function confirmar(si) {
@@ -137,6 +140,45 @@ const EVENTOS = {
   vincerror(d) { $("vincErr").textContent = d.error || "No pude vincular. Pide otro código en el PC."; },
   visible() { sondear(); },
 };
+
+// ---- VISTA: el horario de la semana (o una lista) que Atlas manda junto con su respuesta, igual que en el PC
+let vista = null, vTab = "ambos";
+const COLOR = { clase: "#8FB6FF", auxiliar: "#5FF2C0", evaluacion: "#FFC93C", entrega: "#FF9F43", recordatorio: "#F2C36B", google: "#B49CFF", evento: "#4FE3FF" };
+const ES_CLASE = (it) => it.tipo === "clase" || it.tipo === "auxiliar";
+const DIAS_V = ["DOMINGO", "LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO"];
+const MESES_V = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
+function ponVista(v) {
+  vista = v; const b = $("verVista"); b.hidden = !v;
+  if (!v) { if (pantalla === "vista") ir("principal"); return; }
+  const cal = v.tipo === "calendario";
+  b.textContent = (cal ? "VER HORARIO" : "VER LISTA") + " ›";
+  vTab = cal && ["eventos", "clases", "ambos"].includes(v.pestana) ? v.pestana : "ambos";
+  pintarVista(); ir("vista");
+}
+function pintarVista() {
+  if (!vista) return;
+  const cal = vista.tipo === "calendario", box = $("vLista"); box.textContent = ""; box.scrollTop = 0;
+  $("vTitulo").textContent = "‹ " + (vista.titulo || (cal ? "Horario" : "Lista")).toUpperCase().slice(0, 34);
+  $("vTabs").classList.toggle("on", cal);
+  document.querySelectorAll("#vTabs button").forEach((t) => t.classList.toggle("on", t.dataset.t === vTab));
+  const items = vista.items.filter((it) => !cal || vTab === "ambos" || (vTab === "clases") === ES_CLASE(it))
+    .slice().sort((a, b) => (a.dia || "").localeCompare(b.dia || "") || (a.hora || "").localeCompare(b.hora || ""));
+  const hoy = new Date(); const hoyIso = hoy.getFullYear() + "-" + String(hoy.getMonth() + 1).padStart(2, "0") + "-" + String(hoy.getDate()).padStart(2, "0");
+  let ultimo = null;
+  for (const it of items) {
+    if (it.dia && it.dia !== ultimo) { ultimo = it.dia; const p = it.dia.split("-").map(Number), f = new Date(p[0], p[1] - 1, p[2]);
+      const d = document.createElement("div"); d.className = "dia"; d.textContent = DIAS_V[f.getDay()] + " " + p[2] + " " + MESES_V[p[1] - 1];
+      if (it.dia === hoyIso) { const h = document.createElement("b"); h.textContent = "HOY"; d.appendChild(h); } box.appendChild(d); }
+    const fila = document.createElement("div"); fila.className = "it ev"; fila.style.setProperty("--k", COLOR[it.tipo] || "#4FE3FF");
+    const tm = document.createElement("time"); tm.textContent = it.hora || "—"; if (it.fin) { const f = document.createElement("i"); f.textContent = it.fin; tm.appendChild(f); }
+    const tx = document.createElement("div"); tx.textContent = it.titulo || "";
+    const sub = [it.detalle, it.lugar, !it.hora && it.dia ? "todo el día" : "", it.tipo && it.tipo !== "evento" && it.tipo !== "item" ? it.tipo : ""].filter(Boolean).join(" · ");
+    if (sub) { const sm = document.createElement("small"); sm.textContent = sub.toUpperCase(); tx.appendChild(sm); }
+    fila.append(tm, tx); box.appendChild(fila);
+  }
+  if (!items.length) { const v = document.createElement("div"); v.className = "vacio"; v.textContent = vTab === "clases" ? "Sin clases en estos días." : vTab === "eventos" ? "Sin eventos en estos días." : "Nada en estos días."; box.appendChild(v); }
+}
+document.querySelectorAll("#vTabs button").forEach((t) => { t.onclick = () => { vTab = t.dataset.t; pintarVista(); }; });
 
 // ---- HOY
 function pintarHoy() {
@@ -193,3 +235,4 @@ function arrancar() {
 setInterval(sondear, 2500);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) sondear(); });
 arrancar();
+if (location.hash === "#vista") setTimeout(() => enviar("mi horario"), 600);   // solo para ver la pantalla en un navegador

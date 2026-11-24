@@ -73,6 +73,17 @@ body[data-modo="pensando"] .hablar,body[data-modo="hablando"] .hablar{border-col
 .it small{display:block;font-family:var(--mono);font-size:10px;color:var(--tenue);letter-spacing:.08em;margin-top:2px}
 .it .pt{align-self:center;margin-left:auto}
 .it.fut{color:var(--tenue)}
+.it{border-left:2px solid transparent}
+.it.ev{border-left-color:var(--k,var(--a));padding-left:12px;margin-top:6px;border-bottom:0;background:linear-gradient(90deg,color-mix(in srgb,var(--k,var(--a)) 9%,transparent),transparent 70%)}
+.it.ev time{color:var(--k,var(--a));width:46px;line-height:1.35}
+.it.ev time i{display:block;font-style:normal;color:var(--tenue);font-size:10px}
+.dia b{color:var(--a);font-weight:400;margin-left:8px}
+.tabs{display:none;width:100%;border:1px solid var(--line);margin:4px 0 2px}
+.tabs.on{display:grid;grid-template-columns:1fr 1fr 1fr}
+.tabs button{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--tenue);padding:12px 2px}
+.tabs button.on{color:var(--a);background:rgba(79,227,255,.12)}
+.ver{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--a);border:1px solid var(--line);padding:11px 18px}
+.ver[hidden]{display:none}
 .vacio{color:var(--tenue);text-align:center;margin-top:30px;max-width:26ch;align-self:center}
 
 .aps{width:100%;display:flex;flex-direction:column;gap:4px;margin-top:18px}
@@ -126,6 +137,7 @@ body[data-modo="pensando"] .hablar,body[data-modo="hablando"] .hablar{border-col
   <div class="frases">
     <div class="frase yo" id="fraseYo"></div>
     <div class="frase" id="fraseAtlas"></div>
+    <button class="ver" id="verVista" data-ir="vista" hidden>VER HORARIO ›</button>
     <div class="sino" id="sino"><button id="btnSi">CONFIRMAR</button><button id="btnNo">CANCELAR</button></div>
   </div>
   <div class="aire"></div>
@@ -138,6 +150,13 @@ body[data-modo="pensando"] .hablar,body[data-modo="hablando"] .hablar{border-col
 <section class="pant" id="p-hoy">
   <button class="titulo" data-ir="principal">‹ HOY</button>
   <div class="lista" id="hoyLista"></div>
+</section>
+
+<!-- VISTA: el horario o la lista que acompaña una respuesta de Atlas -->
+<section class="pant" id="p-vista">
+  <button class="titulo" data-ir="principal" id="vTitulo">‹ HORARIO</button>
+  <div class="tabs" id="vTabs"><button data-t="eventos">EVENTOS</button><button data-t="clases">CLASES</button><button data-t="ambos">AMBOS</button></div>
+  <div class="lista" id="vLista"></div>
 </section>
 
 <!-- APPS -->

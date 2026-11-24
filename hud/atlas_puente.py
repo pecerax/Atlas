@@ -300,6 +300,17 @@ def _vista_estado(hud) -> dict:
     }
 
 
+def _vista(v) -> dict | None:
+    """La vista que acompaña una respuesta (el horario de la semana, una lista), con solo lo que la app dibuja.
+    Es la misma que hud.html muestra en el PC: {"tipo": "calendario"|"lista", "titulo", "desde", "dias", "pestana", "items"}."""
+    if not isinstance(v, dict) or not isinstance(v.get("items"), list) or not v["items"]:
+        return None
+    items = [{k: it[k] for k in ("titulo", "dia", "hora", "fin", "lugar", "tipo", "detalle") if it.get(k) not in (None, "")}
+             for it in v["items"][:80] if isinstance(it, dict)]
+    return {"tipo": "calendario" if v.get("tipo") == "calendario" else "lista", "titulo": str(v.get("titulo") or ""),
+            "desde": v.get("desde"), "dias": v.get("dias"), "pestana": v.get("pestana"), "items": items}
+
+
 def _oir(hud, audio: bytes) -> dict:
     """Transcribe lo que grabó el celular con el mismo oído y las mismas correcciones que la tecla Fin del PC."""
     A = hud.ATLAS
@@ -330,7 +341,7 @@ def _atender(hud, ruta: str, data: dict, cuerpo: bytes) -> tuple[int, object, st
     if ruta == "/p/chat":
         A.hush_voice(page=False)
         out = A.chat_cancelable(str(data.get("text", ""))[:4000]) or {}
-        return 200, {"reply": out.get("reply", ""), "detenido": bool(out.get("detenido")),
+        return 200, {"reply": out.get("reply", ""), "detenido": bool(out.get("detenido")), "vista": _vista(out.get("view")),
                      "pendiente": (A.pending or {}).get("summary") if getattr(A, "pending", None) else None}, "json"
     if ruta == "/p/oir":
         return 200, _oir(hud, cuerpo), "json"

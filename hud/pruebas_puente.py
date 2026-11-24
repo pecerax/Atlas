@@ -54,6 +54,12 @@ class AtlasFalso:
         if "recuerda" in text:
             self.pending = {"summary": "Crear recordatorio", "tool": None}
             return {"reply": "Necesito su confirmación."}
+        if "horario" in text:
+            return {"reply": "Esta semana tiene dos cosas.", "view": {"tipo": "calendario", "titulo": "Mi horario", "desde": "2026-11-23",
+                    "dias": 7, "pestana": "clases", "items": [
+                        {"titulo": "Redes", "dia": "2026-11-24", "hora": "10:15", "fin": "11:45", "lugar": "B101", "tipo": "clase",
+                         "evento": {"interno": "no debe salir"}, "personas": [{"nombre": "x"}]},
+                        {"titulo": "Entrega T5", "dia": "2026-11-25", "hora": None, "fin": None, "lugar": "", "tipo": "entrega"}]}}
         return {"reply": "Hola, señor: " + text}
 
     def confirm(self, accept):
@@ -171,6 +177,13 @@ ok("estado: 200", st == 200 and e["listo"] is True and e["apps"] == ["Cronos", "
 ok("estado no filtra lo que no es de la app", "inbox" not in e and "hw" not in e and "secreto" not in json.dumps(e))
 st, r = cel.pedir("POST", "/p/chat", {"text": "qué hora es"})
 ok("chat llega a Atlas", st == 200 and r["reply"].endswith("qué hora es") and hud.ATLAS.dicho == ["qué hora es"])
+r0 = r
+ok("chat sin vista", r.get("vista") is None)
+st, r = cel.pedir("POST", "/p/chat", {"text": "mi horario"})
+v = r.get("vista") or {}
+ok("chat pasa el horario", v.get("tipo") == "calendario" and v.get("pestana") == "clases" and v.get("dias") == 7 and len(v.get("items", [])) == 2)
+ok("el horario lleva solo lo que la app dibuja", v["items"][0] == {"titulo": "Redes", "dia": "2026-11-24", "hora": "10:15", "fin": "11:45",
+   "lugar": "B101", "tipo": "clase"} and v["items"][1] == {"titulo": "Entrega T5", "dia": "2026-11-25", "tipo": "entrega"})
 st, r = cel.pedir("POST", "/p/chat", {"text": "recuerda repasar"})
 ok("chat avisa lo pendiente", st == 200 and r["pendiente"] == "Crear recordatorio")
 st, r = cel.pedir("POST", "/p/confirmar", {"accept": True})
