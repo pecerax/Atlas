@@ -72,7 +72,7 @@ function pintarApps(lista) {
   const tiene = new Set((lista || []).map((n) => String(n).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")));
   for (const k of ORDEN) { if (lista && lista.length && !tiene.has(k)) continue;
     const b = document.createElement("button"); b.className = "ap"; b.dataset.k = k; b.style.setProperty("--k", LOGOS[k].c);
-    b.innerHTML = '<span class="lg">' + unico(LOGOS[k].logo) + '</span><span class="nm"></span><small></small>'; nombre(b.querySelector(".nm"), k); b.querySelector("small").textContent = QUE[k] || "";
+    b.innerHTML = '<span class="lg">' + unico(LOGOS[k].logo) + '</span><span class="nm"></span>'; nombre(b.querySelector(".nm"), k);
     b.onclick = () => { if (!b.classList.contains("cen")) return b.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }); abrirLaApp(k); };
     box.appendChild(b); const p = document.createElement("i"); p.style.setProperty("--k", LOGOS[k].c); pts.appendChild(p);
     const m = document.createElement("button"); m.style.setProperty("--k", LOGOS[k].c); m.innerHTML = unico(LOGOS[k].logo); m.setAttribute("aria-label", k.charAt(0).toUpperCase() + k.slice(1));
@@ -202,7 +202,7 @@ document.addEventListener("touchmove", (e) => { if (x0 === null) return;
   else if (["hoy", "enlace", "vista"].includes(pantalla)) { if (dx < 0) return; ir("principal"); }
   else return;
   x0 = null; deslizo = Date.now(); }, { passive: true });
-const sueltaLado = () => { x0 = null; $("aps").style.overflow = ""; };
+const sueltaLado = () => { x0 = null; if ($("aps").style.overflow) setTimeout(() => { $("aps").style.overflow = ""; }, 400); };
 document.addEventListener("touchend", sueltaLado, { passive: true });
 document.addEventListener("touchcancel", sueltaLado, { passive: true });
 $("escribir").onsubmit = (e) => { e.preventDefault(); const t = $("msg").value.trim(); if (!t || modo === "sinpc") return; $("msg").value = ""; $("msg").blur(); $("escribir").classList.remove("on"); hoja(); Nativo.callar(); enviar(t); };
