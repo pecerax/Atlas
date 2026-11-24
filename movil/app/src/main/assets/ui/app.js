@@ -3,7 +3,7 @@
 "use strict";
 const $ = (id) => document.getElementById(id);
 const ORDEN = ["cronos", "hermes", "fortuna", "baco", "atenea"];
-const QUE = { cronos: "Cronos guarda tu historia día por día.", hermes: "Hermes lleva tus gastos.", fortuna: "Fortuna sigue tus fondos mutuos.",
+const QUE = { baco: "Baco es tu música: lo que suena en el PC.", cronos: "Cronos guarda tu historia día por día.", hermes: "Hermes lleva tus gastos.", fortuna: "Fortuna sigue tus fondos mutuos.",
   atenea: "Atenea es tu espacio de aprendizaje." };
 
 // ---- sin la app (navegador del PC): un Nativo de mentira para ver las pantallas
@@ -54,7 +54,7 @@ function ir(p) {
   pantalla = p;
   document.querySelectorAll(".pant").forEach((s) => s.classList.toggle("on", s.id === "p-" + p));
   document.documentElement.style.setProperty("--c", p === "baco" ? LOGOS.baco.c : p === "app" ? (LOGOS[appAbierta] || {}).c || "#4FE3FF" : "#4FE3FF");
-  if (p === "hoy") pintarHoy(); if (p === "enlace") pintarEnlace(); if (p === "baco") pintarMusica();
+  if (p === "hoy") pintarHoy(); if (p === "apps") requestAnimationFrame(centrarApps); if (p === "enlace") pintarEnlace(); if (p === "baco") pintarMusica();
 }
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-ir]"); if (b) ir(b.dataset.ir); });
 
@@ -66,14 +66,32 @@ function nombre(el, k) { const up = k.toUpperCase(), g = LOGOS[k]; el.style.setP
 document.querySelectorAll("[data-marca]").forEach((e) => { e.innerHTML = unico(LOGOS.marca); });
 document.querySelectorAll("[data-nm]").forEach((e) => nombre(e, e.dataset.nm));
 let appAbierta = "";
+function abrirLaApp(k) { if (k === "baco") return ir("baco"); appAbierta = k; nombre($("appNm"), k); ir("app"); abrirApp(k); }
 function pintarApps(lista) {
-  const box = $("aps"); box.textContent = "";
+  const box = $("aps"), pts = $("apts"), mini = $("menuApps"); box.textContent = ""; pts.textContent = ""; mini.textContent = "";
   const tiene = new Set((lista || []).map((n) => String(n).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")));
   for (const k of ORDEN) { if (lista && lista.length && !tiene.has(k)) continue;
-    const b = document.createElement("button"); b.className = "ap"; b.style.setProperty("--k", LOGOS[k].c);
-    b.innerHTML = '<span class="lg">' + unico(LOGOS[k].logo) + '</span><span class="nm"></span>'; nombre(b.querySelector(".nm"), k);
-    b.onclick = () => { if (k === "baco") return ir("baco"); appAbierta = k; nombre($("appNm"), k); ir("app"); abrirApp(k); };
-    box.appendChild(b); }
+    const b = document.createElement("button"); b.className = "ap"; b.dataset.k = k; b.style.setProperty("--k", LOGOS[k].c);
+    b.innerHTML = '<span class="lg">' + unico(LOGOS[k].logo) + '</span><span class="nm"></span><small></small>'; nombre(b.querySelector(".nm"), k); b.querySelector("small").textContent = QUE[k] || "";
+    b.onclick = () => { if (!b.classList.contains("cen")) return b.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }); abrirLaApp(k); };
+    box.appendChild(b); const p = document.createElement("i"); p.style.setProperty("--k", LOGOS[k].c); pts.appendChild(p);
+    const m = document.createElement("button"); m.style.setProperty("--k", LOGOS[k].c); m.innerHTML = unico(LOGOS[k].logo); m.setAttribute("aria-label", k.charAt(0).toUpperCase() + k.slice(1));
+    m.onclick = () => { menu(false); abrirLaApp(k); }; mini.appendChild(m); }
+  centrarApps();
+}
+// la app que queda al centro del carrusel se agranda, muestra su descripción y tiñe el cielo
+function centrarApps() {
+  const box = $("aps"), medio = box.scrollLeft + box.clientWidth / 2; let mejor = null, dist = 1e9;
+  for (const a of box.children) { const d = Math.abs(a.offsetLeft + a.offsetWidth / 2 - medio); if (d < dist) { dist = d; mejor = a; } }
+  [...box.children].forEach((a, i) => { const on = a === mejor; a.classList.toggle("cen", on); if ($("apts").children[i]) $("apts").children[i].classList.toggle("on", on); });
+  if (mejor && pantalla === "apps") document.documentElement.style.setProperty("--c", LOGOS[mejor.dataset.k].c);
+}
+$("aps").addEventListener("scroll", () => requestAnimationFrame(centrarApps), { passive: true });
+function pintarMenu() {
+  const n = est ? (est.recordatorios || []).length + (est.tareas || []).length : 0;
+  $("mHoy").textContent = !est ? "" : n ? n + (n === 1 ? " pendiente" : " pendientes") : "Nada pendiente";
+  $("mEnl").textContent = modo === "sinpc" ? "Sin conexión" : (est && est.pc) || "Conectado";
+  $("menuEst").textContent = modo === "sinpc" ? "BUSCANDO EL PC" : "CONECTADO" + (est && est.pc ? " · " + String(est.pc).toUpperCase().slice(0, 16) : "");
 }
 
 // ---- estado de Atlas
@@ -159,7 +177,7 @@ $("nucleo").onclick = () => {
 $("btnSi").onclick = () => confirmar(true);
 $("btnNo").onclick = () => confirmar(false);
 // ---- menú lateral
-function menu(abrir) { document.body.classList.toggle("menu", abrir); $("btnMenu").setAttribute("aria-expanded", abrir); $("menu").setAttribute("aria-hidden", !abrir); }
+function menu(abrir) { if (abrir) pintarMenu(); document.body.classList.toggle("menu", abrir); $("btnMenu").setAttribute("aria-expanded", abrir); $("menu").setAttribute("aria-hidden", !abrir); }
 $("btnMenu").onclick = () => menu(true);
 $("velo").onclick = () => menu(false);
 document.querySelectorAll("[data-menu]").forEach((b) => { b.onclick = () => { menu(false); const d = b.dataset.menu;
@@ -182,7 +200,7 @@ $("escribir").onsubmit = (e) => { e.preventDefault(); const t = $("msg").value.t
 let recargar = false;
 function hayApp(si) { $("btnApp").hidden = !si; $("btnMenu").classList.toggle("nueva", si); }
 function versiones() { let v = {}; try { v = JSON.parse(Nativo.version ? Nativo.version() : "{}"); } catch (e) { /* app antigua */ }
-  $("verN").textContent = v.app ? "APP " + v.app + " · PANTALLA " + (v.ui || 0) : ""; hayApp(!!v.appNueva); }
+  $("verN").textContent = v.app ? "APP " + v.app + " · PANTALLA " + (v.ui || 0) : "APP 0.8 O ANTERIOR · SIN ACTUALIZACIÓN AUTOMÁTICA"; hayApp(!!v.appNueva); }
 $("btnApp").onclick = () => { menu(false); dice("", "Instalando la versión nueva. Atlas se cerrará un momento; ábralo de nuevo al terminar."); Nativo.actualizar(); };
 const libre = () => !ocupado && (modo === "espera" || modo === "sinpc") && !document.body.classList.contains("menu");
 function siToca() { if (recargar && libre()) { recargar = false; if (Nativo.recargar) Nativo.recargar(); else location.reload(); } }
