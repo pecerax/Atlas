@@ -32,20 +32,12 @@ button:focus-visible{outline:2px solid var(--a);outline-offset:4px}
 .nucleo[disabled]{pointer-events:none}
 .nucleo img{width:100%;height:100%;display:block;-webkit-mask-image:radial-gradient(circle,#000 60%,transparent 70%);mask-image:radial-gradient(circle,#000 60%,transparent 70%)}
 @keyframes late{50%{filter:brightness(1.18)}}
-/* El color de cada estado es el mismo del HUD del PC: verde al escuchar, ámbar al pensar y blanco al responder. */
-.nucleo{position:relative;isolation:isolate}
-.nucleo::after{content:"";position:absolute;inset:0;background:var(--m,transparent);-webkit-mask-image:radial-gradient(circle,#000 60%,transparent 70%);mask-image:radial-gradient(circle,#000 60%,transparent 70%);mix-blend-mode:color;opacity:0;transition:opacity .3s;pointer-events:none}
-body[data-modo="escuchando"]{--m:#5FF2C0}
-body[data-modo="pensando"]{--m:#FF9F43}
-body[data-modo="hablando"]{--m:#FFFFFF}
-body[data-modo="escuchando"] .nucleo::after,body[data-modo="pensando"] .nucleo::after,body[data-modo="hablando"] .nucleo::after{opacity:1}
-body[data-modo="escuchando"] .nucleo{animation:oye 1.1s ease-in-out infinite}
-body[data-modo="pensando"] .nucleo{animation:piensa 1.6s linear infinite}
-body[data-modo="hablando"] .nucleo{animation:oye .7s ease-in-out infinite}
-body[data-modo="hablando"] .nucleo img{filter:brightness(1.5)}
+/* La esfera principal es el dibujo vivo del PC (nucleo.js): sus colores y giros los pone ese código. */
+#nucleo{animation:none;filter:drop-shadow(0 0 6px rgba(79,227,255,.35))}
+#nucleo svg{display:block;width:100%;height:100%;overflow:visible}
 body[data-modo="escuchando"] .estado{color:#5FF2C0}
 body[data-modo="hablando"] .estado{color:#FFFFFF}
-body[data-modo="sinpc"] .nucleo{animation:none;filter:grayscale(1) brightness(.55)}
+body[data-modo="sinpc"] .nucleo,body[data-modo="sinpc"] #nucleo{animation:none;filter:grayscale(1) brightness(.55)}
 @keyframes oye{50%{filter:brightness(1.45);transform:scale(1.03)}}
 @keyframes piensa{50%{filter:brightness(1.3)}}
 .estado{font-family:var(--mono);font-size:11px;letter-spacing:.34em;color:var(--a);display:flex;align-items:center;gap:9px;margin-top:6px;min-height:34px;padding:0 14px}
@@ -85,6 +77,10 @@ body[data-modo="pensando"] .estado{color:#FF9F43}
 .es.sol{--s:128px}
 .es.sol .o{border:0;background:none;box-shadow:none;padding:0;filter:drop-shadow(0 0 22px rgba(79,227,255,.55))}
 .es.sol b{font-size:12px;margin-top:2px}
+/* los planetas (uno por app) giran alrededor del sol, cada uno a su paso, solo con el menú abierto */
+.es.sol .pl{transform-origin:50px 50px;animation:orbita var(--d,40s) linear infinite;animation-delay:var(--r,0s);animation-play-state:paused}
+body.menu .es.sol .pl{animation-play-state:running}
+@keyframes orbita{to{transform:rotate(360deg)}}
 .es .o{width:var(--s);height:var(--s);border-radius:50%;padding:calc(var(--s) * .19);display:block;border:1px solid color-mix(in srgb,var(--k,var(--a)) 42%,transparent);
   background:radial-gradient(circle,color-mix(in srgb,var(--k,var(--a)) 16%,#01040A),#01040A 78%);box-shadow:0 0 24px color-mix(in srgb,var(--k,var(--a)) 26%,transparent)}
 .es:active .o{transform:scale(.94)}
@@ -170,7 +166,23 @@ body.menu #menu{transform:none}
 .fondo{display:grid;grid-template-columns:1fr auto;gap:3px 10px;align-items:center;padding:9px 0;border-top:1px solid color-mix(in srgb,var(--ap) 12%,transparent);font-size:14.5px}
 .fondo:first-of-type{border-top:0}.fondo small{font-family:var(--mono);font-size:10px;color:var(--amuted);letter-spacing:.08em}
 .fondo svg{width:64px;height:20px;overflow:visible;justify-self:end}.fondo span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.cini{display:flex;flex-direction:column;align-items:center;gap:14px;flex:none;padding:6px 0 10px}
+.cini .clogo{width:min(40vw,170px);aspect-ratio:1;display:block;filter:drop-shadow(0 0 10px rgba(183,166,255,.55))}
+.cini .clogo svg{width:100%;height:100%;display:block}
+.cini p{color:var(--amuted);font-size:15px;letter-spacing:.04em}
+.cal{width:100%;border:1px solid var(--aline);background:var(--apanel);padding:12px;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+.cal .ct{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.16em;color:var(--afg);margin-bottom:8px}
+.cal .ct button{color:var(--ap);font-size:18px;width:48px;height:40px}.cal .ct button:disabled{opacity:.25}
+.cal .g{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.cal .g i{font-family:var(--mono);font-size:10px;color:var(--amuted);font-style:normal;padding-bottom:4px}
+.cal .g button{font-size:14px;color:var(--afg);height:40px;border:1px solid transparent}
+.cal .g button:disabled{opacity:.25}
+.cal .g button.hoy{color:var(--ap);border-color:var(--aline);font-weight:700}
+.cal .g button:active{background:color-mix(in srgb,var(--ap) 18%,transparent)}
+.atajos{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.atajos button{border:1px solid var(--aline);color:var(--afg);font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;padding:12px 14px}
 .nav{display:flex;justify-content:space-between;align-items:stretch;flex:none;border:1px solid var(--aline);background:var(--apanel);font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;color:var(--afg)}
+.nav .dia{flex:1;width:auto;font-size:11.5px;color:var(--afg);letter-spacing:.1em;font-family:var(--mono);font-weight:700;border-left:1px solid var(--aline);border-right:1px solid var(--aline)}
 .nav span{flex:1;display:flex;align-items:center;justify-content:center;border-left:1px solid var(--aline);border-right:1px solid var(--aline);font-weight:700}
 .nav button{width:52px;height:42px;font-size:18px;color:var(--ap)}.nav button:disabled{opacity:.25}
 .esfera{width:min(100%,46vh);align-self:center;flex:none;display:block;margin:2px 0}
@@ -219,7 +231,7 @@ body.menu .aps{overflow:hidden}
 .avisos .accion.on{border-color:var(--ok);color:var(--ok)}
 .accion.rojo{border-color:var(--mal);color:var(--mal);background:none}
 .error{color:var(--mal);text-align:center;font-size:15px;min-height:22px;margin-top:12px;max-width:28ch}
-@media (prefers-reduced-motion:reduce){.nucleo,.pant.on,.ap .lg{animation:none!important}#menu,#velo,.hoja,.es{transition:none!important}}
+@media (prefers-reduced-motion:reduce){.nucleo,.pant.on,.ap .lg,.es.sol .pl{animation:none!important}#menu,#velo,.hoja,.es{transition:none!important}}
 </style>
 </head>
 <body data-modo="sinpc">
@@ -243,7 +255,7 @@ body.menu .aps{overflow:hidden}
 <section class="pant" id="p-principal">
   <div class="cab"><button class="mbtn" id="btnMenu" aria-label="Abrir el menú" aria-expanded="false"><i></i><i></i><i></i></button><span class="wm" data-marca></span><span class="mbtn" aria-hidden="true"></span></div>
   <div class="aire"></div>
-  <button class="nucleo" id="nucleo" aria-label="Hablar con Atlas"><img alt="" src="nucleo.jpg"></button>
+  <button class="nucleo" id="nucleo" aria-label="Hablar con Atlas"></button>
   <div class="estado"><span class="pt"></span><span id="estadoTx">BUSCANDO EL PC</span></div>
   <div class="pista" id="pista"></div>
   <div class="aire"></div>
@@ -334,5 +346,6 @@ body.menu .aps{overflow:hidden}
 
 <script src="logos.js"></script>
 <script src="app.js"></script>
+<script src="nucleo.js"></script>
 </body>
 </html>

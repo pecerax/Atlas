@@ -45,7 +45,8 @@ function pedir(metodo, ruta, cuerpo) {
 const Atlas = window.Atlas = {
   _cb(id, st, texto) { const ok = espera.get(id); if (!ok) return; espera.delete(id); let j = null; try { j = JSON.parse(texto); } catch (e) { /* no era JSON */ } ok({ st, j }); },
   _evento(nombre, texto) { let d = {}; try { d = JSON.parse(texto || "{}"); } catch (e) { /* vacío */ } (EVENTOS[nombre] || (() => {}))(d); },
-  _atras() { if (document.body.classList.contains("menu")) { menu(false); return true; } if (pantalla === "principal" || pantalla === "vincular") return false; ir(pantalla === "baco" || pantalla === "app" ? "apps" : "principal"); return true; },
+  _atras() { if (document.body.classList.contains("menu")) { menu(false); return true; } if (pantalla === "principal" || pantalla === "vincular") return false; if (pantalla === "app" && appAbierta === "cronos" && diaCronos) { abrirApp("cronos"); return true; }   // de un día se vuelve al calendario
+    ir(pantalla === "baco" || pantalla === "app" ? "apps" : "principal"); return true; },
 };
 
 // ---- pantallas
@@ -70,7 +71,8 @@ let appAbierta = "";
 const ESTRELLAS = { apps: [50, 33], hoy: [24, 62], escribir: [76, 62], enlace: [50, 82] };
 const UNIONES = [["apps", "hoy"], ["apps", "escribir"], ["hoy", "enlace"], ["escribir", "enlace"], ["hoy", "escribir"]];
 // los planetas del sol «Aplicaciones»: uno por app que exista, con su color
-const PLANETAS = [[76, 35, 3.4], [26, 33, 3], [50, 92, 3.6], [12, 68, 3], [90, 62, 3.2], [62, 14, 3], [30, 82, 3]];
+// [radio de la órbita, tamaño, segundos por vuelta, fracción de vuelta en que parte]
+const PLANETAS = [[30, 3.4, 26, .12], [42, 3.6, 44, .5], [30, 3, 26, .62], [42, 3, 44, .85], [42, 3.2, 44, .2], [30, 3, 26, .37], [42, 3, 44, .68]];
 function abrirLaApp(k) { if (k === "baco") return ir("baco"); appAbierta = k; nombre($("appNm"), k); ir("app"); abrirApp(k); }
 { const lin = $("consLineas");
   for (const [a, b] of UNIONES) { const p = ESTRELLAS[a], q = ESTRELLAS[b], l = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -88,8 +90,9 @@ function pintarApps(lista) {
     box.appendChild(b); const p = document.createElement("i"); p.style.setProperty("--k", LOGOS[k].c); pts.appendChild(p);
     hay.push(k); }
   const ns = "http://www.w3.org/2000/svg";
-  hay.forEach((k, n) => { const q = PLANETAS[n % PLANETAS.length], c = document.createElementNS(ns, "circle");
-    c.setAttribute("cx", q[0]); c.setAttribute("cy", q[1]); c.setAttribute("r", q[2]); c.setAttribute("fill", LOGOS[k].c); mini.appendChild(c); });
+  hay.forEach((k, n) => { const q = PLANETAS[n % PLANETAS.length], g = document.createElementNS(ns, "g"), c = document.createElementNS(ns, "circle");
+    c.setAttribute("cx", 50); c.setAttribute("cy", 50 - q[0]); c.setAttribute("r", q[1]); c.setAttribute("fill", LOGOS[k].c);
+    g.setAttribute("class", "pl"); g.style.setProperty("--d", q[2] + "s"); g.style.setProperty("--r", -(q[2] * q[3]) + "s"); g.appendChild(c); mini.appendChild(g); });
   centrarApps();
 }
 // la app que queda al centro del carrusel se agranda, muestra su descripción y tiñe el cielo
@@ -265,7 +268,9 @@ function pie(box, texto, cielo) { const p = el("div", "pie", texto); if (cielo) 
 async function abrirApp(k, extra) {
   const box = $("appCaja"), turno = ++turnoApp; $("p-app").dataset.app = k;
   if (!["cronos", "hermes", "fortuna"].includes(k)) { box.textContent = ""; box.appendChild(el("div", "vacio", (QUE[k] || "") + " Todavía no tiene pantalla en el celular.")); return; }
-  if (!extra) { box.textContent = ""; box.appendChild(el("div", "vacio", "Pidiéndoselo al PC…")); }
+  if (k === "cronos" && !extra) return pintaCronosInicio(box);   // igual que en el PC: primero se elige el día
+  if (!extra || extra.nuevo) { box.textContent = ""; box.appendChild(el("div", "vacio", "Pidiéndoselo al PC…")); }
+  if (extra) extra = { fecha: extra.fecha };
   const r = await pedir("POST", "/p/" + k, extra || {});
   if (turno !== turnoApp || pantalla !== "app" || appAbierta !== k) return;
   box.textContent = ""; box.scrollTop = 0; const d = r.j || {};
@@ -354,12 +359,37 @@ function esferaSVG(bl) {
   else g += '<text x="256" y="262" text-anchor="middle" font-family="monospace" font-size="14" letter-spacing="3" fill="#A99BD8">SIN DATOS</text>';
   return `<svg class="esfera" viewBox="-34 -34 580 580" role="img" aria-label="Esfera de 24 horas del día">${g}</svg>`;
 }
+// inicio de Cronos, como en el PC: su logo, «¿Qué día quiere ver?», el calendario y los atajos
+let calMes = null;
+const MESES_L = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+function pintaCronosInicio(box) {
+  diaCronos = null; box.textContent = ""; box.scrollTop = 0;
+  const hoy = new Date(), ini = el("div", "cini"), lg = el("span", "clogo"), cal = el("div", "cal"), at = el("div", "atajos");
+  lg.innerHTML = unico(LOGOS.cronos.logo); if (!calMes) calMes = [hoy.getFullYear(), hoy.getMonth()];
+  const ver = (f) => abrirApp("cronos", { fecha: isoDe(f), nuevo: true });
+  const pinta = () => { cal.textContent = ""; const [y, m] = calMes, ct = el("div", "ct"), a = el("button", "", "◂"), s = el("button", "", "▸"), g = el("div", "g");
+    a.setAttribute("aria-label", "Mes anterior"); s.setAttribute("aria-label", "Mes siguiente");
+    a.onclick = () => { calMes = m ? [y, m - 1] : [y - 1, 11]; pinta(); }; s.onclick = () => { calMes = m === 11 ? [y + 1, 0] : [y, m + 1]; pinta(); };
+    s.disabled = y > hoy.getFullYear() || (y === hoy.getFullYear() && m >= hoy.getMonth());
+    ct.append(a, el("span", "", MESES_L[m] + " " + y), s); cal.appendChild(ct);
+    for (const l of "LMMJVSD") g.appendChild(el("i", "", l));
+    const vacios = (new Date(y, m, 1).getDay() + 6) % 7, dias = new Date(y, m + 1, 0).getDate();
+    for (let i = 0; i < vacios; i++) g.appendChild(el("span"));
+    for (let n = 1; n <= dias; n++) { const f = new Date(y, m, n), b = el("button", isoDe(f) === isoDe(hoy) ? "hoy" : "", String(n)); b.disabled = f > hoy; b.onclick = () => ver(f); g.appendChild(b); }
+    cal.appendChild(g); };
+  pinta();
+  for (const [t, n] of [["HOY", 0], ["AYER", 1], ["HACE UNA SEMANA", 7]]) { const b = el("button", "", t); b.onclick = () => ver(new Date(Date.now() - n * 864e5)); at.appendChild(b); }
+  ini.append(lg, el("p", "", "¿Qué día quiere ver?"), cal, at); box.appendChild(ini);
+  pie(box, "TODO QUEDA EN SU PC", "CAPRICORNIO");
+}
 function pintaCronos(box, d) {
   diaCronos = d.fecha; const p = d.fecha.split("-").map(Number), f = new Date(p[0], p[1] - 1, p[2]), hoy = isoDe(new Date());
   const nav = el("div", "nav"), a = el("button", "", "◂"), s = el("button", "", "▸"); a.setAttribute("aria-label", "Día anterior"); s.setAttribute("aria-label", "Día siguiente");
   const mover = (n) => { const x = new Date(p[0], p[1] - 1, p[2] + n); abrirApp("cronos", { fecha: isoDe(x) }); };
   a.onclick = () => mover(-1); s.onclick = () => mover(1); s.disabled = d.fecha >= hoy;
-  nav.append(a, el("span", "", (d.fecha === hoy ? "HOY · " : "") + DIAS_V[f.getDay()] + " " + p[2] + " " + MESES_V[p[1] - 1]), s); box.appendChild(nav);
+  const medio = el("button", "dia", (d.fecha === hoy ? "HOY · " : "") + DIAS_V[f.getDay()] + " " + p[2] + " " + MESES_V[p[1] - 1] + " ▾"); medio.setAttribute("aria-label", "Elegir otro día");
+  medio.onclick = () => { calMes = [p[0], p[1] - 1]; abrirApp("cronos"); };
+  nav.append(a, medio, s); box.appendChild(nav);
   const bl = d.bloques.filter((b) => b.ini && ["sueno", "lugar", "viaje", "actividad"].includes(b.fila));
   const caja = el("div"); caja.style.cssText = "display:flex;flex:none"; caja.innerHTML = esferaSVG(bl); box.appendChild(caja);   // solo números y nombres ya limpiados: nada del PC entra como HTML
   const usados = new Set(bl.map(COLOR_RELOJ)), ley = el("div", "ley");
