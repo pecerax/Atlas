@@ -307,6 +307,124 @@ def _vista_estado(hud) -> dict:
     }
 
 
+# ----------------------------------------------------------------------------- las apps, resumidas para el celular
+# Solo lectura y solo lo que la pantalla del celular dibuja: totales, categorías y los últimos movimientos de Hermes;
+# valor y rentabilidad de Fortuna; los bloques del día de Cronos. Nada de números de cuenta ni de tarjeta, ni fotos,
+# ni correos. Los números salen de las mismas funciones que usa Atlas al responder por voz.
+def _corto(v, n: int) -> str:
+    return "".join(c for c in str(v or "") if c.isprintable())[:n].strip()
+
+
+def _comercio(v) -> str:
+    """El nombre del comercio sin tiras largas de dígitos (por si la glosa del banco trae un número de cuenta o tarjeta)."""
+    import re
+
+    return _corto(re.sub(r"\d[\d -]{6,}\d", "…", str(v or "")), 40)
+
+
+def _app_hermes() -> dict:
+    import atlas_hermes as H
+    from datetime import timedelta
+
+    movs, pres = H.cargar()
+    if not movs:
+        return {"vacio": True}
+    hoy = H._hoy()
+    cfg = H.ajuste_periodo()
+    a, m = H.periodo_de(hoy, cfg)
+    ini, fin = H.rango(a, m, cfg)
+    ciclo = cfg["modo"] == "ciclo"
+    gastos = [x for x in H.en(movs, ini, min(fin, hoy), ciclo) if H.es_gasto(x)]
+    i0, f0 = H.rango(a, m - 1, cfg)
+    antes = [x for x in H.en(movs, i0, min(f0, i0 + (hoy - ini)), ciclo) if H.es_gasto(x)]   # mismo tramo del ciclo anterior
+    por: dict[str, float] = {}
+    for x in gastos:
+        k = x.get("categoria") or "Sin categoría"
+        por[k] = por.get(k, 0) - x["monto"]
+    cats = [{"nombre": _corto(k, 40), "monto": round(v), "presupuesto": round(pres[k]) if k in pres else None}
+            for k, v in sorted(por.items(), key=lambda kv: -kv[1])[:10]]
+    ult = sorted((x for x in movs if H.es_gasto(x) and x["_f"] <= hoy), key=lambda x: x["_f"], reverse=True)[:15]
+    return {
+        "desde": ini.isoformat(), "hasta": fin.isoformat(), "total": round(-sum(x["monto"] for x in gastos)),
+        "anterior": round(-sum(x["monto"] for x in antes)), "dias_quedan": max(0, (fin - hoy).days),
+        "presupuesto": round(sum(pres.values())) if pres else None, "categorias": cats,
+        "ultimos": [{"fecha": x["_f"].isoformat(), "comercio": _comercio(x.get("comercio")), "monto": round(-x["monto"]),
+                     "categoria": _corto(x.get("categoria"), 40)} for x in ult],
+        "al": max(x["_f"] for x in movs).isoformat(),
+        "semana": round(-sum(x["monto"] for x in H.en(movs, hoy - timedelta(days=hoy.weekday()), hoy) if H.es_gasto(x))),
+    }
+
+
+def _app_fortuna() -> dict:
+    import atlas_fortuna as F
+    import atlas_fortuna_aportes
+    from datetime import date, timedelta
+
+    fondos = F.cargar()
+    if not fondos:
+        return {"vacio": True}
+    al = max(f["ultimo"][0] for f in fondos)
+    pos, _sueltos = F.posiciones(fondos, atlas_fortuna_aportes.leer().get("aportes") or [])
+    mias = {p["f"]["key"] for p in pos}
+    r = lambda f, d: (lambda v: None if v is None else round(v, 2))(F.rent(f, d))  # noqa: E731
+    lista = [{"nombre": _corto(f["nombre"], 60), "adm": _corto(f["adm"], 20), "mes": r(f, f["ultimo"][0] - timedelta(days=30)),
+              "anio": r(f, date(f["ultimo"][0].year, 1, 1) - timedelta(days=1)), "mio": f["key"] in mias}
+             for f in sorted(fondos, key=lambda f: (f["key"] not in mias, f["otro"], f["nombre"]))[:16]]
+    mio = None
+    if pos:
+        puesto, ahora = sum(p["puesto"] for p in pos), sum(p["ahora"] for p in pos)
+        g30, b30 = F._cambio_desde(pos, al - timedelta(days=30))
+        mio = {"puesto": round(puesto), "ahora": round(ahora), "gano": round(ahora - puesto),
+               "pct": round((ahora / puesto - 1) * 100, 2) if puesto else 0.0,
+               "mes": round(g30), "mes_pct": round(g30 / b30 * 100, 2) if b30 else 0.0,
+               "posiciones": [{"nombre": _corto(p["f"]["nombre"], 60), "adm": _corto(p["f"]["adm"], 20), "puesto": round(p["puesto"]),
+                               "ahora": round(p["ahora"]), "pct": round((p["ahora"] / p["puesto"] - 1) * 100, 2) if p["puesto"] else 0.0}
+                              for p in sorted(pos, key=lambda p: -p["ahora"])[:12]]}
+    return {"al": al.isoformat(), "mio": mio, "fondos": lista}
+
+
+def _app_cronos(data: dict) -> dict:
+    import atlas_historia as C
+    from datetime import date, timedelta
+
+    try:
+        f = date.fromisoformat(str(data.get("fecha") or ""))
+    except ValueError:
+        f = date.today()
+    hoy = date.today()
+    f = min(max(f, hoy - timedelta(days=3650)), hoy)
+    caja: dict = {}
+
+    def completo():   # con los recibos de viaje del correo, como el panel del PC; puede tardar si hay que consultarlo
+        try:
+            caja["d"] = C.dia(f)
+        except Exception as exc:  # noqa: BLE001
+            caja["error"] = exc
+
+    h = threading.Thread(target=completo, daemon=True)
+    h.start()
+    h.join(9)
+    parcial = "d" not in caja
+    d = caja["d"] if not parcial else C.dia(f, correos=False)
+    B = C.bloques(d, f)
+    return {"fecha": f.isoformat(), "parcial": parcial,
+            "bloques": [{"ini": _corto(b.get("ini"), 5), "fin": _corto(b.get("fin"), 5), "fila": _corto(b.get("fila"), 12),
+                         "titulo": _corto(b.get("titulo"), 90), "conf": _corto(b.get("conf"), 12)} for b in B[:60] if b.get("titulo")]}
+
+
+def _app(nombre: str, data: dict) -> tuple[int, dict]:
+    try:
+        if nombre == "hermes":
+            return 200, _app_hermes()
+        if nombre == "fortuna":
+            return 200, _app_fortuna()
+        if nombre == "cronos":
+            return 200, _app_cronos(data)
+    except Exception as exc:  # noqa: BLE001 - sin datos o con un archivo a medias, la app dice que no pudo leer
+        return 200, {"error": f"No pude leer los datos ({type(exc).__name__})."}
+    return 404, {"error": "no existe"}
+
+
 EVENTOS: deque = deque(maxlen=50)   # lo último que avisó el celular (notificaciones y llamadas), por si alguien quiere leerlo
 
 
@@ -389,6 +507,9 @@ def _atender(hud, ruta: str, data: dict, cuerpo: bytes) -> tuple[int, object, st
         return 200, {"reply": out.get("reply", "")}, "json"
     if ruta == "/p/detener":
         return 200, A.stop_turn(), "json"
+    if ruta in ("/p/hermes", "/p/fortuna", "/p/cronos"):
+        st, r = _app(ruta[3:], data)
+        return st, r, "json"
     if ruta == "/p/evento":
         st, r = _evento(hud, data)
         return st, r, "json"

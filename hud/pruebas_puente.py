@@ -194,6 +194,56 @@ ok("detener", cel.pedir("POST", "/p/detener")[0] == 200 and hud.ATLAS.detenido =
 ok("oír sin voz no revienta", cel.pedir("POST", "/p/oir", b"RIFFxxxx", tipo="audio/wav")[1].get("error") == "Voz no disponible")
 ok("ruta que no existe: 404", cel.pedir("GET", "/api/status")[0] == 404 and cel.pedir("POST", "/p/apagar")[0] == 404)
 ok("música: acción desconocida 400", cel.pedir("POST", "/p/musica", {"accion": "borrar"})[0] == 400)
+# --- las apps resumidas (datos de mentira en una carpeta temporal) ---
+import json as _json
+import tempfile as _tf
+from datetime import date as _date
+from pathlib import Path as _Path
+import atlas_fortuna as _F
+import atlas_fortuna_aportes as _FA
+import atlas_hermes as _H
+
+_tmp = _Path(_tf.mkdtemp())
+_H.HERMES_DIR, _H.HOY, _H.CLS_FILE = _tmp, _date(2026, 11, 20), _tmp / "no.json"
+(_tmp / "movimientos.json").write_text(_json.dumps({"cortes": [{"fecha": "2026-10-23"}], "movimientos": [
+    {"id": "a", "fecha": "2026-11-18", "monto": -12000, "comercio": "Supermercado Uno 4111-1111-1111-1111", "categoria": "Comida"},
+    {"id": "b", "fecha": "2026-11-10", "monto": -8000, "comercio": "Uber", "categoria": "Transporte"},
+    {"id": "c", "fecha": "2026-11-05", "monto": -50000, "comercio": "Pago TC", "categoria": "Pago de tarjeta"},
+    {"id": "d", "fecha": "2026-10-28", "monto": -5000, "comercio": "Café", "categoria": "Comida"},
+    {"id": "e", "fecha": "2026-10-01", "monto": -30000, "comercio": "Librería", "categoria": "Estudio"},
+    {"id": "f", "fecha": "2026-11-15", "monto": 900000, "comercio": "Sueldo", "categoria": "Ingresos"}]}), encoding="utf-8")
+(_tmp / "presupuestos.json").write_text(_json.dumps({"Comida": 100000, "_nota": "x"}), encoding="utf-8")
+st, r = cel.pedir("POST", "/p/hermes", {})
+ok("hermes: total del ciclo sin pagos de tarjeta ni ingresos", st == 200 and r.get("total") == 25000 and r["desde"] == "2026-10-24", )
+ok("hermes: categorías con presupuesto y últimos gastos", r["categorias"][0] == {"nombre": "Comida", "monto": 17000, "presupuesto": 100000}
+   and [u["comercio"] for u in r["ultimos"]][:2] == ["Supermercado Uno …", "Uber"] and r["ultimos"][0]["monto"] == 12000
+   and all(set(u) == {"fecha", "comercio", "monto", "categoria"} for u in r["ultimos"]) and r["al"] == "2026-11-18")
+_H.HERMES_DIR = _tmp / "vacia"
+ok("hermes: sin datos lo dice sin reventar", cel.pedir("POST", "/p/hermes", {})[1] == {"vacio": True})
+_F.DATOS = _tmp / "fondos.json"
+_F.DATOS.write_text(_json.dumps({"funds": [
+    {"name": "Fondo Uno", "start": "2026-01-01", "values": [1000 + i for i in range(300)], "adm": "BCI", "rut": "1", "serie": "A"},
+    {"name": "Fondo Dos", "start": "2026-01-01", "values": [2000 - i for i in range(300)], "adm": "Scotia", "rut": "2", "serie": "B", "otro": True}]}), encoding="utf-8")
+_FA.ARCHIVO = _tmp / "aportes.json"
+_FA.ARCHIVO.write_text(_json.dumps({"aportes": [{"key": "1-A", "amount": 100000, "date": "2026-01-01"}]}), encoding="utf-8")
+st, r = cel.pedir("POST", "/p/fortuna", {})
+ok("fortuna: lo suyo valorizado y los fondos con rentabilidad", st == 200 and r["mio"]["puesto"] == 100000 and r["mio"]["ahora"] == 129900
+   and r["mio"]["pct"] == 29.9 and r["fondos"][0]["nombre"] == "Fondo Uno" and r["fondos"][0]["mio"] is True
+   and r["fondos"][1]["mes"] < 0 and r["al"] == "2026-10-27")
+_FA.ARCHIVO = _tmp / "no_hay.json"
+ok("fortuna: sin aportes muestra solo los fondos", cel.pedir("POST", "/p/fortuna", {})[1]["mio"] is None)
+_F.DATOS = _tmp / "no.json"
+ok("fortuna: archivo que falta da un error legible", "No pude leer" in cel.pedir("POST", "/p/fortuna", {})[1].get("error", ""))
+sys.modules["atlas_historia"] = types.SimpleNamespace(
+    dia=lambda f, correos=True: {"f": f, "correos": correos},
+    bloques=lambda d, f: [{"ini": "00:30", "fin": "08:10", "fila": "sueno", "titulo": "Durmiendo", "conf": "alta", "regla": "x", "por": ["secreto"]},
+                          {"ini": "10:15", "fin": "11:45", "fila": "lugar", "titulo": "En la U " + "x" * 200, "conf": "media"}, {"ini": "12:00", "titulo": ""}])
+st, r = cel.pedir("POST", "/p/cronos", {"fecha": "2026-11-20"})
+ok("cronos: bloques del día, recortados y sin campos internos", st == 200 and r["fecha"] == "2026-11-20" and r["parcial"] is False and len(r["bloques"]) == 2
+   and set(r["bloques"][0]) == {"ini", "fin", "fila", "titulo", "conf"} and len(r["bloques"][1]["titulo"]) <= 90)
+ok("cronos: fecha rara o futura cae en hoy", cel.pedir("POST", "/p/cronos", {"fecha": "2999-01-01"})[1]["fecha"] == _date.today().isoformat()
+   and cel.pedir("POST", "/p/cronos", {"fecha": "x"})[1]["fecha"] == _date.today().isoformat())
+ok("apps: sin firma no entran", cel.pedir("POST", "/p/hermes", {}, firmar=False)[0] in (401, 403))
 vistos = []
 hud.evento_celular = vistos.append
 hud.AVISOS_CELULAR = ["cl.banco.app"]

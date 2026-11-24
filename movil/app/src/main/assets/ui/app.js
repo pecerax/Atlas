@@ -19,6 +19,13 @@ if (!window.Nativo) {
       "/p/chat": { reply: "Esta semana tiene cuatro cosas, señor.", vista: /horario|evento/i.test(cuerpo) || location.hash === "#vista" ? { tipo: "calendario", titulo: "Mi horario · esta semana", desde: "2026-11-23", dias: 7, pestana: "ambos", items: [
         { titulo: "Redes de computadores", dia: "2026-11-24", hora: "10:15", fin: "11:45", lugar: "B101", tipo: "clase" }, { titulo: "Auxiliar de Intro", dia: "2026-11-24", hora: "16:00", fin: "17:30", tipo: "auxiliar" },
         { titulo: "Control 2 de Lenguajes", dia: "2026-11-25", hora: "18:00", fin: "20:00", lugar: "F10", tipo: "evaluacion" }, { titulo: "Entrega T5", dia: "2026-11-26", tipo: "entrega" }, { titulo: "Cumpleaños de Ana", dia: "2026-11-28", hora: "20:00", tipo: "google" }] } : null, pendiente: /recu/i.test(cuerpo) ? "Crear recordatorio «Repasar Redes», mañana 08:00" : null },
+      "/p/hermes": { desde: "2026-10-24", hasta: "2026-11-23", total: 384200, anterior: 431000, dias_quedan: 0, presupuesto: 500000, semana: 41300, al: "2026-11-22",
+        categorias: [{ nombre: "Comida", monto: 152300, presupuesto: 180000 }, { nombre: "Transporte", monto: 88400, presupuesto: 60000 }, { nombre: "Salidas", monto: 74500, presupuesto: null }, { nombre: "Suscripciones", monto: 69000, presupuesto: null }],
+        ultimos: [{ fecha: "2026-11-22", comercio: "Supermercado Uno", monto: 23490, categoria: "Comida" }, { fecha: "2026-11-21", comercio: "Uber", monto: 6200, categoria: "Transporte" }, { fecha: "2026-11-20", comercio: "Cafetería del campus", monto: 3100, categoria: "Comida" }] },
+      "/p/fortuna": { al: "2026-11-20", mio: { puesto: 1500000, ahora: 1583400, gano: 83400, pct: 5.56, mes: 12300, mes_pct: 0.78, posiciones: [{ nombre: "Fondo Moderado", adm: "BCI", puesto: 1000000, ahora: 1061200, pct: 6.12 }, { nombre: "Fondo Acciones USA", adm: "Scotia", puesto: 500000, ahora: 522200, pct: 4.44 }] },
+        fondos: [{ nombre: "Fondo Moderado", adm: "BCI", mes: 0.8, anio: 6.4, mio: true }, { nombre: "Fondo Acciones USA", adm: "Scotia", mes: -1.2, anio: 11.9, mio: true }, { nombre: "Fondo Liquidez", adm: "Scotia", mes: 0.4, anio: 4.1, mio: false }] },
+      "/p/cronos": { fecha: (() => { try { return JSON.parse(cuerpo).fecha; } catch (e) { return null; } })() || new Date().toISOString().slice(0, 10), parcial: false, bloques: [{ ini: "00:40", fin: "08:05", fila: "sueno", titulo: "Durmiendo", conf: "media" }, { ini: "08:50", fin: "09:25", fila: "viaje", titulo: "Metro a la universidad", conf: "alta" },
+        { ini: "10:15", fin: "11:45", fila: "lugar", titulo: "En la universidad · Redes", conf: "alta" }, { ini: "13:10", fin: "", fila: "actividad", titulo: "Almuerzo · Cafetería del campus", conf: "alta" }, { ini: "21:00", fin: "23:30", fila: "actividad", titulo: "Música y videos en casa", conf: "media" }] },
       "/p/confirmar": { reply: "Hecho, señor." } }[ruta] || { ok: true };
       setTimeout(() => Atlas._cb(id, 200, JSON.stringify(r)), ruta === "/p/chat" ? 1200 : 150); },
     grabar: () => ev("grabando"), pararGrabacion: () => { ev("oyendo"); setTimeout(() => ev("oido", { text: "¿Qué tengo mañana?" }), 900); }, cancelarGrabacion: () => {},
@@ -64,7 +71,7 @@ function pintarApps(lista) {
   for (const k of ORDEN) { if (lista && lista.length && !tiene.has(k)) continue;
     const b = document.createElement("button"); b.className = "ap"; b.style.setProperty("--k", LOGOS[k].c);
     b.innerHTML = '<span class="lg">' + unico(LOGOS[k].logo) + '</span><span class="nm"></span>'; nombre(b.querySelector(".nm"), k);
-    b.onclick = () => { if (k === "baco") return ir("baco"); appAbierta = k; nombre($("appNm"), k); $("appTx").textContent = QUE[k] || ""; ir("app"); };
+    b.onclick = () => { if (k === "baco") return ir("baco"); appAbierta = k; nombre($("appNm"), k); ir("app"); abrirApp(k); };
     box.appendChild(b); }
 }
 
@@ -192,6 +199,65 @@ const EVENTOS = {
   visible() { sondear(); if (pantalla === "enlace") pintarAvisos(); },
 };
 
+// ---- CRONOS, HERMES y FORTUNA: un resumen de solo lectura que el PC calcula y manda por el Puente
+const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; };
+const plata = (n) => "$" + Math.round(Math.abs(n || 0)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+const pct = (n) => (n > 0 ? "+" : n < 0 ? "−" : "") + Math.abs(n || 0).toFixed(1).replace(".", ",") + " %";
+const fechaC = (iso) => { const p = String(iso || "").split("-").map(Number); return p.length === 3 ? p[2] + " " + MESES_V[p[1] - 1] : ""; };
+const isoDe = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+let diaCronos = null, turnoApp = 0;
+function cifra(box, n, nota) { const c = el("div", "cifra"); c.append(el("small", "", "$"), plata(n).slice(1)); box.appendChild(c); if (nota) box.appendChild(nota); }
+function fila(box, izq, der, sub, clsDer) { const f = el("div", "fl"), r = el("div", "r"); r.append(el("span", "", izq), el("span", clsDer || "", der)); f.appendChild(r);
+  if (sub) f.appendChild(el("small", "", sub)); box.appendChild(f); return f; }
+function medida(f, v, tope) { const m = el("div", "medida" + (tope && v > tope ? " pas" : "")), i = el("i"); i.style.width = Math.min(100, tope ? v / tope * 100 : 0) + "%"; m.appendChild(i); f.appendChild(m); }
+async function abrirApp(k, extra) {
+  const box = $("appCaja"), turno = ++turnoApp; box.style.setProperty("--k", (LOGOS[k] || {}).c || "#4FE3FF");
+  if (!["cronos", "hermes", "fortuna"].includes(k)) { box.textContent = ""; box.appendChild(el("div", "vacio", (QUE[k] || "") + " Todavía no tiene pantalla en el celular.")); return; }
+  if (!extra) { box.textContent = ""; box.appendChild(el("div", "vacio", "Pidiéndoselo al PC…")); }
+  const r = await pedir("POST", "/p/" + k, extra || {});
+  if (turno !== turnoApp || pantalla !== "app" || appAbierta !== k) return;
+  box.textContent = ""; box.scrollTop = 0; const d = r.j || {};
+  if (r.st === 404) return box.appendChild(el("div", "vacio", "Tu PC necesita la versión nueva del puente para mostrar " + k.charAt(0).toUpperCase() + k.slice(1) + " aquí."));
+  if (r.st !== 200 || d.error) return box.appendChild(el("div", "vacio", r.st ? d.error || "Atlas no pudo leer esos datos." : "No pude llegar al PC."));
+  if (d.vacio) return box.appendChild(el("div", "vacio", "Todavía no hay datos. Pídele a Atlas «actualiza " + k.charAt(0).toUpperCase() + k.slice(1) + "»."));
+  ({ hermes: pintaHermes, fortuna: pintaFortuna, cronos: pintaCronos })[k](box, d);
+}
+function pintaHermes(box, d) {
+  const n = el("div", "nota"); n.append("GASTADO · CICLO " + fechaC(d.desde) + " – " + fechaC(d.hasta) + " · QUEDAN " + d.dias_quedan + " DÍAS");
+  if (d.anterior > 0) { const dif = (d.total / d.anterior - 1) * 100, b = el("b", dif > 0 ? "mal" : "", Math.abs(dif).toFixed(0) + " % " + (dif > 0 ? "MÁS" : "MENOS")); n.append(el("br"), b, " QUE EL CICLO ANTERIOR A ESTA ALTURA"); }
+  cifra(box, d.total, n);
+  if (d.presupuesto) { const f = el("div"); medida(f, d.total, d.presupuesto); box.appendChild(f); box.appendChild(el("div", "nota", "PRESUPUESTO " + plata(d.presupuesto) + " · ESTA SEMANA " + plata(d.semana))); }
+  else box.appendChild(el("div", "nota", "ESTA SEMANA " + plata(d.semana)));
+  if (d.categorias.length) box.appendChild(el("div", "dia", "EN QUÉ"));
+  const tope = Math.max(1, ...d.categorias.map((c) => c.monto));
+  for (const c of d.categorias) { const f = fila(box, c.nombre, plata(c.monto), c.presupuesto ? "DE " + plata(c.presupuesto) : ""); medida(f, c.monto, c.presupuesto || tope); if (!c.presupuesto) f.lastChild.classList.remove("pas"); }
+  if (d.ultimos.length) box.appendChild(el("div", "dia", "ÚLTIMOS GASTOS"));
+  for (const u of d.ultimos) fila(box, u.comercio || "Sin nombre", plata(u.monto), (fechaC(u.fecha) + (u.categoria ? " · " + u.categoria : "")).toUpperCase());
+  box.appendChild(el("div", "nota", "DATOS HASTA EL " + fechaC(d.al))).style.margin = "18px 0";
+}
+function pintaFortuna(box, d) {
+  if (d.mio) { const m = d.mio, n = el("div", "nota"); n.append("LO SUYO HOY · ", el("b", m.gano < 0 ? "mal" : "", (m.gano < 0 ? "PERDIÓ " : "GANÓ ") + plata(m.gano) + " (" + pct(m.pct) + ")"), el("br"), "PUESTO " + plata(m.puesto) + " · ÚLTIMOS 30 DÍAS ", el("b", m.mes < 0 ? "mal" : "", pct(m.mes_pct)));
+    cifra(box, m.ahora, n); box.appendChild(el("div", "dia", "MIS FONDOS"));
+    for (const p of m.posiciones) fila(box, p.nombre, plata(p.ahora), (p.adm + " · PUESTO " + plata(p.puesto) + " · " + pct(p.pct)).toUpperCase()); }
+  else box.appendChild(el("div", "nota", "SIN APORTES ANOTADOS. SE ANOTAN EN FORTUNA, EN EL PC.")).style.marginTop = "18px";
+  box.appendChild(el("div", "dia", "FONDOS · 30 DÍAS"));
+  for (const f of d.fondos) fila(box, f.nombre, f.mes === null ? "—" : pct(f.mes), (f.adm + (f.anio === null ? "" : " · EN EL AÑO " + pct(f.anio)) + (f.mio ? " · SUYO" : "")).toUpperCase(), f.mes > 0 ? "sube" : f.mes < 0 ? "baja" : "");
+  box.appendChild(el("div", "nota", "VALORES CUOTA DE LA CMF AL " + fechaC(d.al))).style.margin = "18px 0";
+}
+const FILA_C = { sueno: ["#8E86C9", "SUEÑO"], lugar: ["#B7A6FF", "LUGAR"], viaje: ["#FFB86B", "VIAJE"], actividad: ["#7CF0C8", "ACTIVIDAD"], quieto: ["#6B7F8C", "SIN ACTIVIDAD"], dicho: ["#4FE3FF", "LO DIJO"] };
+function pintaCronos(box, d) {
+  diaCronos = d.fecha; const p = d.fecha.split("-").map(Number), f = new Date(p[0], p[1] - 1, p[2]), hoy = isoDe(new Date());
+  const nav = el("div", "nav"), a = el("button", "", "‹"), s = el("button", "", "›"); a.setAttribute("aria-label", "Día anterior"); s.setAttribute("aria-label", "Día siguiente");
+  const mover = (n) => { const x = new Date(p[0], p[1] - 1, p[2] + n); abrirApp("cronos", { fecha: isoDe(x) }); };
+  a.onclick = () => mover(-1); s.onclick = () => mover(1); s.disabled = d.fecha >= hoy;
+  nav.append(a, el("span", "", (d.fecha === hoy ? "HOY · " : "") + DIAS_V[f.getDay()] + " " + p[2] + " " + MESES_V[p[1] - 1]), s); box.appendChild(nav);
+  for (const b of d.bloques) { const c = FILA_C[b.fila] || ["#4FE3FF", String(b.fila || "").toUpperCase()], it = el("div", "it ev"); it.style.setProperty("--k", c[0]);
+    const tm = el("time", "", b.ini || "—"); if (b.fin) tm.appendChild(el("i", "", b.fin));
+    const tx = el("div", "", b.titulo); tx.appendChild(el("small", "", c[1] + (b.conf && b.conf !== "alta" ? " · NO ES SEGURO" : ""))); it.append(tm, tx); box.appendChild(it); }
+  if (!d.bloques.length) box.appendChild(el("div", "vacio", "No hay nada registrado ese día."));
+  if (d.parcial) box.appendChild(el("div", "nota", "FALTAN LOS VIAJES DEL CORREO: EL PC TODAVÍA LOS ESTÁ BUSCANDO.")).style.margin = "18px 0";
+}
+
 // ---- VISTA: el horario de la semana (o una lista) que Atlas manda junto con su respuesta, igual que en el PC
 let vista = null, vTab = "ambos";
 const COLOR = { clase: "#8FB6FF", auxiliar: "#5FF2C0", evaluacion: "#FFC93C", entrega: "#FF9F43", recordatorio: "#F2C36B", google: "#B49CFF", evento: "#4FE3FF" };
@@ -303,3 +369,4 @@ arrancar();
 if (location.hash === "#menu") setTimeout(() => menu(true), 600);
 if (location.hash === "#vista") setTimeout(() => enviar("mi horario"), 600);   // solo para ver la pantalla en un navegador
 versiones(); setInterval(siToca, 3000);
+if (/^#(cronos|hermes|fortuna)$/.test(location.hash)) setTimeout(() => { appAbierta = location.hash.slice(1); nombre($("appNm"), appAbierta); ir("app"); abrirApp(appAbierta); }, 700);

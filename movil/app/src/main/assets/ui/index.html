@@ -101,6 +101,21 @@ body.menu #menu{transform:none}
 .tabs button.on{color:var(--a);background:rgba(79,227,255,.12)}
 .ver{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--a);border:1px solid var(--line);padding:11px 18px}
 .ver[hidden]{display:none}
+.appc{color:var(--texto)}
+.cifra{font-size:42px;font-weight:300;line-height:1.1;font-variant-numeric:tabular-nums;margin-top:18px;color:var(--k)}
+.cifra small{font-size:20px;opacity:.7;margin-right:4px}
+.nota{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--tenue);margin-top:8px;line-height:1.7}
+.nota b{font-weight:400;color:var(--ok)}.nota b.mal{color:var(--mal)}
+.medida{height:2px;background:rgba(255,255,255,.08);margin-top:8px}.medida i{display:block;height:100%;background:var(--k);max-width:100%}
+.medida.pas i{background:var(--mal)}
+.fl{padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.fl .r{display:flex;justify-content:space-between;gap:14px;align-items:baseline;font-size:15.5px}
+.fl .r span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.fl .r span+span{font-variant-numeric:tabular-nums;flex:none}
+.fl small{display:block;font-family:var(--mono);font-size:10px;color:var(--tenue);letter-spacing:.08em;margin-top:3px}
+.sube{color:var(--ok)}.baja{color:var(--mal)}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--k);text-align:center}
+.nav button{width:48px;height:44px;font-size:20px;color:var(--k)}.nav button:disabled{opacity:.25}
 .vacio{color:var(--tenue);text-align:center;margin-top:30px;max-width:26ch;align-self:center}
 
 .aps{width:100%;display:flex;flex-direction:column;gap:4px;margin-top:18px}
@@ -216,11 +231,7 @@ body.menu #menu{transform:none}
 <!-- UNA APP QUE AÚN VIVE SOLO EN EL PC -->
 <section class="pant" id="p-app">
   <button class="titulo" data-ir="apps" style="letter-spacing:0"><span class="nm" id="appNm" style="font-size:20px"></span></button>
-  <div class="aire"></div>
-  <div class="frase" id="appTx"></div>
-  <div class="frase yo" style="margin-top:12px">Por ahora su pantalla se ve solo en el PC. Desde aquí puedes pedírselo a Atlas por voz.</div>
-  <div class="aire"></div>
-  <button class="accion" data-ir="principal">HABLAR CON ATLAS</button>
+  <div class="lista appc" id="appCaja"></div>
 </section>
 
 <!-- ENLACE -->
