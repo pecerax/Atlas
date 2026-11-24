@@ -71,6 +71,10 @@ body[data-modo="pensando"] .estado{color:var(--ambar)}
   display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 26px) 26px 26px;gap:2px}
 #menu .wm{margin-bottom:26px}
 #menu button{text-align:left;font-family:var(--mono);font-size:13px;letter-spacing:.3em;color:var(--texto);padding:18px 0;border-bottom:1px solid rgba(79,227,255,.09)}
+#menu #btnApp{color:var(--ambar)}
+#menu #btnApp[hidden]{display:none}
+.ver-n{margin-top:auto;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--tenue);padding-top:16px}
+.mbtn.nueva i:first-child{background:var(--ambar)}
 body.menu #velo{opacity:1;pointer-events:auto}
 body.menu #menu{transform:none}
 #escribir{display:none;width:100%;gap:8px;margin-top:10px}
@@ -170,6 +174,8 @@ body.menu #menu{transform:none}
   <button data-menu="apps">APPS</button>
   <button data-menu="escribir">ESCRIBIR</button>
   <button data-menu="enlace">ENLACE</button>
+  <button id="btnApp" hidden>ACTUALIZAR APP ›</button>
+  <div class="ver-n" id="verN"></div>
 </nav>
 
 <!-- HOY -->

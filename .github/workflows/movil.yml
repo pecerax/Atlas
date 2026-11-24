@@ -31,6 +31,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # el número de la interfaz es la cantidad de cambios que ha tenido su carpeta
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -59,6 +61,15 @@ jobs:
           echo "::add-mask::$CLAVE"
           echo "ATLAS_KEYSTORE=$RUNNER_TEMP/atlas.jks" >> "$GITHUB_ENV"
           echo "ATLAS_KEYSTORE_CLAVE=$CLAVE" >> "$GITHUB_ENV"
+      # La interfaz lleva un número que solo sube; el mismo queda dentro del APK y dentro del paquete que la app baja sola.
+      - name: Numerar la interfaz
+        run: |
+          UI=movil/app/src/main/assets/ui
+          N=$(git rev-list --count HEAD -- "$UI")
+          MIN=$(python3 -c "import json;print(int(json.load(open('$UI/version.json'))['min_app']))")
+          echo "{\"n\": $N, \"min_app\": $MIN}" > "$UI/version.json"
+          echo "UI_N=$N" >> "$GITHUB_ENV"; echo "UI_MIN=$MIN" >> "$GITHUB_ENV"
+          cat "$UI/version.json"
       - name: Compilar
         # Con la llave fija sale la versión final (no depurable). Sin llave solo se puede firmar la de prueba.
         run: |
@@ -69,6 +80,22 @@ jobs:
             gradle -p movil assembleDebug --no-daemon --stacktrace
             cp movil/app/build/outputs/apk/debug/app-debug.apk Atlas-Movil.apk
           fi
+      # El paquete de la interfaz va firmado con la misma llave del APK: la app solo acepta el que trae esa firma.
+      - name: Empaquetar y firmar la interfaz
+        if: env.ATLAS_KEYSTORE != ''
+        run: |
+          (cd movil/app/src/main/assets/ui && zip -q -X -j "$GITHUB_WORKSPACE/ui.zip" *)
+          export CLAVE="$ATLAS_KEYSTORE_CLAVE"
+          keytool -importkeystore -srckeystore "$ATLAS_KEYSTORE" -srcstorepass:env CLAVE -srcalias atlas \
+            -destkeystore "$RUNNER_TEMP/k.p12" -deststoretype PKCS12 -deststorepass:env CLAVE -destkeypass:env CLAVE -noprompt 2>/dev/null
+          openssl pkcs12 -in "$RUNNER_TEMP/k.p12" -nocerts -nodes -passin env:CLAVE -out "$RUNNER_TEMP/k.pem" 2>/dev/null
+          openssl pkcs12 -in "$RUNNER_TEMP/k.p12" -nokeys -passin env:CLAVE 2>/dev/null | openssl x509 -pubkey -noout > "$RUNNER_TEMP/pub.pem"
+          openssl dgst -sha256 -sign "$RUNNER_TEMP/k.pem" -out ui.zip.sig ui.zip
+          rm -f "$RUNNER_TEMP/k.pem" "$RUNNER_TEMP/k.p12"
+          openssl dgst -sha256 -verify "$RUNNER_TEMP/pub.pem" -signature ui.zip.sig ui.zip
+          APP=$(grep -oP 'versionCode = \K[0-9]+' movil/app/build.gradle.kts)
+          echo "{\"ui\": $UI_N, \"ui_min_app\": $UI_MIN, \"app\": $APP}" > actual.json
+          cat actual.json; ls -l ui.zip ui.zip.sig
       - uses: actions/upload-artifact@v4
         with:
           name: Atlas-Movil
@@ -80,6 +107,7 @@ jobs:
           git init -q -b apk-atlas-movil
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Atlas-Movil.apk
+          for f in ui.zip ui.zip.sig actual.json; do [ -f "../$f" ] && cp "../$f" .; done
+          git add .
           git commit -q -m "Atlas Móvil: APK compilado de ${GITHUB_SHA::7}"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" apk-atlas-movil

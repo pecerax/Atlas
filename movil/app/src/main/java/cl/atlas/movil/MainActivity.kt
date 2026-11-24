@@ -2,6 +2,8 @@ package cl.atlas.movil
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
@@ -13,6 +15,8 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.OnBackPressedCallback
@@ -36,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var puente: Puente
     private lateinit var grabadora: Grabadora
     private lateinit var parlante: Parlante
+    private lateinit var actualiza: Actualiza
     private val red = Executors.newFixedThreadPool(3)
     private val turnoVoz = AtomicInteger(0)
     private val INICIO = "file:///android_asset/ui/index.html"
@@ -71,6 +76,8 @@ class MainActivity : AppCompatActivity() {
         puente = Puente(applicationContext)
         grabadora = Grabadora(applicationContext)
         parlante = Parlante(applicationContext)
+        actualiza = Actualiza(applicationContext)
+        actualiza.elegir()
 
         web = WebView(this)
         web.setBackgroundColor(Color.parseColor("#01040A"))
@@ -80,10 +87,34 @@ class MainActivity : AppCompatActivity() {
         web.settings.mediaPlaybackRequiresUserGesture = true
         web.settings.blockNetworkLoads = true   // la página no sale a la red: solo la parte nativa habla con el PC
         web.overScrollMode = WebView.OVER_SCROLL_NEVER
+        web.settings.cacheMode = WebSettings.LOAD_NO_CACHE
         web.webViewClient = object : WebViewClient() {
             // Nativo solo existe para la página que viene dentro de la app: nunca se navega a otra parte
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean =
                 request?.url?.toString() != INICIO
+
+            // Si hay una interfaz más nueva ya bajada y verificada, sus archivos reemplazan a los que trae el APK.
+            // La dirección sigue siendo la misma: la página nunca sale de android_asset/ui.
+            override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
+                val u = request?.url ?: return null
+                val ruta = u.path ?: return null
+                if (u.scheme != "file" || !ruta.startsWith("/android_asset/ui/")) return null
+                val nombre = ruta.removePrefix("/android_asset/ui/")
+                val datos = actualiza.abrir(nombre) ?: return null
+                val tipo = when (nombre.substringAfterLast('.', "")) {
+                    "html" -> "text/html"
+                    "js" -> "text/javascript"
+                    "css" -> "text/css"
+                    "json" -> "application/json"
+                    "jpg", "jpeg" -> "image/jpeg"
+                    "png" -> "image/png"
+                    "svg" -> "image/svg+xml"
+                    "woff2" -> "font/woff2"
+                    else -> "application/octet-stream"
+                }
+                val texto = tipo.startsWith("text/") || tipo == "application/json" || tipo == "image/svg+xml"
+                return WebResourceResponse(tipo, if (texto) "utf-8" else null, datos)
+            }
         }
         web.addJavascriptInterface(Nativo(), "Nativo")
         candado = TextView(this).apply {
@@ -125,6 +156,27 @@ class MainActivity : AppCompatActivity() {
             BiometricManager.from(this).canAuthenticate(LLAVES) == BiometricManager.BIOMETRIC_SUCCESS
         ) bloquear()
         if (bloqueada) pedirLlave()
+        red.execute {
+            val n = actualiza.revisar()
+            if (n.interfaz) evento("uinueva", JSONObject())
+            if (n.apk != null) evento("appnueva", JSONObject())
+        }
+    }
+
+    // El instalador de Android avisa aquí: si necesita que la persona confirme, se abre su pantalla.
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.action != Actualiza.ACCION_INSTALAR) return
+        when (intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)) {
+            PackageInstaller.STATUS_PENDING_USER_ACTION -> {
+                @Suppress("DEPRECATION")
+                val pedir = intent.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)
+                // solo se abre la pantalla del propio instalador del sistema
+                if (pedir != null && !bloqueada) try { startActivity(pedir) } catch (e: Exception) { evento("apperror", JSONObject()) }
+            }
+            PackageInstaller.STATUS_SUCCESS -> {}
+            else -> evento("apperror", JSONObject().put("error", intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE) ?: ""))
+        }
     }
 
     override fun onStop() {
@@ -222,6 +274,16 @@ class MainActivity : AppCompatActivity() {
     inner class Nativo {
         @JavascriptInterface
         fun vinculo(): String = puente.vinculoJson()
+
+        @JavascriptInterface
+        fun version(): String = JSONObject().put("app", actualiza.nombreApp).put("ui", actualiza.nInterfaz)
+            .put("appNueva", actualiza.apkLista != null).toString()
+
+        @JavascriptInterface
+        fun actualizar() {
+            if (bloqueada) return
+            runOnUiThread { if (!actualiza.instalar(this@MainActivity)) evento("apperror", JSONObject()) }
+        }
 
         @JavascriptInterface
         fun escanear() {

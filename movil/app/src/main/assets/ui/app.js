@@ -23,6 +23,7 @@ if (!window.Nativo) {
       setTimeout(() => Atlas._cb(id, 200, JSON.stringify(r)), ruta === "/p/chat" ? 1200 : 150); },
     grabar: () => ev("grabando"), pararGrabacion: () => { ev("oyendo"); setTimeout(() => ev("oido", { text: "¿Qué tengo mañana?" }), 900); }, cancelarGrabacion: () => {},
     decir: () => setTimeout(() => ev("callado"), 2500), callar: () => {},
+    version: () => JSON.stringify({ app: "demo", ui: 0, appNueva: location.hash === "#app" }), actualizar: () => {},
   };
 }
 
@@ -167,7 +168,17 @@ document.addEventListener("touchend", () => { x0 = null; }, { passive: true });
 document.addEventListener("touchcancel", () => { x0 = null; }, { passive: true });
 $("escribir").onsubmit = (e) => { e.preventDefault(); const t = $("msg").value.trim(); if (!t || modo === "sinpc") return; $("msg").value = ""; $("msg").blur(); $("escribir").classList.remove("on"); hoja(); Nativo.callar(); enviar(t); };
 
+// ---- actualizaciones: la interfaz nueva se aplica sola cuando Atlas está en reposo; la app nueva se ofrece en el menú
+let recargar = false;
+function hayApp(si) { $("btnApp").hidden = !si; $("btnMenu").classList.toggle("nueva", si); }
+function versiones() { let v = {}; try { v = JSON.parse(Nativo.version ? Nativo.version() : "{}"); } catch (e) { /* app antigua */ }
+  $("verN").textContent = v.app ? "APP " + v.app + " · PANTALLA " + (v.ui || 0) : ""; hayApp(!!v.appNueva); }
+$("btnApp").onclick = () => { menu(false); dice("", "Instalando la versión nueva. Atlas se cerrará un momento; ábralo de nuevo al terminar."); Nativo.actualizar(); };
+function siToca() { if (recargar && !ocupado && (modo === "espera" || modo === "sinpc")) location.reload(); }
 const EVENTOS = {
+  uinueva() { recargar = true; siToca(); },
+  appnueva() { hayApp(true); },
+  apperror() { dice(null, "No pude instalar la actualización. Puede intentarlo de nuevo desde el menú."); },
   grabando() { ocupado = true; dice("", ""); pendiente(null); ponModo("escuchando"); },
   oyendo() { ponModo("oyendo"); },
   oido(d) { if (modo !== "oyendo") { ocupado = false; return; } if (d.text) enviar(d.text); else { ocupado = false; dice("", d.error || "No le escuché, señor."); ponModo(d.sinpc ? "sinpc" : "espera"); } },
@@ -275,3 +286,4 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) sond
 arrancar();
 if (location.hash === "#menu") setTimeout(() => menu(true), 600);
 if (location.hash === "#vista") setTimeout(() => enviar("mi horario"), 600);   // solo para ver la pantalla en un navegador
+versiones(); setInterval(siToca, 3000);
