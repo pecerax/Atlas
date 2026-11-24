@@ -219,8 +219,10 @@ $("escribir").onsubmit = (e) => { e.preventDefault(); const t = $("msg").value.t
 // ---- actualizaciones: la interfaz nueva se aplica sola cuando Atlas está en reposo; la app nueva se ofrece en el menú
 let recargar = false;
 function hayApp(si) { $("btnApp").hidden = !si; $("btnMenu").classList.toggle("nueva", si); }
+// La versión de esta pantalla: al publicar se escribe aquí el número de movil/VERSION (la misma cuenta del PC).
+const ATLAS_V = "@ATLAS_V@".replace(/^@.*/, "DE PRUEBA");
 function versiones() { let v = {}; try { v = JSON.parse(Nativo.version ? Nativo.version() : "{}"); } catch (e) { /* app antigua */ }
-  $("verN").textContent = v.app ? "APP " + v.app + " · PANTALLA " + (v.ui || 0) : "APP 0.8 O ANTERIOR · SIN ACTUALIZACIÓN AUTOMÁTICA"; hayApp(!!v.appNueva); }
+  $("verN").textContent = v.app ? "ATLAS " + ATLAS_V : "APP ANTIGUA · SIN ACTUALIZACIÓN AUTOMÁTICA"; hayApp(!!v.appNueva); }
 $("btnApp").onclick = () => { menu(false); dice("", "Instalando la versión nueva. Atlas se cerrará un momento; ábralo de nuevo al terminar."); Nativo.actualizar(); };
 const libre = () => !ocupado && (modo === "espera" || modo === "sinpc") && !document.body.classList.contains("menu");
 function siToca() { if (recargar && libre()) { recargar = false; if (Nativo.recargar) Nativo.recargar(); else location.reload(); } }
@@ -440,7 +442,8 @@ function pintarEnlace() {
     const sm = document.createElement("small"); sm.textContent = s; d.appendChild(sm); it.appendChild(d); if (on !== null) { const p = document.createElement("span"); p.className = "pt"; if (!on) p.style.cssText = "background:var(--mal);box-shadow:none"; it.appendChild(p); } box.appendChild(it); };
   const tailscale = /^100\.|\.ts\.net$/.test(v.host || "");
   fila(v.pc || "PC", modo === "sinpc" ? "SIN RESPUESTA" : "ATLAS " + ((est && est.version) || "") + " · " + (tailscale ? "POR TAILSCALE" : "POR WI‑FI DE CASA"), modo !== "sinpc");
-  fila("Este celular", "VINCULADO", true);
+  let ap = {}; try { ap = JSON.parse(Nativo.version ? Nativo.version() : "{}"); } catch (e) { /* app antigua */ }
+  fila("Este celular", "ATLAS " + ATLAS_V + (ap.app && ap.app !== ATLAS_V ? " · APP " + ap.app : "") + " · VINCULADO", true);
   pintarAvisos();
   fila("Visor", "MÁS ADELANTE", null, true); fila("Cámara para las manos", "MÁS ADELANTE", null, true);
 }

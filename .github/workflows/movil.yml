@@ -68,6 +68,9 @@ jobs:
           N=$(git rev-list --count HEAD -- "$UI")
           MIN=$(python3 -c "import json;print(int(json.load(open('$UI/version.json'))['min_app']))")
           echo "{\"n\": $N, \"min_app\": $MIN}" > "$UI/version.json"
+          V=$(tr -d '[:space:]' < movil/VERSION)
+          echo "$V" | grep -Eq '^1\.[0-9]+\.[0-9]+$'
+          sed -i "s/@ATLAS_V@/$V/" "$UI/app.js"; grep -q "\"$V\"" "$UI/app.js"
           echo "UI_N=$N" >> "$GITHUB_ENV"; echo "UI_MIN=$MIN" >> "$GITHUB_ENV"
           cat "$UI/version.json"
       - name: Compilar
@@ -93,7 +96,8 @@ jobs:
           openssl dgst -sha256 -sign "$RUNNER_TEMP/k.pem" -out ui.zip.sig ui.zip
           rm -f "$RUNNER_TEMP/k.pem" "$RUNNER_TEMP/k.p12"
           openssl dgst -sha256 -verify "$RUNNER_TEMP/pub.pem" -signature ui.zip.sig ui.zip
-          APP=$(grep -oP 'versionCode = \K[0-9]+' movil/app/build.gradle.kts)
+          # el mismo número que calcula build.gradle.kts a partir de movil/VERSION (1.x.y -> x*10000 + y)
+          APP=$(awk -F. '{print $2 * 10000 + $3}' movil/VERSION)
           echo "{\"ui\": $UI_N, \"ui_min_app\": $UI_MIN, \"app\": $APP}" > actual.json
           cat actual.json; ls -l ui.zip ui.zip.sig
       - uses: actions/upload-artifact@v4

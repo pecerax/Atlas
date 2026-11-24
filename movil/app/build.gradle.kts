@@ -11,8 +11,11 @@ android {
         applicationId = "cl.atlas.movil"
         minSdk = 26
         targetSdk = 35
-        versionCode = 12
-        versionName = "0.12"
+        // Una sola numeración para PC y celular: «Atlas 1.x.y» en movil/VERSION. Cada cambio concreto sube la y.
+        val atlas = file("../VERSION").readText().trim()
+        val partes = atlas.split(".").map { it.toInt() }
+        versionCode = partes[1] * 10000 + partes[2]
+        versionName = atlas
     }
 
     // La llave de firma no vive en el repositorio. Si están estas variables (en GitHub: secretos del repositorio),
