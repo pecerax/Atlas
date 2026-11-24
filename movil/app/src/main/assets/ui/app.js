@@ -66,17 +66,26 @@ function nombre(el, k) { const up = k.toUpperCase(), g = LOGOS[k]; el.style.setP
 document.querySelectorAll("[data-marca]").forEach((e) => { e.innerHTML = unico(LOGOS.marca); });
 document.querySelectorAll("[data-nm]").forEach((e) => nombre(e, e.dataset.nm));
 let appAbierta = "";
+// dónde va cada estrella del menú (en % del panel) y cuáles se unen
+const ESTRELLAS = { cronos: [25, 25], hermes: [72, 20], fortuna: [50, 37], baco: [21, 50], atenea: [79, 51], hoy: [33, 67], escribir: [71, 70], enlace: [50, 84] };
+const UNIONES = [["cronos", "fortuna"], ["hermes", "fortuna"], ["cronos", "hermes"], ["fortuna", "baco"], ["fortuna", "atenea"], ["baco", "hoy"], ["atenea", "escribir"], ["hoy", "enlace"], ["escribir", "enlace"], ["hoy", "escribir"]];
 function abrirLaApp(k) { if (k === "baco") return ir("baco"); appAbierta = k; nombre($("appNm"), k); ir("app"); abrirApp(k); }
 function pintarApps(lista) {
-  const box = $("aps"), pts = $("apts"), mini = $("menuApps"); box.textContent = ""; pts.textContent = ""; mini.textContent = "";
+  const box = $("aps"), pts = $("apts"), mini = $("consApps"), hay = []; box.textContent = ""; pts.textContent = ""; mini.textContent = "";
   const tiene = new Set((lista || []).map((n) => String(n).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")));
   for (const k of ORDEN) { if (lista && lista.length && !tiene.has(k)) continue;
     const b = document.createElement("button"); b.className = "ap"; b.dataset.k = k; b.style.setProperty("--k", LOGOS[k].c);
     b.innerHTML = '<span class="lg">' + unico(LOGOS[k].logo) + '</span><span class="nm"></span>'; nombre(b.querySelector(".nm"), k);
     b.onclick = () => { if (!b.classList.contains("cen")) return b.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }); abrirLaApp(k); };
     box.appendChild(b); const p = document.createElement("i"); p.style.setProperty("--k", LOGOS[k].c); pts.appendChild(p);
-    const m = document.createElement("button"); m.style.setProperty("--k", LOGOS[k].c); m.innerHTML = unico(LOGOS[k].logo); m.setAttribute("aria-label", k.charAt(0).toUpperCase() + k.slice(1));
-    m.onclick = () => { menu(false); abrirLaApp(k); }; mini.appendChild(m); }
+    const m = document.createElement("button"), e = ESTRELLAS[k]; m.className = "es app"; m.style.cssText = "left:" + e[0] + "%;top:" + e[1] + "%"; m.style.setProperty("--k", LOGOS[k].c); m.style.setProperty("--i", hay.length);
+    m.innerHTML = '<span class="o">' + unico(LOGOS[k].logo) + "</span>"; m.setAttribute("aria-label", k);
+    m.onclick = () => { menu(false); abrirLaApp(k); }; mini.appendChild(m); hay.push(k); }
+  // las líneas de la constelación, solo entre las estrellas que existen
+  const ns = "http://www.w3.org/2000/svg", lin = $("consLineas"); lin.textContent = "";
+  for (const [a, b] of UNIONES) { const p = ESTRELLAS[a], q = ESTRELLAS[b]; if ((LOGOS[a] && !hay.includes(a)) || (LOGOS[b] && !hay.includes(b))) continue;
+    const l = document.createElementNS(ns, "line"); l.setAttribute("x1", p[0]); l.setAttribute("y1", p[1]); l.setAttribute("x2", q[0]); l.setAttribute("y2", q[1]); lin.appendChild(l); }
+  document.querySelectorAll("#menu .es[data-menu]").forEach((b, i) => b.style.setProperty("--i", hay.length + i));
   centrarApps();
 }
 // la app que queda al centro del carrusel se agranda, muestra su descripción y tiñe el cielo
@@ -89,10 +98,10 @@ function centrarApps() {
 $("aps").addEventListener("scroll", () => requestAnimationFrame(centrarApps), { passive: true });
 function pintarMenu() {
   const n = est ? (est.recordatorios || []).length + (est.tareas || []).length : 0;
-  $("mHoy").textContent = !est ? "" : n ? n + (n === 1 ? " pendiente" : " pendientes") : "Nada pendiente";
-  $("mEnl").textContent = modo === "sinpc" ? "Sin conexión" : (est && est.pc) || "Conectado";
-  $("menuEst").textContent = modo === "sinpc" ? "BUSCANDO EL PC" : "CONECTADO" + (est && est.pc ? " · " + String(est.pc).toUpperCase().slice(0, 16) : "");
+  $("mHoy").textContent = n ? n + (n === 1 ? " pendiente" : " pendientes") : "";
+  $("mEnl").textContent = modo === "sinpc" ? "sin conexión" : (est && est.pc) || "";
 }
+$("menu").addEventListener("click", (e) => { if (e.target === $("menu") || e.target.closest(".cl")) menu(false); });   // tocar el cielo vacío cierra
 
 // ---- estado de Atlas
 let est = null, modo = "sinpc", ocupado = false, fallos = 0;
