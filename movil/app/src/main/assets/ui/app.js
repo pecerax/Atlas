@@ -118,6 +118,7 @@ async function confirmar(si) {
 }
 function detener() { Nativo.callar(); Nativo.cancelarGrabacion(); pedir("POST", "/p/detener"); ocupado = false; ponModo("espera"); }
 $("nucleo").onclick = () => {
+  if (Date.now() - deslizo < 500) return;   // el gesto de abrir el menú no cuenta como toque
   if (modo === "espera") { Nativo.callar(); Nativo.grabar(); }
   else if (modo === "escuchando") Nativo.pararGrabacion();
   else if (modo === "hablando") { Nativo.callar(); ponModo("espera"); }
@@ -131,10 +132,18 @@ $("btnMenu").onclick = () => menu(true);
 $("velo").onclick = () => menu(false);
 document.querySelectorAll("[data-menu]").forEach((b) => { b.onclick = () => { menu(false); const d = b.dataset.menu;
   if (d === "escribir") { ir("principal"); $("escribir").classList.add("on"); setTimeout(() => $("msg").focus(), 250); } else ir(d); }; });
-let x0 = null;   // deslizar desde el borde izquierdo abre el menú; deslizar hacia la izquierda lo cierra
-document.addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; }, { passive: true });
-document.addEventListener("touchend", (e) => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0;
-  if (pantalla === "principal" && x0 < 32 && dx > 60) menu(true); else if (document.body.classList.contains("menu") && dx < -60) menu(false); x0 = null; }, { passive: true });
+// Deslizar hacia la derecha en cualquier parte de la pantalla principal abre el menú; hacia la izquierda lo cierra.
+// Se decide mientras el dedo se mueve, para que el menú salga sin esperar a soltar.
+let x0 = null, y0 = 0, deslizo = 0;
+document.addEventListener("touchstart", (e) => { if (e.touches.length !== 1) { x0 = null; return; } x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+document.addEventListener("touchmove", (e) => { if (x0 === null) return;
+  const dx = e.touches[0].clientX - x0, dy = e.touches[0].clientY - y0;
+  if (Math.abs(dx) < 45 || Math.abs(dx) < 1.5 * Math.abs(dy)) return;
+  const abierto = document.body.classList.contains("menu");
+  if (dx > 0 && !abierto && pantalla === "principal") menu(true); else if (dx < 0 && abierto) menu(false); else return;
+  x0 = null; deslizo = Date.now(); }, { passive: true });
+document.addEventListener("touchend", () => { x0 = null; }, { passive: true });
+document.addEventListener("touchcancel", () => { x0 = null; }, { passive: true });
 $("escribir").onsubmit = (e) => { e.preventDefault(); const t = $("msg").value.trim(); if (!t || modo === "sinpc") return; $("msg").value = ""; $("msg").blur(); $("escribir").classList.remove("on"); Nativo.callar(); enviar(t); };
 
 const EVENTOS = {
