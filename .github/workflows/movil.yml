@@ -42,14 +42,24 @@ jobs:
       - name: Llave de firma (si está configurada)
         env:
           LLAVE: ${{ secrets.ATLAS_KEYSTORE_B64 }}
+          CLAVE: ${{ secrets.ATLAS_KEYSTORE_CLAVE }}
         run: |
-          if [ -n "$LLAVE" ]; then
-            echo "$LLAVE" | base64 -d > "$RUNNER_TEMP/atlas.jks"
-            echo "ATLAS_KEYSTORE=$RUNNER_TEMP/atlas.jks" >> "$GITHUB_ENV"
+          if [ -z "$LLAVE" ]; then echo "Sin llave: se usa la firma de prueba."; exit 0; fi
+          # Al pegar los secretos suelen colarse saltos de línea o espacios: se quitan antes de usarlos.
+          printf '%s' "$LLAVE" | tr -d ' \r\n\t' | base64 -d > "$RUNNER_TEMP/atlas.jks" \
+            || { echo "::error::ATLAS_KEYSTORE_B64 no es base64 válido (¿se pegó incompleto?)."; exit 1; }
+          echo "Llave: $(printf '%s' "$LLAVE" | tr -d ' \r\n\t' | wc -c) caracteres, $(stat -c %s "$RUNNER_TEMP/atlas.jks") bytes."
+          CLAVE="$(printf '%s' "$CLAVE" | tr -d '\r\n\t ')"
+          if [ -z "$CLAVE" ]; then echo "::error::Falta el secreto ATLAS_KEYSTORE_CLAVE."; exit 1; fi
+          if ! keytool -list -v -keystore "$RUNNER_TEMP/atlas.jks" -storepass:env CLAVE -alias atlas > "$RUNNER_TEMP/llave.txt" 2>&1; then
+            echo "::error::ATLAS_KEYSTORE_CLAVE no abre la llave: la clave guardada no corresponde a este archivo."
+            exit 1
           fi
+          grep -m1 "SHA256:" "$RUNNER_TEMP/llave.txt"
+          echo "::add-mask::$CLAVE"
+          echo "ATLAS_KEYSTORE=$RUNNER_TEMP/atlas.jks" >> "$GITHUB_ENV"
+          echo "ATLAS_KEYSTORE_CLAVE=$CLAVE" >> "$GITHUB_ENV"
       - name: Compilar
-        env:
-          ATLAS_KEYSTORE_CLAVE: ${{ secrets.ATLAS_KEYSTORE_CLAVE }}
         run: gradle -p movil assembleDebug --no-daemon --stacktrace
       - run: cp movil/app/build/outputs/apk/debug/app-debug.apk Atlas-Movil.apk
       - uses: actions/upload-artifact@v4
