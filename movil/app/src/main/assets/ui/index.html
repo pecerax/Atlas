@@ -93,7 +93,7 @@ body[data-modo="pensando"] .estado{color:#FF9F43}
 body.menu .es{opacity:1;transition-delay:calc(var(--i,0) * 35ms + 120ms)}
 #menu #btnApp{position:absolute;right:22px;top:calc(env(safe-area-inset-top) + 34px);font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--ambar);border:1px solid var(--ambar);padding:10px 14px}
 #menu #btnApp[hidden]{display:none}
-.ver-n{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 18px);text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--tenue)}
+.ver-n{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 6px);padding:12px 4px;width:100%;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--tenue)}
 .mbtn.nueva i:first-child{background:var(--ambar)}
 body.menu #velo{opacity:1;pointer-events:auto}
 body.menu #menu{transform:none}
@@ -270,7 +270,7 @@ body.menu .aps{overflow:hidden}
   <button class="es" data-menu="hoy" style="left:33%;top:67%"><span class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="5" width="17" height="15" rx="1"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><circle cx="12" cy="14.5" r="1.6" fill="currentColor"/></svg></span><b>HOY</b><small id="mHoy"></small></button>
   <button class="es" data-menu="escribir" style="left:71%;top:70%"><span class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 20l1-4.5L16.5 4l3.5 3.5L8.5 19z"/><path d="M14 6.5l3.5 3.5"/></svg></span><b>ESCRIBIR</b></button>
   <button class="es" data-menu="enlace" style="left:50%;top:84%"><span class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4.5" width="12" height="9" rx="1"/><path d="M6 17.5h6"/><rect x="16.5" y="9" width="5" height="10.5" rx="1"/></svg></span><b>ENLACE</b><small id="mEnl"></small></button>
-  <div class="ver-n" id="verN"></div>
+  <button class="ver-n" id="verN"></button>
 </nav>
 
 <!-- HOY -->

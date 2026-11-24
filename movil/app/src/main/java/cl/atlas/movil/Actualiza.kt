@@ -48,6 +48,10 @@ class Actualiza(private val ctx: Context) {
     @Volatile var apkLista: File? = null
         private set
 
+    /** Qué pasó en la última búsqueda, en palabras para la persona. */
+    @Volatile var motivo = ""
+        private set
+
     val versionApp: Int by lazy {
         @Suppress("DEPRECATION") ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionCode
     }
@@ -178,21 +182,28 @@ class Actualiza(private val ctx: Context) {
         }
     }
 
-    /** Mira si hay algo nuevo (a lo más cada 3 minutos). Corre fuera del hilo principal. */
+    /** Mira si hay algo nuevo (a lo más cada 3 minutos, salvo que la persona lo pida). Corre fuera del hilo principal. */
     @Synchronized
-    fun revisar(): Novedad {
+    fun revisar(forzar: Boolean = false): Novedad {
         val nada = Novedad(false, apkLista, prefs.getInt("apk_v", 0))
         val ahora = System.currentTimeMillis()
         val ultima = prefs.getLong("revisado", 0L)
-        if (ahora >= ultima && ahora - ultima < CADA_MS) return nada
+        if (!forzar && ahora >= ultima && ahora - ultima < CADA_MS) return nada
         try {
+            motivo = "NO PUDE LLEGAR A INTERNET"
             val aviso = JSONObject((bajar("actual.json", 4096) ?: return nada).toString(Charsets.UTF_8))
+            motivo = "ESTÁ AL DÍA"
             prefs.edit().putLong("revisado", ahora).apply()
             var interfaz = false
             if (aviso.optInt("ui", 0) > nInterfaz && aviso.optInt("ui_min_app", 0) <= versionApp) {
                 val zip = bajar("ui.zip", 16 * 1024 * 1024)
                 val firma = bajar("ui.zip.sig", 2048)
-                if (zip != null && firma != null && firmaValida(zip, firma)) interfaz = instalarInterfaz(zip)
+                if (zip == null || firma == null) motivo = "NO PUDE BAJAR LA PANTALLA NUEVA"
+                else if (!firmaValida(zip, firma)) motivo = "LA PANTALLA NUEVA NO TRAE LA FIRMA DE ESTA APP"
+                else {
+                    interfaz = instalarInterfaz(zip)
+                    motivo = if (interfaz) "PANTALLA NUEVA LISTA" else "LA PANTALLA NUEVA NO SE PUDO GUARDAR"
+                }
             }
             val v = aviso.optInt("app", 0)
             val carpeta = File(ctx.cacheDir, "apk")
@@ -201,7 +212,11 @@ class Actualiza(private val ctx: Context) {
                 if (!f.isFile) {
                     carpeta.deleteRecursively()
                     carpeta.mkdirs()
-                    val apk = bajar("Atlas-Movil.apk", 80 * 1024 * 1024) ?: return Novedad(interfaz, null, 0)
+                    val apk = bajar("Atlas-Movil.apk", 80 * 1024 * 1024)
+                    if (apk == null) {
+                        motivo = "NO PUDE BAJAR LA APP NUEVA"
+                        return Novedad(interfaz, null, 0)
+                    }
                     f.writeBytes(apk)
                 }
                 @Suppress("DEPRECATION")
@@ -209,9 +224,11 @@ class Actualiza(private val ctx: Context) {
                 @Suppress("DEPRECATION")
                 if (info == null || info.packageName != ctx.packageName || info.versionCode <= versionApp) {
                     f.delete()
+                    motivo = "LA APP BAJADA NO SIRVE"
                     return Novedad(interfaz, null, 0)
                 }
                 apkLista = f
+                motivo = "HAY APP NUEVA: TOCA ACTUALIZAR"
                 @Suppress("DEPRECATION")
                 prefs.edit().putInt("apk_v", info.versionCode).apply()
                 @Suppress("DEPRECATION")
@@ -221,6 +238,7 @@ class Actualiza(private val ctx: Context) {
             apkLista = null
             return Novedad(interfaz, null, 0)
         } catch (e: Exception) {
+            motivo = "FALLÓ LA BÚSQUEDA (" + e.javaClass.simpleName + ")"
             return nada
         }
     }

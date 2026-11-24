@@ -32,7 +32,7 @@ if (!window.Nativo) {
     grabar: () => ev("grabando"), pararGrabacion: () => { ev("oyendo"); setTimeout(() => ev("oido", { text: "¿Qué tengo mañana?" }), 900); }, cancelarGrabacion: () => {},
     decir: () => setTimeout(() => ev("callado"), 2500), callar: () => {},
     avisos: () => JSON.stringify({ activo: !!window._av, permiso: !!window._av }), avisosPoner: (si) => { window._av = si; }, avisosApps: () => {},
-    version: () => JSON.stringify({ app: "demo", ui: 0, appNueva: location.hash === "#app" }), actualizar: () => {},
+    version: () => JSON.stringify({ app: "demo", ui: 0, appNueva: location.hash === "#app" }), actualizar: () => {}, buscar: () => setTimeout(() => Atlas._evento("buscado", JSON.stringify({ motivo: "ESTÁ AL DÍA" })), 600),
   };
 }
 
@@ -222,7 +222,10 @@ function hayApp(si) { $("btnApp").hidden = !si; $("btnMenu").classList.toggle("n
 // La versión de esta pantalla: al publicar se escribe aquí el número de movil/VERSION (la misma cuenta del PC).
 const ATLAS_V = "@ATLAS_V@".replace(/^@.*/, "DE PRUEBA");
 function versiones() { let v = {}; try { v = JSON.parse(Nativo.version ? Nativo.version() : "{}"); } catch (e) { /* app antigua */ }
-  $("verN").textContent = v.app ? "ATLAS " + ATLAS_V : "APP ANTIGUA · SIN ACTUALIZACIÓN AUTOMÁTICA"; hayApp(!!v.appNueva); }
+  $("verN").textContent = !v.app ? "APP ANTIGUA · SIN ACTUALIZACIÓN AUTOMÁTICA" : "ATLAS " + ATLAS_V + (Nativo.buscar ? " · BUSCAR ACTUALIZACIÓN" : ""); hayApp(!!v.appNueva); }
+// tocar la versión busca una actualización ahora y dice qué pasó
+let tVer = 0;
+$("verN").onclick = (e) => { e.stopPropagation(); if (!Nativo.buscar) return; clearTimeout(tVer); $("verN").textContent = "BUSCANDO…"; Nativo.buscar(); };
 $("btnApp").onclick = () => { menu(false); dice("", "Instalando la versión nueva. Atlas se cerrará un momento; ábralo de nuevo al terminar."); Nativo.actualizar(); };
 const libre = () => !ocupado && (modo === "espera" || modo === "sinpc") && !document.body.classList.contains("menu");
 function siToca() { if (recargar && libre()) { recargar = false; if (Nativo.recargar) Nativo.recargar(); else location.reload(); } }
@@ -230,6 +233,7 @@ Atlas._libre = libre;
 const EVENTOS = {
   uinueva() { recargar = true; siToca(); },
   appnueva() { hayApp(true); },
+  buscado(d) { $("verN").textContent = (d && d.motivo) || "ESTÁ AL DÍA"; clearTimeout(tVer); tVer = setTimeout(versiones, 6000); },
   apperror() { dice(null, "No pude instalar la actualización. Puede intentarlo de nuevo desde el menú."); },
   grabando() { ocupado = true; dice("", ""); pendiente(null); ponModo("escuchando"); },
   oyendo() { ponModo("oyendo"); },

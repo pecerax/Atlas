@@ -279,6 +279,17 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread { if (!isDestroyed && web.url != inicio()) web.loadUrl(inicio()) }
         }
 
+        /** La persona tocó la versión en el menú: se busca ahora mismo y se le dice qué pasó. */
+        @JavascriptInterface
+        fun buscar() {
+            red.execute {
+                val n = actualiza.revisar(true)
+                evento("buscado", JSONObject().put("motivo", actualiza.motivo))
+                if (n.interfaz) recargarSiQuieta()
+                if (n.apk != null) evento("appnueva", JSONObject())
+            }
+        }
+
         @JavascriptInterface
         fun actualizar() {
             if (bloqueada) return
