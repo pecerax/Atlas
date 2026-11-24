@@ -195,15 +195,16 @@ document.addEventListener("touchmove", (e) => { if (x0 === null) return;
   const dx = e.touches[0].clientX - x0, dy = e.touches[0].clientY - y0;
   if (Math.abs(dx) < 45 || Math.abs(dx) < 1.5 * Math.abs(dy)) return;
   const abierto = document.body.classList.contains("menu");
-  if (abierto) { if (dx > 0) return; menu(false); }
+  if (abierto) { if (dx > 0) return; $("aps").style.overflow = "hidden"; menu(false); }   // el resto del gesto no debe mover el carrusel de abajo
   else if (pantalla === "principal") { if (dx < 0) return; menu(true); }
   else if (pantalla === "apps") { if (dx < 0 || apsIni > 8) return; menu(true); }
   else if (pantalla === "app" || pantalla === "baco") ir("apps");
   else if (["hoy", "enlace", "vista"].includes(pantalla)) { if (dx < 0) return; ir("principal"); }
   else return;
   x0 = null; deslizo = Date.now(); }, { passive: true });
-document.addEventListener("touchend", () => { x0 = null; }, { passive: true });
-document.addEventListener("touchcancel", () => { x0 = null; }, { passive: true });
+const sueltaLado = () => { x0 = null; $("aps").style.overflow = ""; };
+document.addEventListener("touchend", sueltaLado, { passive: true });
+document.addEventListener("touchcancel", sueltaLado, { passive: true });
 $("escribir").onsubmit = (e) => { e.preventDefault(); const t = $("msg").value.trim(); if (!t || modo === "sinpc") return; $("msg").value = ""; $("msg").blur(); $("escribir").classList.remove("on"); hoja(); Nativo.callar(); enviar(t); };
 
 // ---- actualizaciones: la interfaz nueva se aplica sola cuando Atlas está en reposo; la app nueva se ofrece en el menú
