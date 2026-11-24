@@ -182,15 +182,25 @@ $("btnMenu").onclick = () => menu(true);
 $("velo").onclick = () => menu(false);
 document.querySelectorAll("[data-menu]").forEach((b) => { b.onclick = () => { menu(false); const d = b.dataset.menu;
   if (d === "escribir") { ir("principal"); $("escribir").classList.add("on"); hoja(true); setTimeout(() => $("msg").focus(), 250); } else ir(d); }; });
-// Deslizar hacia la derecha en cualquier parte de la pantalla principal abre el menú; hacia la izquierda lo cierra.
-// Se decide mientras el dedo se mueve, para que el menú salga sin esperar a soltar.
-let x0 = null, y0 = 0, deslizo = 0;
-document.addEventListener("touchstart", (e) => { if (e.touches.length !== 1) { x0 = null; return; } x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+// Gestos de lado, pensados como un mapa: el menú vive a la izquierda de todo y las apps a la derecha.
+//  · pantalla principal: deslizar a la derecha abre el menú.
+//  · selector de apps: deslizar pasa de una app a otra; estando en la primera, seguir tirando a la derecha abre el menú.
+//  · dentro de una app (o de Baco): deslizar de lado vuelve al selector de apps.
+//  · Hoy, Enlace y el horario: deslizar a la derecha vuelve a la pantalla principal.
+//  · con el menú abierto: deslizar a la izquierda lo cierra.
+// Se decide mientras el dedo se mueve, para que responda sin esperar a soltar.
+let x0 = null, y0 = 0, deslizo = 0, apsIni = 0;
+document.addEventListener("touchstart", (e) => { if (e.touches.length !== 1) { x0 = null; return; } x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; apsIni = $("aps").scrollLeft; }, { passive: true });
 document.addEventListener("touchmove", (e) => { if (x0 === null) return;
   const dx = e.touches[0].clientX - x0, dy = e.touches[0].clientY - y0;
   if (Math.abs(dx) < 45 || Math.abs(dx) < 1.5 * Math.abs(dy)) return;
   const abierto = document.body.classList.contains("menu");
-  if (dx > 0 && !abierto && pantalla === "principal") menu(true); else if (dx < 0 && abierto) menu(false); else return;
+  if (abierto) { if (dx > 0) return; menu(false); }
+  else if (pantalla === "principal") { if (dx < 0) return; menu(true); }
+  else if (pantalla === "apps") { if (dx < 0 || apsIni > 8) return; menu(true); }
+  else if (pantalla === "app" || pantalla === "baco") ir("apps");
+  else if (["hoy", "enlace", "vista"].includes(pantalla)) { if (dx < 0) return; ir("principal"); }
+  else return;
   x0 = null; deslizo = Date.now(); }, { passive: true });
 document.addEventListener("touchend", () => { x0 = null; }, { passive: true });
 document.addEventListener("touchcancel", () => { x0 = null; }, { passive: true });
