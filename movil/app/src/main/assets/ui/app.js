@@ -19,7 +19,7 @@ if (!window.Nativo) {
       "/p/chat": { reply: "Esta semana tiene cuatro cosas, señor.", vista: /horario|evento/i.test(cuerpo) || location.hash === "#vista" ? { tipo: "calendario", titulo: "Mi horario · esta semana", desde: "2026-11-23", dias: 7, pestana: "ambos", items: [
         { titulo: "Redes de computadores", dia: "2026-11-24", hora: "10:15", fin: "11:45", lugar: "B101", tipo: "clase" }, { titulo: "Auxiliar de Intro", dia: "2026-11-24", hora: "16:00", fin: "17:30", tipo: "auxiliar" },
         { titulo: "Control 2 de Lenguajes", dia: "2026-11-25", hora: "18:00", fin: "20:00", lugar: "F10", tipo: "evaluacion" }, { titulo: "Entrega T5", dia: "2026-11-26", tipo: "entrega" }, { titulo: "Cumpleaños de Ana", dia: "2026-11-28", hora: "20:00", tipo: "google" }] } : null, pendiente: /recu/i.test(cuerpo) ? "Crear recordatorio «Repasar Redes», mañana 08:00" : null },
-      "/p/hermes": { ciclos: [["abr", 352000], ["may", 418000], ["jun", 301500], ["jul", 466200], ["ago", 389000], ["sep", 342700], ["oct", 431000], ["nov", 384200]].map(([mes, total], i) => ({ mes, total, actual: i === 7 })), desde: "2026-10-24", hasta: "2026-11-23", total: 384200, anterior: 431000, dias_quedan: 0, presupuesto: 500000, semana: 41300, al: "2026-11-22",
+      "/p/hermes": { ciclos: [["abr", 352000], ["may", 418000], ["jun", 301500], ["jul", 466200], ["ago", 389000], ["sep", 342700], ["oct", 431000], ["nov", 384200]].map(([mes, total], i) => ({ mes, total, actual: i === 7 })), ciclo: "2026-11", nombre: "noviembre 2026", en_curso: false, previo: "2026-10", siguiente: "2026-12", desde: "2026-10-24", hasta: "2026-11-23", total: 384200, anterior: 431000, dias_quedan: 0, presupuesto: 500000, semana: 41300, al: "2026-11-22",
         categorias: [{ nombre: "Comida", monto: 152300, presupuesto: 180000 }, { nombre: "Transporte", monto: 88400, presupuesto: 60000 }, { nombre: "Salidas", monto: 74500, presupuesto: null }, { nombre: "Suscripciones", monto: 69000, presupuesto: null }],
         ultimos: [{ fecha: "2026-11-22", comercio: "Supermercado Uno", monto: 23490, categoria: "Comida" }, { fecha: "2026-11-21", comercio: "Uber", monto: 6200, categoria: "Transporte" }, { fecha: "2026-11-20", comercio: "Cafetería del campus", monto: 3100, categoria: "Comida" }] },
       "/p/fortuna": { al: "2026-11-20", mio: { puesto: 1500000, ahora: 1583400, gano: 83400, pct: 5.56, mes: 12300, mes_pct: 0.78, posiciones: [{ nombre: "Fondo Moderado", adm: "BCI", puesto: 1000000, ahora: 1061200, pct: 6.12 }, { nombre: "Fondo Acciones USA", adm: "Scotia", puesto: 500000, ahora: 522200, pct: 4.44 }] },
@@ -215,7 +215,7 @@ document.addEventListener("touchmove", (e) => { if (x0 === null) return;
   const abierto = document.body.classList.contains("menu");
   if (abierto) { if (dx > 0) return; $("aps").style.overflow = "hidden"; menu(false); }   // el resto del gesto no debe mover el carrusel de abajo
   else if (pantalla === "principal") { if (dx < 0) return; menu(true); }
-  else if (pantalla === "apps") { if (dx < 0 || apsIni > 8) return; menu(true); }
+  else if (pantalla === "apps") { if (dx < 0 || apsIni > 8) return; ir("principal"); }   // desde la primera app, tirar más allá vuelve a Atlas
   else if (pantalla === "app" || pantalla === "baco") ir("apps");
   else if (["hoy", "enlace", "vista"].includes(pantalla)) { if (dx < 0) return; ir("principal"); }
   else return;
@@ -270,7 +270,7 @@ async function abrirApp(k, extra) {
   if (!["cronos", "hermes", "fortuna"].includes(k)) { box.textContent = ""; box.appendChild(el("div", "vacio", (QUE[k] || "") + " Todavía no tiene pantalla en el celular.")); return; }
   if (k === "cronos" && !extra) return pintaCronosInicio(box);   // igual que en el PC: primero se elige el día
   if (!extra || extra.nuevo) { box.textContent = ""; box.appendChild(el("div", "vacio", "Pidiéndoselo al PC…")); }
-  if (extra) extra = { fecha: extra.fecha };
+  if (extra && extra.nuevo) extra = { fecha: extra.fecha };
   const r = await pedir("POST", "/p/" + k, extra || {});
   if (turno !== turnoApp || pantalla !== "app" || appAbierta !== k) return;
   box.textContent = ""; box.scrollTop = 0; const d = r.j || {};
@@ -280,16 +280,21 @@ async function abrirApp(k, extra) {
   ({ hermes: pintaHermes, fortuna: pintaFortuna, cronos: pintaCronos })[k](box, d);
 }
 function pintaHermes(box, d) {
-  const r = panel(box, "Resumen", "CICLO " + fechaC(d.desde) + " – " + fechaC(d.hasta));
+  // en qué ciclo de la tarjeta está parado, como en el PC, y las flechas para moverse (si el puente del PC ya lo permite)
+  if (d.ciclo) { const nav = el("div", "nav"), a = el("button", "", "◂"), s = el("button", "", "▸"); a.setAttribute("aria-label", "Ciclo anterior"); s.setAttribute("aria-label", "Ciclo siguiente");
+    a.onclick = () => abrirApp("hermes", { ciclo: d.previo }); s.onclick = () => abrirApp("hermes", { ciclo: d.siguiente }); s.disabled = !d.siguiente;
+    nav.append(a, el("span", "", String(d.nombre || "").toUpperCase()), s); box.appendChild(nav); }
+  const r = panel(box, "Resumen", (d.en_curso === false ? "CICLO CERRADO · " : "CICLO ") + fechaC(d.desde) + " – " + fechaC(d.hasta));
   r.appendChild(el("div", "rot", "Salió"));
   r.appendChild(el("div", "cifra", plata(d.total)));
   const tope = d.presupuesto || Math.max(d.anterior, d.total, 1), t = el("div", "tramo");
   t.append(el("span", "rot", d.presupuesto ? "Presupuesto" : "Ciclo anterior"), seg(d.total, tope, !!d.presupuesto), el("span", "num rot", plata(tope))); r.appendChild(t);
   const n = el("div", "rot"); n.style.cssText = "margin-top:12px;line-height:1.8";
-  if (d.anterior > 0) { const dif = (d.total / d.anterior - 1) * 100; n.append(el("b", dif > 0 ? "mal" : "", Math.abs(dif).toFixed(0) + " % " + (dif > 0 ? "más" : "menos")), " que el ciclo anterior a esta altura", el("br")); }
-  n.append("Esta semana " + plata(d.semana) + " · quedan " + d.dias_quedan + " días"); r.appendChild(n);
+  if (d.anterior > 0) { const dif = (d.total / d.anterior - 1) * 100; n.append(el("b", dif > 0 ? "mal" : "", Math.abs(dif).toFixed(0) + " % " + (dif > 0 ? "más" : "menos")), d.en_curso === false ? " que el ciclo anterior" : " que el ciclo anterior a esta altura", el("br")); }
+  if (d.en_curso !== false) n.append("Esta semana " + plata(d.semana) + " · quedan " + d.dias_quedan + " días"); r.appendChild(n);
   if (d.ciclos && d.ciclos.some((c) => c.total > 0)) { const p = panel(box, "Últimos ciclos de la tarjeta"), bs = el("div", "barras"), ms = el("div", "meses"), mx = Math.max(1, ...d.ciclos.map((c) => c.total));
-    for (const c of d.ciclos) { const col = el("div", c.actual ? "act" : ""), i = el("i"); i.style.height = Math.max(c.total ? 4 : 0, c.total / mx * 92) + "%"; col.appendChild(i); bs.appendChild(col); ms.appendChild(el("span", c.actual ? "act" : "", c.mes)); }
+    for (const c of d.ciclos) { const col = el("div", c.actual ? "act" : ""), i = el("i"); i.style.height = Math.max(c.total ? 4 : 0, c.total / mx * 92) + "%"; col.appendChild(i); bs.appendChild(col);
+      if (c.ciclo) col.onclick = () => abrirApp("hermes", { ciclo: c.ciclo }); ms.appendChild(el("span", c.actual ? "act" : "", c.mes)); }
     p.append(bs, ms); }
   if (d.categorias.length) { const p = panel(box, "Por categoría"), mx = Math.max(1, ...d.categorias.map((c) => c.monto));
     for (const c of d.categorias) { const f = el("div", "cat"); f.append(el("span", "", c.nombre), el("span", "num", plata(c.monto)));

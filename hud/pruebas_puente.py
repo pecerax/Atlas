@@ -218,8 +218,20 @@ ok("hermes: total del ciclo sin pagos de tarjeta ni ingresos", st == 200 and r.g
 ok("hermes: categorías con presupuesto y últimos gastos", r["categorias"][0] == {"nombre": "Comida", "monto": 17000, "presupuesto": 100000}
    and [u["comercio"] for u in r["ultimos"]][:2] == ["Supermercado Uno …", "Uber"] and r["ultimos"][0]["monto"] == 12000
    and all(set(u) == {"fecha", "comercio", "monto", "categoria"} for u in r["ultimos"]) and r["al"] == "2026-11-18")
-ok("hermes: los 8 últimos ciclos, el actual al final", len(r["ciclos"]) == 8 and r["ciclos"][-1] == {"mes": "nov", "actual": True, "total": 25000}
+ok("hermes: los 8 últimos ciclos, el actual al final", len(r["ciclos"]) == 8 and r["ciclos"][-1] == {"mes": "nov", "ciclo": "2026-11", "actual": True, "total": 25000}
    and r["ciclos"][-2]["mes"] == "oct" and r["ciclos"][-2]["total"] == 30000)
+ok("hermes: dice en qué ciclo está parado y sus vecinos", r["ciclo"] == "2026-11" and r["nombre"] == "noviembre 2026" and r["en_curso"]
+   and r["previo"] == "2026-10" and r["siguiente"] is None)
+st, r = cel.pedir("POST", "/p/hermes", {"ciclo": "2026-10"})
+ok("hermes: se puede pedir otro ciclo", r["ciclo"] == "2026-10" and r["total"] == 30000 and r["siguiente"] == "2026-11" and not r["en_curso"]
+   and [u["comercio"] for u in r["ultimos"]] == ["Librería"] and r["ciclos"][-2]["actual"] and not r["ciclos"][-1]["actual"])
+ok("hermes: un ciclo futuro o mal escrito no pasa del de hoy", cel.pedir("POST", "/p/hermes", {"ciclo": "2031-01"})[1]["ciclo"] == "2026-11"
+   and cel.pedir("POST", "/p/hermes", {"ciclo": "../x"})[1]["ciclo"] == "2026-11")
+_H.HOY = _date(2026, 11, 25)   # recién pasado el corte: el ciclo nuevo está vacío, así que se muestra el del último movimiento
+r = cel.pedir("POST", "/p/hermes", {})[1]
+ok("hermes: tras el corte sigue parado en el ciclo con datos", r["ciclo"] == "2026-11" and r["total"] == 25000 and not r["en_curso"]
+   and r["siguiente"] == "2026-12" and r["ciclos"][-1]["mes"] == "dic" and r["ciclos"][-2]["actual"])
+_H.HOY = _date(2026, 11, 20)
 _H.HERMES_DIR = _tmp / "vacia"
 ok("hermes: sin datos lo dice sin reventar", cel.pedir("POST", "/p/hermes", {})[1] == {"vacio": True})
 _F.DATOS = _tmp / "fondos.json"

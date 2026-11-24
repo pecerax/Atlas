@@ -322,7 +322,12 @@ def _comercio(v) -> str:
     return _corto(re.sub(r"\d[\d -]{6,}\d", "…", str(v or "")), 40)
 
 
-def _app_hermes() -> dict:
+def _app_hermes(data: dict | None = None) -> dict:
+    """El resumen de un ciclo de la tarjeta. Sin pedir uno, es el del último movimiento registrado (igual que la página
+    de Hermes en el PC): justo después de un corte el ciclo nuevo está vacío y no es donde la persona «está parada».
+    Con {"ciclo": "AAAA-MM"} se pide otro, hasta el ciclo de hoy."""
+    import re
+
     import atlas_hermes as H
     from datetime import timedelta
 
@@ -331,19 +336,25 @@ def _app_hermes() -> dict:
         return {"vacio": True}
     hoy = H._hoy()
     cfg = H.ajuste_periodo()
-    a, m = H.periodo_de(hoy, cfg)
-    ini, fin = H.rango(a, m, cfg)
     ciclo = cfg["modo"] == "ciclo"
-    gastos = [x for x in H.en(movs, ini, min(fin, hoy), ciclo) if H.es_gasto(x)]
+    tope = H.periodo_de(hoy, cfg)                                   # no hay ciclos después del de hoy
+    a, m = H.periodo_de(min(hoy, max(x["_f"] for x in movs)), cfg)
+    pedido = re.fullmatch(r"(20\d\d)-(0[1-9]|1[0-2])", str((data or {}).get("ciclo") or ""))
+    if pedido:
+        a, m = min((int(pedido.group(1)), int(pedido.group(2))), tope)
+    clave = lambda y, n: "%04d-%02d" % (y + (n - 1) // 12, (n - 1) % 12 + 1)   # noqa: E731 - acepta meses 0 y 13
+    ini, fin = H.rango(a, m, cfg)
+    hasta = min(fin, hoy)
+    gastos = [x for x in H.en(movs, ini, hasta, ciclo) if H.es_gasto(x)]
     i0, f0 = H.rango(a, m - 1, cfg)
-    antes = [x for x in H.en(movs, i0, min(f0, i0 + (hoy - ini)), ciclo) if H.es_gasto(x)]   # mismo tramo del ciclo anterior
+    antes = [x for x in H.en(movs, i0, min(f0, i0 + (hasta - ini)), ciclo) if H.es_gasto(x)]   # mismo tramo del ciclo anterior
     por: dict[str, float] = {}
     for x in gastos:
         k = x.get("categoria") or "Sin categoría"
         por[k] = por.get(k, 0) - x["monto"]
     cats = [{"nombre": _corto(k, 40), "monto": round(v), "presupuesto": round(pres[k]) if k in pres else None}
             for k, v in sorted(por.items(), key=lambda kv: -kv[1])[:10]]
-    ult = sorted((x for x in movs if H.es_gasto(x) and x["_f"] <= hoy), key=lambda x: x["_f"], reverse=True)[:15]
+    ult = sorted(gastos, key=lambda x: x["_f"], reverse=True)[:15]
     return {
         "desde": ini.isoformat(), "hasta": fin.isoformat(), "total": round(-sum(x["monto"] for x in gastos)),
         "anterior": round(-sum(x["monto"] for x in antes)), "dias_quedan": max(0, (fin - hoy).days),
@@ -351,10 +362,14 @@ def _app_hermes() -> dict:
         "ultimos": [{"fecha": x["_f"].isoformat(), "comercio": _comercio(x.get("comercio")), "monto": round(-x["monto"]),
                      "categoria": _corto(x.get("categoria"), 40)} for x in ult],
         "al": max(x["_f"] for x in movs).isoformat(),
-        # los últimos 8 ciclos de la tarjeta, como las barras de Hermes en el PC (el actual va hasta hoy)
-        "ciclos": [{"mes": H.MESES[(m - i - 1) % 12][:3], "actual": i == 0,
+        # dónde está parada la persona: el ciclo que se muestra, con su nombre, y los vecinos para moverse
+        "ciclo": clave(a, m), "nombre": H.MESES[m - 1] + " " + str(a), "en_curso": ini <= hoy <= fin,
+        "previo": clave(a, m - 1), "siguiente": clave(a, m + 1) if (a, m) < tope else None,
+        # los 8 ciclos de la tarjeta hasta el de hoy, como las barras de Hermes en el PC (el de hoy va hasta hoy)
+        "ciclos": [{"mes": H.MESES[(tope[1] - i - 1) % 12][:3], "ciclo": clave(tope[0], tope[1] - i),
+                    "actual": clave(tope[0], tope[1] - i) == clave(a, m),
                     "total": round(-sum(x["monto"] for x in H.en(movs, r0, min(r1, hoy), ciclo) if H.es_gasto(x)))}
-                   for i in range(7, -1, -1) for r0, r1 in [H.rango(a, m - i, cfg)]],
+                   for i in range(7, -1, -1) for r0, r1 in [H.rango(tope[0], tope[1] - i, cfg)]],
         "semana": round(-sum(x["monto"] for x in H.en(movs, hoy - timedelta(days=hoy.weekday()), hoy) if H.es_gasto(x))),
     }
 
@@ -445,7 +460,7 @@ def _app_cronos(data: dict) -> dict:
 def _app(nombre: str, data: dict) -> tuple[int, dict]:
     try:
         if nombre == "hermes":
-            return 200, _app_hermes()
+            return 200, _app_hermes(data)
         if nombre == "fortuna":
             return 200, _app_fortuna()
         if nombre == "cronos":
