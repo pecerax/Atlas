@@ -11,8 +11,8 @@ android {
         applicationId = "cl.atlas.movil"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.2"
+        versionCode = 3
+        versionName = "0.3"
     }
 
     // La llave de firma no vive en el repositorio. Si están estas variables (en GitHub: secretos del repositorio),

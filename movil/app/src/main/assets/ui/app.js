@@ -35,7 +35,7 @@ function pedir(metodo, ruta, cuerpo) {
 const Atlas = window.Atlas = {
   _cb(id, st, texto) { const ok = espera.get(id); if (!ok) return; espera.delete(id); let j = null; try { j = JSON.parse(texto); } catch (e) { /* no era JSON */ } ok({ st, j }); },
   _evento(nombre, texto) { let d = {}; try { d = JSON.parse(texto || "{}"); } catch (e) { /* vacío */ } (EVENTOS[nombre] || (() => {}))(d); },
-  _atras() { if (pantalla === "principal" || pantalla === "vincular") return false; ir(pantalla === "baco" || pantalla === "app" ? "apps" : "principal"); return true; },
+  _atras() { if (document.body.classList.contains("menu")) { menu(false); return true; } if (pantalla === "principal" || pantalla === "vincular") return false; ir(pantalla === "baco" || pantalla === "app" ? "apps" : "principal"); return true; },
 };
 
 // ---- pantallas
@@ -72,8 +72,8 @@ const ROTULO = { sinpc: "SIN CONEXIÓN CON EL PC", espera: "EN ESPERA", escuchan
 function ponModo(m, detalle) {
   modo = m; document.body.dataset.modo = m === "oyendo" ? "pensando" : m;
   $("estadoTx").textContent = detalle || ROTULO[m];
-  $("hablarTx").textContent = m === "escuchando" ? "LISTO" : (m === "pensando" || m === "hablando" || m === "oyendo") ? "DETENER" : "HABLAR";
-  $("hablar").disabled = m === "sinpc";
+  $("pista").textContent = m === "espera" ? "TOCA LA ESFERA PARA HABLAR" : m === "escuchando" ? "TOCA PARA TERMINAR" : m === "sinpc" ? "" : "TOCA PARA DETENER";
+  $("nucleo").disabled = m === "sinpc";
   $("nucleo").classList.toggle("ch", m !== "espera" && m !== "sinpc" || !!$("fraseYo").textContent);
 }
 function dice(yo, atlas) {
@@ -117,7 +117,7 @@ async function confirmar(si) {
   responder(r.j ? r.j.reply : "No pude llegar al PC.", null);
 }
 function detener() { Nativo.callar(); Nativo.cancelarGrabacion(); pedir("POST", "/p/detener"); ocupado = false; ponModo("espera"); }
-$("hablar").onclick = () => {
+$("nucleo").onclick = () => {
   if (modo === "espera") { Nativo.callar(); Nativo.grabar(); }
   else if (modo === "escuchando") Nativo.pararGrabacion();
   else if (modo === "hablando") { Nativo.callar(); ponModo("espera"); }
@@ -125,9 +125,17 @@ $("hablar").onclick = () => {
 };
 $("btnSi").onclick = () => confirmar(true);
 $("btnNo").onclick = () => confirmar(false);
-$("btnEscribir").onclick = () => { const f = $("escribir"); f.classList.toggle("on"); if (f.classList.contains("on")) $("msg").focus(); };
+// ---- menú lateral
+function menu(abrir) { document.body.classList.toggle("menu", abrir); $("btnMenu").setAttribute("aria-expanded", abrir); $("menu").setAttribute("aria-hidden", !abrir); }
+$("btnMenu").onclick = () => menu(true);
+$("velo").onclick = () => menu(false);
+document.querySelectorAll("[data-menu]").forEach((b) => { b.onclick = () => { menu(false); const d = b.dataset.menu;
+  if (d === "escribir") { ir("principal"); $("escribir").classList.add("on"); setTimeout(() => $("msg").focus(), 250); } else ir(d); }; });
+let x0 = null;   // deslizar desde el borde izquierdo abre el menú; deslizar hacia la izquierda lo cierra
+document.addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+document.addEventListener("touchend", (e) => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0;
+  if (pantalla === "principal" && x0 < 32 && dx > 60) menu(true); else if (document.body.classList.contains("menu") && dx < -60) menu(false); x0 = null; }, { passive: true });
 $("escribir").onsubmit = (e) => { e.preventDefault(); const t = $("msg").value.trim(); if (!t || modo === "sinpc") return; $("msg").value = ""; $("msg").blur(); $("escribir").classList.remove("on"); Nativo.callar(); enviar(t); };
-$("estado").onclick = () => ir("enlace");
 
 const EVENTOS = {
   grabando() { ocupado = true; dice("", ""); pendiente(null); ponModo("escuchando"); },
@@ -235,4 +243,5 @@ function arrancar() {
 setInterval(sondear, 2500);
 document.addEventListener("visibilitychange", () => { if (!document.hidden) sondear(); });
 arrancar();
+if (location.hash === "#menu") setTimeout(() => menu(true), 600);
 if (location.hash === "#vista") setTimeout(() => enviar("mi horario"), 600);   // solo para ver la pantalla en un navegador
