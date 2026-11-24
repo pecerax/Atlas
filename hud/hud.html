@@ -83,6 +83,7 @@ header{position:absolute;left:40px;right:40px;top:30px;display:flex;justify-cont
 #core{color:var(--a)}
 #core.listen{--a:#5FF2C0}   /* escuchando: verde, igual que el círculo flotante */
 #core.think{--a:#FF9F43}    /* procesando: ámbar; el anillo interior late y los engranajes se traban */
+#core.speak{--a:#FFFFFF}    /* respondiendo: blanco */
 #core.think .r4{animation:think 1.3s ease-in-out infinite}
 @keyframes think{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.07);opacity:1}}
 @media (prefers-reduced-motion:reduce){#core.think .r4{animation:none}}
@@ -1631,6 +1632,7 @@ function setMode(m, quiet) {
   $("state").textContent = labels[m];
   $("core").classList.toggle("listen", m === "listening");
   $("core").classList.toggle("think", m === "thinking");
+  $("core").classList.toggle("speak", m === "speaking");
   setCoreMode(m);
   toEmbed({ type: "estado", modo: m });
 }
@@ -1736,7 +1738,7 @@ function frame(t) {
   for (let i = 0; i < N; i++) { const h = 6 + levels[i] * 74; bars[i].style.height = h + "px"; sum += levels[i]; }
   const g = Math.round(20 + (sum / N) * 120);
   window.nucleoNivel = sum / N;
-  const rgb = mode === "thinking" ? "255,159,67" : mode === "listening" ? "95,242,192" : "79,227,255";
+  const rgb = mode === "thinking" ? "255,159,67" : mode === "listening" ? "95,242,192" : mode === "speaking" ? "255,255,255" : "79,227,255";
   $("glow").style.boxShadow = `0 0 ${g}px rgba(${rgb},.45), inset 0 0 ${g}px rgba(${rgb},.3)`;
   requestAnimationFrame(frame);
 }
@@ -1802,7 +1804,7 @@ requestAnimationFrame(frame);
     [351.4, 221, 8.1, 19.5], [179.1, 283.8, 5.7, 13.7], [368.9, 254.8, 4.4, 10.7], [321.1, 204.4, 3.4, 8.3]];
   const LN = [[180.1, 299.6, 179.1, 283.8], [180.1, 299.6, 252.8, 289.8], [252.8, 289.8, 303, 319.6], [303, 319.6, 365.8, 288.2],
     [365.8, 288.2, 368.9, 254.8], [368.9, 254.8, 351.4, 221], [351.4, 221, 324.6, 239.9], [324.6, 239.9, 252.8, 289.8], [351.4, 221, 321.1, 204.4]];
-  const COLS = { idle: ["#4FE3FF", "#9C7BFF"], speaking: ["#4FE3FF", "#9C7BFF"], listening: ["#5FF2C0", "#4FE3FF"], thinking: ["#FFB04F", "#FF6E8A"] };
+  const COLS = { idle: ["#4FE3FF", "#9C7BFF"], speaking: ["#FFFFFF", "#CFEFFF"], listening: ["#5FF2C0", "#4FE3FF"], thinking: ["#FFB04F", "#FF6E8A"] };
   const ARC = "M324.7 98.6 A170 170 0 0 0 131.6 374.4";
   const mer = Array.from({ length: 6 }, () => '<ellipse cx="256" cy="256" rx="1" ry="170"/>').join("");
   const par = [[143.8, 127.7, 10.2], [199.9, 160.5, 12.8], [256, 170, 13.6], [312.1, 160.5, 12.8], [368.2, 127.7, 10.2]].map(([cy, rx, ry]) => `<ellipse cx="256" cy="${cy}" rx="${rx}" ry="${ry}"/>`).join("");
